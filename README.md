@@ -1,7 +1,2 @@
-# We are the best group
-
-# hell yea
-
-#he hee
-
-#merge
+# stUwa
+The middleman between you and your units, made for/made by UWA students.
