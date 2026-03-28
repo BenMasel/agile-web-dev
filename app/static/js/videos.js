@@ -1,55 +1,32 @@
-const MOCK_VIDEOS = [
-  {
-    id: "dQw4w9WgXcQ",
-    title: "Never Gonna Give You Up",
-    thumbnail: "https://i.ytimg.com/vi/dQw4w9WgXcQ/mqdefault.jpg",
-    channelTitle: "Rick Astley",
-    publishedAt: "2009-10-25",
-  },
-  {
-    id: "9bZkp7q19f0",
-    title: "PSY - GANGNAM STYLE",
-    thumbnail: "https://i.ytimg.com/vi/9bZkp7q19f0/mqdefault.jpg",
-    channelTitle: "officialpsy",
-    publishedAt: "2012-07-15",
-  },
-  {
-    id: "kJQP7kiw5Fk",
-    title: "Luis Fonsi - Despacito ft. Daddy Yankee",
-    thumbnail: "https://i.ytimg.com/vi/kJQP7kiw5Fk/mqdefault.jpg",
-    channelTitle: "Luis Fonsi",
-    publishedAt: "2017-01-12",
-  },
-  {
-    id: "JGwWNGJdvx8",
-    title: "Ed Sheeran - Shape of You",
-    thumbnail: "https://i.ytimg.com/vi/JGwWNGJdvx8/mqdefault.jpg",
-    channelTitle: "Ed Sheeran",
-    publishedAt: "2017-01-30",
-  },
-  {
-    id: "RgKAFK5djSk",
-    title: "Wiz Khalifa - See You Again ft. Charlie Puth",
-    thumbnail: "https://i.ytimg.com/vi/RgKAFK5djSk/mqdefault.jpg",
-    channelTitle: "Wiz Khalifa",
-    publishedAt: "2015-04-06",
-  },
-  {
-    id: "OPf0YbXqDm0",
-    title: "Mark Ronson - Uptown Funk ft. Bruno Mars",
-    thumbnail: "https://i.ytimg.com/vi/OPf0YbXqDm0/mqdefault.jpg",
-    channelTitle: "Mark Ronson",
-    publishedAt: "2014-11-19",
-  },
-];
+const YOUTUBE_API_KEY = CONFIG.YOUTUBE_API_KEY;
 
-// Replace this function body with a real YouTube Data API v3 fetch() call later.
-// Expected shape: { id, title, thumbnail, channelTitle, publishedAt }
+async function searchChannel(channelId, query) {
+  const url = new URL("https://www.googleapis.com/youtube/v3/search");
+  url.searchParams.set("part", "snippet");
+  url.searchParams.set("type", "video");
+  url.searchParams.set("maxResults", "12");
+  url.searchParams.set("channelId", channelId);
+  url.searchParams.set("q", query);
+  url.searchParams.set("key", YOUTUBE_API_KEY);
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`YouTube API error: ${res.status} for channel ${channelId}`);
+  const data = await res.json();
+
+  return data.items.map((item) => ({
+    id: item.id.videoId,
+    title: item.snippet.title,
+    thumbnail: item.snippet.thumbnails.medium.url,
+    channelTitle: item.snippet.channelTitle,
+    publishedAt: item.snippet.publishedAt,
+  }));
+}
+
 async function searchVideos(query) {
-  return MOCK_VIDEOS.filter((v) =>
-    v.title.toLowerCase().includes(query.toLowerCase()) ||
-    v.channelTitle.toLowerCase().includes(query.toLowerCase())
-  );
+  const results = await Promise.all(CHANNELS.map((ch) => searchChannel(ch.id, query)));
+  return results
+    .flat()
+    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
 }
 
 function renderResults(videos) {
@@ -117,8 +94,15 @@ document.getElementById("search-form").addEventListener("submit", async (e) => {
   btn.disabled = true;
   btn.textContent = "Searching…";
 
-  const videos = await searchVideos(query);
-  renderResults(videos);
+  try {
+    const videos = await searchVideos(query);
+    renderResults(videos);
+  } catch (err) {
+    console.error(err);
+    document.getElementById("empty-state").textContent =
+      "Search failed. Check your API key and try again.";
+    document.getElementById("empty-state").classList.remove("hidden");
+  }
 
   btn.disabled = false;
   btn.textContent = "Search";
