@@ -1,1 +1,8 @@
 app/static/js/config.js
+
+instance/
+*.db
+__pycache__/
+*.pyc
+.env
+.venv
