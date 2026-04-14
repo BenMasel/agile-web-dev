@@ -1,6 +1,6 @@
 import os
 import yaml
-from flask import Blueprint, render_template, abort
+from flask import Blueprint, render_template
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
@@ -49,7 +49,7 @@ def unit_detail(code):
     """
     unit = load_yaml('units', f'{code}.yaml')
     if unit is None:
-        abort(404)
+        return render_template('404.html', category='unit'), 404
 
     # Load each associated club so the template has icon/accent info.
     clubs = []
@@ -69,7 +69,7 @@ def degree_detail(slug):
     """
     degree = load_yaml('degrees', f'{slug}.yaml')
     if degree is None:
-        abort(404)
+        return render_template('404.html', category='degree'), 404
 
     return render_template('degree/detail.html', degree=degree)
 
@@ -82,7 +82,7 @@ def club_detail(slug):
     """
     club = load_yaml('clubs', f'{slug}.yaml')
     if club is None:
-        abort(404)
+        return render_template('404.html', category='club'), 404
 
     return render_template('club/detail.html', club=club)
 
