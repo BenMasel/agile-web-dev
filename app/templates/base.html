@@ -49,7 +49,7 @@
 
   {# Content column — centred, padded below the navbar #}
   <div class="flex justify-center px-6 pt-5 pb-8">
-    <div class="w-full max-w-2xl flex flex-col gap-4">
+    <div class="{% block content_width %}w-full max-w-2xl{% endblock %} flex flex-col gap-4">
 
       {% block content %}{% endblock %}
 
