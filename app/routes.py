@@ -26,13 +26,77 @@ def load_yaml(subfolder, filename):
         return yaml.safe_load(f)
 
 
+def load_all_yaml(subfolder):
+    """
+    Load every .yaml file in a data subfolder.
+    Returns a list of parsed dicts, skipping any that fail to parse.
+    """
+    directory = os.path.join(DATA_DIR, subfolder)
+    if not os.path.exists(directory):
+        return []
+    items = []
+    for filename in sorted(os.listdir(directory)):
+        if filename.endswith('.yaml'):
+            data = load_yaml(subfolder, filename)
+            if data:
+                items.append(data)
+    return items
+
+
+def build_search_index():
+    """
+    Flatten all units, degrees, and clubs into a single list of dicts
+    suitable for Fuse.js. Each item carries a 'type' and 'url' field so
+    the frontend knows how to render and navigate to it.
+    """
+    index = []
+
+    for u in load_all_yaml('units'):
+        index.append({
+            'type':          'unit',
+            'code':          u.get('code', ''),
+            'title':         u.get('title', ''),
+            'faculty':       u.get('faculty', ''),
+            'credit_points': u.get('credit_points', ''),
+            'level':         u.get('level', ''),
+            'semester':      u.get('semester', ''),
+            'url':           f'/unit/{u["code"]}',
+        })
+
+    for d in load_all_yaml('degrees'):
+        index.append({
+            'type':           'degree',
+            'title':          d.get('title', ''),
+            'faculty':        d.get('faculty', ''),
+            'duration_years': d.get('duration_years', ''),
+            'credit_points':  d.get('credit_points', ''),
+            'url':            f'/degree/{d["slug"]}',
+        })
+
+    for c in load_all_yaml('clubs'):
+        index.append({
+            'type':         'club',
+            'name':         c.get('name', ''),
+            'abbreviation': c.get('abbreviation', ''),
+            'description':  str(c.get('description', '')).replace('\n', ' ').strip(),
+            'accent_color': c.get('accent_color', '#ffffff'),
+            'url':          f'/club/{c["slug"]}',
+        })
+
+    return index
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
 
 @bp.route('/')
 def home():
-    return render_template('home.html')
+    """
+    Home page — passes the full search index to the template as JSON so
+    Fuse.js can run client-side search with no round-trips.
+    """
+    return render_template('home.html', search_data=build_search_index())
 
 
 @bp.route('/videos')

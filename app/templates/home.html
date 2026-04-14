@@ -1,12 +1,370 @@
-<!doctype html>
-<html>
-  <head>
-    <title>stUwa</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
-  </head>
-  <body>
-    <nav>
-      <h1>stUwa</h1>
-    </nav>
-  </body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}stUwa — Search units, degrees & clubs{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7/dist/fuse.min.js"></script>
+{% endblock %}
+
+{% block content %}
+
+  {# ========== BRANDING ========== #}
+  <div class="flex flex-col items-center gap-1.5 pt-10 pb-2">
+    <div class="w-9 h-9 rounded-[10px] bg-rc-red-muted flex items-center justify-center mb-1">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <circle cx="8" cy="8" r="5.5" stroke="#FF6363" stroke-width="1.3"/>
+        <line x1="12.5" y1="12.5" x2="16" y2="16" stroke="#FF6363" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <h1 class="text-[22px] font-semibold text-rc-text tracking-tight">stUwa</h1>
+    <p class="text-[13px] text-rc-text-tertiary">Search units, degrees and clubs</p>
+  </div>
+
+  {# ========== SEARCH BAR ========== #}
+  <div class="relative">
+    <div class="flex items-center gap-2.5 bg-rc-surface border border-rc-border rounded-[10px] px-4 py-3 focus-within:border-[rgba(255,255,255,0.16)] transition"
+         id="search-bar">
+      {# Search icon #}
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="shrink-0">
+        <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.3)" stroke-width="1.3"/>
+        <line x1="11.2" y1="11.2" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Search units, degrees, clubs…"
+        autocomplete="off"
+        spellcheck="false"
+        class="flex-1 bg-transparent text-sm text-rc-text placeholder-rc-text-tertiary outline-none"
+      />
+
+      {# Clear button — shown only when input has content #}
+      <button id="clear-btn"
+              class="hidden w-5 h-5 rounded-md bg-rc-fill flex items-center justify-center text-rc-text-faint hover:text-white/60 transition shrink-0 cursor-pointer">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  {# ========== RESULTS PANEL (shown while query is non-empty) ========== #}
+  <div id="results-panel" class="hidden bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden flex flex-col">
+    {# Populated by JS #}
+  </div>
+
+  {# ========== HINT PANEL (shown when query is empty) ========== #}
+  <div id="hint-panel" class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+
+    {# Quick-jump category buttons #}
+    <div class="flex flex-col gap-1.5">
+      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Browse by category</span>
+      <div class="flex gap-2 flex-wrap mt-1">
+        <button onclick="setQuery('ENSC')"
+                class="flex items-center gap-2 bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-[13px] text-white/60 hover:bg-rc-red-muted hover:text-rc-red hover:border-rc-red/20 transition cursor-pointer">
+          <span class="w-1.5 h-1.5 rounded-full bg-rc-red"></span> Units
+        </button>
+        <button onclick="setQuery('Bachelor')"
+                class="flex items-center gap-2 bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-[13px] text-white/60 hover:bg-rc-purple-muted hover:text-rc-purple hover:border-rc-purple/20 transition cursor-pointer">
+          <span class="w-1.5 h-1.5 rounded-full bg-rc-purple"></span> Degrees
+        </button>
+        <button onclick="setQuery('Society')"
+                class="flex items-center gap-2 bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-[13px] text-white/60 hover:bg-rc-blue-muted hover:text-rc-blue hover:border-rc-blue/20 transition cursor-pointer">
+          <span class="w-1.5 h-1.5 rounded-full bg-rc-blue"></span> Clubs
+        </button>
+      </div>
+    </div>
+
+    <hr class="border-rc-border-light" />
+
+    {# Example searches #}
+    <div class="flex flex-col gap-1.5">
+      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Try searching</span>
+      <div class="flex gap-1.5 flex-wrap mt-0.5">
+        {% for term in ['ENSC1002', 'Mechanical', 'ESS', 'thermodynamics', 'Physics'] %}
+        <button onclick="setQuery('{{ term }}')"
+                class="text-xs text-white/45 bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 hover:bg-white/10 hover:text-white/70 transition cursor-pointer">
+          {{ term }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+{% endblock %}
+
+
+{% block footer_nav %}
+<div class="flex items-center gap-[3px]">
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">↑↓</span>
+  <span class="text-[11px] text-rc-text-faint mx-0.5">navigate</span>
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">↩</span>
+  <span class="text-[11px] text-rc-text-faint mx-0.5">open</span>
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">esc</span>
+  <span class="text-[11px] text-rc-text-faint">clear</span>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{#
+  search_data is a JSON-serialised list of all units, degrees, and clubs.
+  Fuse.js searches this entirely client-side — no round-trips needed.
+#}
+<script>
+const SEARCH_DATA = {{ search_data | tojson }};
+
+// ---------------------------------------------------------------------------
+// Fuse.js setup
+// ---------------------------------------------------------------------------
+const fuse = new Fuse(SEARCH_DATA, {
+  // Weighted keys: code/abbreviation weighted highest so that typing
+  // "ENSC1002" or "ESS" gives an exact match immediately.
+  keys: [
+    { name: 'code',         weight: 4 },
+    { name: 'abbreviation', weight: 4 },
+    { name: 'title',        weight: 2 },
+    { name: 'name',         weight: 2 },
+    { name: 'faculty',      weight: 0.5 },
+    { name: 'description',  weight: 0.3 },
+  ],
+  threshold: 0.35,      // lower = stricter matching
+  includeScore: true,
+  minMatchCharLength: 2,
+  ignoreLocation: true, // don't penalise matches that aren't at string start
+});
+
+// ---------------------------------------------------------------------------
+// DOM references
+// ---------------------------------------------------------------------------
+const input        = document.getElementById('search-input');
+const clearBtn     = document.getElementById('clear-btn');
+const resultsPanel = document.getElementById('results-panel');
+const hintPanel    = document.getElementById('hint-panel');
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let activeIndex = -1;   // which result row is keyboard-highlighted
+let flatResults = [];   // flat ordered list of result items for keyboard nav
+
+// ---------------------------------------------------------------------------
+// Rendering helpers
+// ---------------------------------------------------------------------------
+
+// Dot colour per type/accent
+function dotStyle(item) {
+  if (item.type === 'unit')   return 'background:#FF6363';
+  if (item.type === 'degree') return 'background:#A78BFA';
+  if (item.type === 'club')   return `background:${item.accent_color}`;
+  return 'background:#ffffff';
+}
+
+// Build a single result row <a> element
+function buildRow(item, index) {
+  const a = document.createElement('a');
+  a.href = item.url;
+  a.className = 'result-row flex items-center gap-3 px-4 py-2.5 border border-transparent transition cursor-pointer';
+  a.dataset.index = index;
+
+  // Dot
+  const dot = `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="${dotStyle(item)}"></div>`;
+
+  // Main label + subtitle vary by type
+  let label, sub, badges = '';
+
+  if (item.type === 'unit') {
+    label  = `<span class="text-[13px] font-medium text-white/85">${item.code}</span>`;
+    sub    = `<span class="text-[11px] text-white/35 truncate">${item.title}</span>`;
+    badges = `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(255,99,99,0.12)] text-[#FF6363] shrink-0">${item.credit_points} CP</span>
+              <span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(239,159,39,0.1)] text-[#D4A340] shrink-0">Sem ${item.semester}</span>`;
+  } else if (item.type === 'degree') {
+    label  = `<span class="text-[13px] font-medium text-white/85">${item.title}</span>`;
+    sub    = `<span class="text-[11px] text-white/35 truncate">${item.faculty}</span>`;
+    badges = `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(167,139,250,0.12)] text-[#A78BFA] shrink-0">${item.duration_years} yr</span>`;
+  } else if (item.type === 'club') {
+    label  = `<span class="text-[13px] font-medium text-white/85">${item.abbreviation}</span>`;
+    sub    = `<span class="text-[11px] text-white/35 truncate">${item.name}</span>`;
+  }
+
+  // Chevron (visible on hover/active)
+  const chevron = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="chevron shrink-0 opacity-0 transition">
+    <path d="M4 2.5L7.5 6L4 9.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+
+  a.innerHTML = `
+    ${dot}
+    <div class="flex items-center gap-2 flex-1 min-w-0">
+      ${label}
+      ${sub}
+    </div>
+    <div class="flex items-center gap-1.5">${badges}</div>
+    ${chevron}
+  `;
+  return a;
+}
+
+// Build a section header element
+function buildHeader(label, count) {
+  const div = document.createElement('div');
+  div.className = 'flex items-center justify-between px-4 py-2 bg-rc-fill-subtle';
+  div.innerHTML = `
+    <span class="text-[10px] uppercase tracking-wider text-rc-text-tertiary">${label}</span>
+    <span class="text-[10px] text-rc-text-faint">${count}</span>
+  `;
+  return div;
+}
+
+// Render all results into the panel, grouped by type
+function renderResults(results) {
+  resultsPanel.innerHTML = '';
+  flatResults = results.map(r => r.item);
+  activeIndex = -1;
+
+  if (results.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'px-4 py-6 text-center text-[13px] text-rc-text-tertiary';
+    empty.textContent = 'No results found.';
+    resultsPanel.appendChild(empty);
+    return;
+  }
+
+  // Group by type preserving score order within each group
+  const groups = { unit: [], degree: [], club: [] };
+  results.forEach(r => { if (groups[r.item.type]) groups[r.item.type].push(r); });
+
+  const labels = { unit: 'Units', degree: 'Degrees', club: 'Clubs' };
+  let rowIndex = 0;
+
+  Object.entries(groups).forEach(([type, group]) => {
+    if (group.length === 0) return;
+
+    resultsPanel.appendChild(buildHeader(labels[type], group.length));
+
+    const section = document.createElement('div');
+    section.className = 'flex flex-col';
+
+    group.forEach(r => {
+      const row = buildRow(r.item, rowIndex++);
+      section.appendChild(row);
+    });
+
+    resultsPanel.appendChild(section);
+  });
+}
+
+// Apply/remove the active highlight style to a row by index
+function setActiveRow(index) {
+  // Clear previous
+  document.querySelectorAll('.result-row').forEach(el => {
+    el.classList.remove('bg-rc-fill', 'border-rc-border');
+    el.classList.add('border-transparent');
+    const ch = el.querySelector('.chevron');
+    if (ch) ch.classList.remove('opacity-40');
+  });
+
+  activeIndex = index;
+
+  if (index < 0 || index >= flatResults.length) return;
+
+  const row = document.querySelector(`.result-row[data-index="${index}"]`);
+  if (!row) return;
+  row.classList.add('bg-rc-fill', 'border-rc-border');
+  row.classList.remove('border-transparent');
+  const ch = row.querySelector('.chevron');
+  if (ch) ch.classList.add('opacity-40');
+  row.scrollIntoView({ block: 'nearest' });
+}
+
+// ---------------------------------------------------------------------------
+// Search logic
+// ---------------------------------------------------------------------------
+let debounceTimer;
+
+function runSearch(query) {
+  const q = query.trim();
+
+  if (q.length < 2) {
+    resultsPanel.classList.add('hidden');
+    resultsPanel.classList.remove('flex');
+    hintPanel.classList.remove('hidden');
+    return;
+  }
+
+  const results = fuse.search(q, { limit: 15 });
+
+  hintPanel.classList.add('hidden');
+  resultsPanel.classList.remove('hidden');
+  resultsPanel.classList.add('flex');
+  renderResults(results);
+}
+
+// ---------------------------------------------------------------------------
+// Event listeners
+// ---------------------------------------------------------------------------
+
+input.addEventListener('input', () => {
+  const hasValue = input.value.length > 0;
+  clearBtn.classList.toggle('hidden', !hasValue);
+
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => runSearch(input.value), 120);
+});
+
+// Hover highlight
+resultsPanel.addEventListener('mouseover', e => {
+  const row = e.target.closest('.result-row');
+  if (row) setActiveRow(Number(row.dataset.index));
+});
+
+resultsPanel.addEventListener('mouseleave', () => setActiveRow(-1));
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    clearSearch();
+    return;
+  }
+
+  if (flatResults.length === 0) return;
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    setActiveRow((activeIndex + 1) % flatResults.length);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    setActiveRow((activeIndex - 1 + flatResults.length) % flatResults.length);
+  } else if (e.key === 'Enter' && activeIndex >= 0) {
+    e.preventDefault();
+    window.location.href = flatResults[activeIndex].url;
+  }
+});
+
+// Clear button
+clearBtn.addEventListener('click', clearSearch);
+
+function clearSearch() {
+  input.value = '';
+  clearBtn.classList.add('hidden');
+  resultsPanel.classList.add('hidden');
+  resultsPanel.classList.remove('flex');
+  hintPanel.classList.remove('hidden');
+  flatResults = [];
+  activeIndex = -1;
+  input.focus();
+}
+
+// Programmatic query — used by the hint panel buttons
+function setQuery(term) {
+  input.value = term;
+  clearBtn.classList.remove('hidden');
+  input.focus();
+  runSearch(term);
+}
+
+// Auto-focus the input on page load
+input.focus();
+</script>
+{% endblock %}
