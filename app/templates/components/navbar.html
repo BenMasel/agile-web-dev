@@ -1,0 +1,113 @@
+{#
+  Navbar component — included by base.html.
+  Sticky, full-width, sits above the max-w-2xl content column.
+
+  Left:   stUwa logo (home link) · My Study Plan (placeholder)
+  Centre: ⌘K search shortcut pill
+  Right:  Semester badge · notification bell · account avatar
+#}
+<nav class="sticky top-0 z-50 w-full border-b border-rc-border bg-rc-bg/80 backdrop-blur-md">
+  <div class="max-w-5xl mx-auto px-5 h-11 flex items-center gap-2">
+
+    {# ---- Logo ---- #}
+    <a href="{{ url_for('main.home') }}"
+       class="flex items-center gap-2 shrink-0 group">
+      <div class="w-6 h-6 rounded-[6px] bg-rc-red-muted flex items-center justify-center transition group-hover:bg-[rgba(255,99,99,0.2)]">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+          <circle cx="6.5" cy="6.5" r="4.5" stroke="#FF6363" stroke-width="1.2"/>
+          <line x1="10" y1="10" x2="13" y2="13" stroke="#FF6363" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="text-[13px] font-semibold text-rc-text tracking-tight">stUwa</span>
+    </a>
+
+    {# ---- Separator ---- #}
+    <div class="w-px h-3.5 bg-rc-border mx-1 shrink-0"></div>
+
+    {# ---- My Study Plan — placeholder for when auth exists ---- #}
+    <a href="#"
+       title="Available once you sign in"
+       class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-white/35 hover:text-white/55 hover:bg-rc-fill transition cursor-not-allowed select-none">
+      {# Checklist icon #}
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.1"/>
+        <path d="M3.5 5l1.5 1.5L8.5 3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3.5 8.5h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      My Study Plan
+      {# Pill badge hinting the feature is coming #}
+      <span class="text-[9px] font-medium px-1 py-[1px] rounded bg-rc-fill border border-rc-border text-rc-text-faint leading-none">
+        soon
+      </span>
+    </a>
+
+    {# ---- Spacer ---- #}
+    <div class="flex-1"></div>
+
+    {# ---- ⌘K search shortcut — focuses search input if on home, else navigates home ---- #}
+    <button id="nav-search-btn"
+            class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rc-fill border border-rc-border text-[11px] text-rc-text-faint hover:border-[rgba(255,255,255,0.12)] hover:text-white/50 transition cursor-pointer">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+        <circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.1"/>
+        <line x1="7.8" y1="7.8" x2="10" y2="10" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      Search
+      <span class="flex items-center gap-[2px] ml-0.5">
+        <span class="bg-rc-fill-light border border-rc-border-light rounded px-1 py-[1px] text-[10px] leading-none">⌘</span>
+        <span class="bg-rc-fill-light border border-rc-border-light rounded px-1 py-[1px] text-[10px] leading-none">K</span>
+      </span>
+    </button>
+
+    {# ---- Current semester badge ---- #}
+    <span class="hidden md:inline-flex text-[10px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-amber-muted text-rc-amber">
+      S1 2026
+    </span>
+
+    {# ---- Notification bell — placeholder ---- #}
+    <button title="Notifications — coming soon"
+            class="relative w-7 h-7 rounded-[7px] flex items-center justify-center text-rc-text-faint hover:bg-rc-fill hover:text-white/40 transition cursor-not-allowed">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M7 1.5A4 4 0 0 0 3 5.5v3L2 10h10l-1-1.5v-3a4 4 0 0 0-4-4z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        <path d="M5.5 10.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.1"/>
+      </svg>
+      {# Dot — uncomment when there are real notifications #}
+      {# <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-rc-red"></span> #}
+    </button>
+
+    {# ---- Account avatar ---- #}
+    {# Placeholder for UWA SSO auth. When implemented, show initials from email. #}
+    <button id="account-btn"
+            title="Sign in with your UWA account"
+            class="w-7 h-7 rounded-full bg-rc-fill border border-rc-border flex items-center justify-center text-rc-text-faint hover:bg-white/10 hover:border-[rgba(255,255,255,0.14)] hover:text-white/50 transition cursor-pointer">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.1"/>
+        <path d="M2 12c0-2.5 2.2-4 5-4s5 1.5 5 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+  </div>
+</nav>
+
+{# ---- Navbar scripts ---- #}
+<script>
+  // ⌘K / Ctrl+K — focus the search input if it exists on this page,
+  // otherwise navigate home (which auto-focuses the input on load).
+  function openSearch() {
+    const input = document.getElementById('search-input');
+    if (input) {
+      input.focus();
+      input.select();
+    } else {
+      window.location.href = '/';
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      openSearch();
+    }
+  });
+
+  document.getElementById('nav-search-btn').addEventListener('click', openSearch);
+</script>

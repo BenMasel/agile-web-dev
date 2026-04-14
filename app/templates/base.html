@@ -42,28 +42,34 @@
   {% block head %}{% endblock %}
 </head>
 
-<body class="bg-rc-bg font-sans min-h-screen flex items-start justify-center p-6 antialiased">
+<body class="bg-rc-bg font-sans min-h-screen antialiased">
 
-  <div class="w-full max-w-2xl flex flex-col gap-4">
+  {# Navbar is full-width, outside the content column #}
+  {% include "components/navbar.html" %}
 
-    {% block content %}{% endblock %}
+  {# Content column — centred, padded below the navbar #}
+  <div class="flex justify-center px-6 pt-5 pb-8">
+    <div class="w-full max-w-2xl flex flex-col gap-4">
 
-    {# Footer bar — child templates can override footer_nav to change the right-hand shortcuts #}
-    <div class="flex justify-between items-center px-0.5">
-      <div class="flex items-center gap-1.5">
-        <span class="w-1.5 h-1.5 rounded-full bg-rc-green"></span>
-        <span class="text-[11px] text-rc-text-faint">UWA unit catalogue + community</span>
+      {% block content %}{% endblock %}
+
+      {# Footer bar — child templates can override footer_nav to change the right-hand shortcuts #}
+      <div class="flex justify-between items-center px-0.5 mt-1">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-rc-green"></span>
+          <span class="text-[11px] text-rc-text-faint">UWA unit catalogue + community</span>
+        </div>
+        {% block footer_nav %}
+        <div class="flex items-center gap-[3px]">
+          <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">tab</span>
+          <span class="text-[11px] text-rc-text-faint mx-0.5">navigate</span>
+          <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">return</span>
+          <span class="text-[11px] text-rc-text-faint">select</span>
+        </div>
+        {% endblock %}
       </div>
-      {% block footer_nav %}
-      <div class="flex items-center gap-[3px]">
-        <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">tab</span>
-        <span class="text-[11px] text-rc-text-faint mx-0.5">navigate</span>
-        <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">return</span>
-        <span class="text-[11px] text-rc-text-faint">select</span>
-      </div>
-      {% endblock %}
+
     </div>
-
   </div>
 
   {% block scripts %}{% endblock %}
