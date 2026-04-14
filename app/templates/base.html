@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}stUwa{% endblock %}</title>
+
+  {# Tailwind browser build — supports @theme for custom tokens #}
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style type="text/tailwindcss">
+    @theme {
+      --color-rc-bg:           #070A0B;
+      --color-rc-surface:      #151515;
+      --color-rc-red:          #FF6363;
+      --color-rc-red-hover:    #ff7a7a;
+      --color-rc-red-muted:    rgba(255, 99, 99, 0.12);
+      --color-rc-blue:         #6CA0F0;
+      --color-rc-blue-muted:   rgba(100, 160, 255, 0.1);
+      --color-rc-amber:        #D4A340;
+      --color-rc-amber-muted:  rgba(239, 159, 39, 0.1);
+      --color-rc-green:        #2ECC71;
+      --color-rc-green-muted:  rgba(46, 204, 113, 0.12);
+      --color-rc-purple:       #A78BFA;
+      --color-rc-purple-muted: rgba(167, 139, 250, 0.12);
+      --color-rc-text:              #F5F5F5;
+      --color-rc-text-secondary:    rgba(255, 255, 255, 0.5);
+      --color-rc-text-tertiary:     rgba(255, 255, 255, 0.25);
+      --color-rc-text-faint:        rgba(255, 255, 255, 0.2);
+      --color-rc-border:       rgba(255, 255, 255, 0.08);
+      --color-rc-border-light: rgba(255, 255, 255, 0.06);
+      --color-rc-fill:         rgba(255, 255, 255, 0.06);
+      --color-rc-fill-light:   rgba(255, 255, 255, 0.04);
+      --color-rc-fill-subtle:  rgba(255, 255, 255, 0.03);
+      --font-sans: 'Inter', system-ui, sans-serif;
+    }
+  </style>
+
+  {% block head %}{% endblock %}
+</head>
+
+<body class="bg-rc-bg font-sans min-h-screen flex items-start justify-center p-6 antialiased">
+
+  <div class="w-full max-w-2xl flex flex-col gap-4">
+
+    {% block content %}{% endblock %}
+
+    {# Footer bar — child templates can override footer_nav to change the right-hand shortcuts #}
+    <div class="flex justify-between items-center px-0.5">
+      <div class="flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-rc-green"></span>
+        <span class="text-[11px] text-rc-text-faint">UWA unit catalogue + community</span>
+      </div>
+      {% block footer_nav %}
+      <div class="flex items-center gap-[3px]">
+        <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">tab</span>
+        <span class="text-[11px] text-rc-text-faint mx-0.5">navigate</span>
+        <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">return</span>
+        <span class="text-[11px] text-rc-text-faint">select</span>
+      </div>
+      {% endblock %}
+    </div>
+
+  </div>
+
+  {% block scripts %}{% endblock %}
+
+</body>
+</html>

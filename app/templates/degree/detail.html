@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}{{ degree.title }} — stUwa{% endblock %}
+
+{% block content %}
+
+  {# ========== SEARCH BAR ========== #}
+  <div class="flex items-center gap-2 bg-rc-surface border border-rc-border rounded-[10px] px-3.5 py-2.5">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="shrink-0">
+      <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.3)" stroke-width="1.2"/>
+      <line x1="11" y1="11" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <span class="text-sm text-rc-text flex-1">{{ degree.title }}</span>
+    <span class="text-[11px] text-rc-text-faint whitespace-nowrap">degree search</span>
+  </div>
+
+  {# ========== DEGREE RESULT CARD ========== #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+
+    {# ---- Header ---- #}
+    <div class="flex items-start gap-3.5">
+      <div class="w-[42px] h-[42px] rounded-[10px] bg-rc-purple-muted flex items-center justify-center shrink-0">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M2 14L10 9l8 5" stroke="#A78BFA" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 4L18 9" stroke="#A78BFA" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 4L2 9" stroke="#A78BFA" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 9v7" stroke="#A78BFA" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="text-xl font-semibold text-rc-text tracking-tight leading-tight">{{ degree.title }}</div>
+        <div class="text-sm text-rc-text-secondary mt-0.5">{{ degree.faculty }}</div>
+      </div>
+      <div class="flex items-start gap-2">
+        <div class="flex gap-1.5 flex-wrap justify-end">
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-purple-muted text-rc-purple">{{ degree.duration_years }} years</span>
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-blue-muted text-rc-blue">{{ degree.credit_points }} CP</span>
+          {% if degree.accredited %}
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-green-muted text-rc-green">Accredited</span>
+          {% endif %}
+        </div>
+        {# Pin button — state managed client-side #}
+        <button id="pin-btn" onclick="togglePin()" title="Pin degree to your account"
+          class="w-7 h-7 rounded-[7px] flex items-center justify-center transition border border-transparent hover:border-rc-border hover:bg-rc-fill cursor-pointer shrink-0 mt-[-1px]">
+          <svg id="pin-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" class="transition">
+            <path d="M8.5 1.5L12.5 5.5L9 7.5L9.5 11L7 9.5L4.5 11L5 7.5L1.5 5.5L5.5 1.5L6.5 3.5L8.5 1.5Z" stroke="rgba(255,255,255,0.3)" stroke-width="1.1" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    {# ---- Pinned notice (hidden until pin is clicked) ---- #}
+    <div id="pin-notice" class="hidden items-center gap-2 bg-rc-purple-muted border border-[rgba(167,139,250,0.15)] rounded-lg px-3 py-2">
+      <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+        <path d="M8.5 1.5L12.5 5.5L9 7.5L9.5 11L7 9.5L4.5 11L5 7.5L1.5 5.5L5.5 1.5L6.5 3.5L8.5 1.5Z" fill="rgba(167,139,250,0.4)" stroke="#A78BFA" stroke-width="1.1" stroke-linejoin="round"/>
+      </svg>
+      <span class="text-[11px] text-rc-purple">Pinned to your account — you'll receive updates for this degree</span>
+      <button onclick="togglePin()" class="ml-auto text-[11px] text-rc-purple/60 hover:text-rc-purple transition cursor-pointer">Unpin</button>
+    </div>
+
+    <hr class="border-rc-border-light" />
+
+    {# ---- Metadata grid ---- #}
+    <div class="grid grid-cols-3 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">School</span>
+        <span class="text-[13px] font-medium text-white/85">{{ degree.school }}</span>
+        <span class="text-xs text-white/55">{{ degree.school_faculty }}</span>
+      </div>
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Delivery</span>
+        <span class="text-[13px] font-medium text-white/85">{{ degree.delivery }}</span>
+        <span class="text-xs text-white/55">{{ degree.location }}</span>
+      </div>
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">ATAR Cutoff</span>
+        <span class="text-[13px] font-medium text-white/85">{{ "%.2f" | format(degree.atar_cutoff) }}</span>
+        <span class="text-xs text-white/55">{{ degree.atar_intake_year }} intake</span>
+      </div>
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Coordinator</span>
+        <span class="text-[13px] font-medium text-white/85">{{ degree.coordinator }}</span>
+        <span class="text-xs text-white/55">{{ degree.coordinator_dept }}</span>
+      </div>
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Intake</span>
+        <span class="text-[13px] font-medium text-white/85">{{ degree.intake }}</span>
+        <span class="text-xs text-white/55">{{ degree.intake_detail }}</span>
+      </div>
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Accreditation</span>
+        <span class="text-[13px] font-medium text-white/85">{{ degree.accreditation_body }}</span>
+        <span class="text-xs text-white/55">{{ degree.accreditation_note }}</span>
+      </div>
+    </div>
+
+    {# ---- Overview ---- #}
+    <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex flex-col gap-1.5">
+      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Overview</span>
+      <p class="text-[13px] text-white/55 leading-relaxed">{{ degree.overview }}</p>
+    </div>
+
+    {# ---- Actions ---- #}
+    <div class="flex gap-2">
+      <button class="bg-rc-purple text-rc-bg font-medium text-[13px] px-4 py-2 rounded-lg transition hover:opacity-90 cursor-pointer">Apply now</button>
+      <button class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">Compare degrees</button>
+      <button class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">Download handbook</button>
+    </div>
+  </div>
+
+  {# ========== REQUIRED UNITS CARD ========== #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded-[7px] bg-rc-red-muted flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 2.5C2 1.95 2.45 1.5 3 1.5H6L7.5 3H11.5C12.05 3 12.5 3.45 12.5 4V11C12.5 11.55 12.05 12 11.5 12H3C2.45 12 2 11.55 2 11V2.5Z" stroke="#FF6363" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="text-sm font-medium text-white/85">Required units</span>
+      <span class="text-[11px] text-rc-text-tertiary ml-auto">{{ degree.credit_points }} credit points</span>
+    </div>
+
+    <hr class="border-rc-border-light" />
+
+    {# ---- Year tabs — one button per year, JS drives visibility ---- #}
+    <div class="flex gap-1" id="year-tabs">
+      {% for yr in degree.years %}
+      <button
+        onclick="showYear({{ yr.year }})"
+        class="year-tab text-[11px] font-medium px-3 py-1.5 rounded-md transition cursor-pointer
+          {% if loop.first %}bg-rc-red-muted text-rc-red{% else %}text-white/40 hover:bg-rc-fill hover:text-white/70{% endif %}"
+        data-year="{{ yr.year }}">
+        Year {{ yr.year }}
+      </button>
+      {% endfor %}
+    </div>
+
+    {# ---- Unit lists — one block per year, hidden/shown by JS ---- #}
+    {% for yr in degree.years %}
+    <div id="units-year-{{ yr.year }}"
+         class="year-content {% if not loop.first %}hidden{% endif %} flex flex-col gap-1">
+
+      {% for sem in yr.semesters %}
+      <div class="text-[10px] uppercase tracking-widest text-rc-text-tertiary px-1 {% if not loop.first %}pt-2{% endif %} pb-1">
+        {{ sem.label }}
+      </div>
+
+      {% for unit in sem.units %}
+      {#
+        Link to unit page only for real unit codes (not "Option A" elective slots).
+        We detect real codes by checking the first 4 chars are alpha and next 4 are digits.
+      #}
+      {% if unit.code[0:4].isalpha() and unit.code[4:8].isdigit() %}
+      <a href="{{ url_for('main.unit_detail', code=unit.code) }}"
+         class="unit-row group flex items-center gap-3 rounded-lg px-3 py-2.5 border border-transparent hover:border-rc-border hover:bg-rc-fill transition cursor-pointer">
+      {% else %}
+      <div class="unit-row group flex items-center gap-3 rounded-lg px-3 py-2.5 border border-transparent">
+      {% endif %}
+
+        {# Dot colour: red = core, blue = elective, purple = honours #}
+        <div class="w-1.5 h-1.5 rounded-full shrink-0
+          {% if unit.type == 'core' %}bg-rc-red
+          {% elif unit.type == 'elective' %}bg-rc-blue
+          {% elif unit.type == 'honours' %}bg-rc-purple
+          {% endif %}"></div>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[13px] font-medium text-white/85 group-hover:text-white transition">{{ unit.code }}</span>
+            <span class="text-[11px] text-white/35 truncate">{{ unit.title }}</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-[11px] text-white/30">{{ unit.credit_points }} CP</span>
+
+          {# Semester / honours badge #}
+          {% if unit.type == 'honours' %}
+          <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-purple-muted text-rc-purple">HON</span>
+          {% elif sem.number == 1 %}
+          <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber">S1</span>
+          {% else %}
+          <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue">S2</span>
+          {% endif %}
+
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="opacity-0 group-hover:opacity-40 transition">
+            <path d="M4 2.5L7.5 6L4 9.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+      {% if unit.code[0:4].isalpha() and unit.code[4:8].isdigit() %}
+      </a>
+      {% else %}
+      </div>
+      {% endif %}
+      {% endfor %}
+      {% endfor %}
+
+      {# Legend #}
+      <div class="flex items-center gap-4 px-1 pt-2">
+        <div class="flex items-center gap-1.5">
+          <div class="w-1.5 h-1.5 rounded-full bg-rc-red"></div>
+          <span class="text-[11px] text-white/30">Core</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <div class="w-1.5 h-1.5 rounded-full bg-rc-blue"></div>
+          <span class="text-[11px] text-white/30">Elective</span>
+        </div>
+        {% if yr.year == degree.years | length %}
+        <div class="flex items-center gap-1.5">
+          <div class="w-1.5 h-1.5 rounded-full bg-rc-purple"></div>
+          <span class="text-[11px] text-white/30">Honours</span>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+
+  {# ========== CAREER OUTCOMES CARD ========== #}
+  {% set co = degree.career_outcomes %}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded-[7px] bg-rc-green-muted flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1.5" y="5" width="11" height="8" rx="1" stroke="#2ECC71" stroke-width="1.1"/>
+          <path d="M4.5 5V3.5C4.5 2.4 5.4 1.5 6.5 1.5H7.5C8.6 1.5 9.5 2.4 9.5 3.5V5" stroke="#2ECC71" stroke-width="1.1"/>
+          <path d="M1.5 8.5H12.5" stroke="#2ECC71" stroke-width="1.1" stroke-dasharray="1.5 1.5"/>
+          <circle cx="7" cy="8.5" r="1" fill="#2ECC71"/>
+        </svg>
+      </div>
+      <span class="text-sm font-medium text-white/85">Career outcomes</span>
+      <span class="text-[11px] text-rc-text-tertiary ml-auto">
+        avg. grad salary ${{ "{:,}".format(co.grad_salary // 1000) }}k
+      </span>
+    </div>
+
+    <hr class="border-rc-border-light" />
+
+    {# Role chips #}
+    <div class="flex flex-wrap gap-1.5">
+      {% for role in co.roles %}
+      <span class="text-xs font-medium text-white/55 bg-rc-fill border border-rc-border rounded-md px-2.5 py-1">{{ role }}</span>
+      {% endfor %}
+    </div>
+
+    {# Employment stats #}
+    <div class="grid grid-cols-3 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+      <div class="bg-rc-surface py-2.5 px-3 flex flex-col items-center gap-[3px]">
+        <span class="text-lg font-semibold text-rc-green">{{ co.employment_rate }}%</span>
+        <span class="text-[11px] text-white/30 text-center">employed within 6 mo.</span>
+      </div>
+      <div class="bg-rc-surface py-2.5 px-3 flex flex-col items-center gap-[3px]">
+        <span class="text-lg font-semibold text-white/85">{{ co.grad_satisfaction }} / 5</span>
+        <span class="text-[11px] text-white/30 text-center">grad satisfaction</span>
+      </div>
+      <div class="bg-rc-surface py-2.5 px-3 flex flex-col items-center gap-[3px]">
+        <span class="text-lg font-semibold text-rc-amber">{{ co.postgrad_rate }}%</span>
+        <span class="text-[11px] text-white/30 text-center">pursue postgrad</span>
+      </div>
+    </div>
+
+  </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+  // Pin toggle — purely client-side for now (no user auth yet)
+  let pinned = false;
+  function togglePin() {
+    pinned = !pinned;
+    const icon   = document.getElementById('pin-icon');
+    const notice = document.getElementById('pin-notice');
+    if (pinned) {
+      icon.innerHTML = '<path d="M8.5 1.5L12.5 5.5L9 7.5L9.5 11L7 9.5L4.5 11L5 7.5L1.5 5.5L5.5 1.5L6.5 3.5L8.5 1.5Z" fill="rgba(167,139,250,0.5)" stroke="#A78BFA" stroke-width="1.1" stroke-linejoin="round"/>';
+      notice.classList.remove('hidden');
+      notice.classList.add('flex');
+    } else {
+      icon.innerHTML = '<path d="M8.5 1.5L12.5 5.5L9 7.5L9.5 11L7 9.5L4.5 11L5 7.5L1.5 5.5L5.5 1.5L6.5 3.5L8.5 1.5Z" stroke="rgba(255,255,255,0.3)" stroke-width="1.1" stroke-linejoin="round"/>';
+      notice.classList.add('hidden');
+      notice.classList.remove('flex');
+    }
+  }
+
+  // Year tab switcher — hides/shows the pre-rendered year blocks
+  function showYear(year) {
+    document.querySelectorAll('.year-content').forEach(el => {
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    });
+    document.querySelectorAll('.year-tab').forEach(btn => {
+      btn.classList.remove('bg-rc-red-muted', 'text-rc-red');
+      btn.classList.add('text-white/40', 'hover:bg-rc-fill', 'hover:text-white/70');
+    });
+    const target = document.getElementById(`units-year-${year}`);
+    if (target) { target.classList.remove('hidden'); target.classList.add('flex'); }
+    const tab = document.querySelector(`[data-year="${year}"]`);
+    if (tab) {
+      tab.classList.add('bg-rc-red-muted', 'text-rc-red');
+      tab.classList.remove('text-white/40', 'hover:bg-rc-fill', 'hover:text-white/70');
+    }
+  }
+</script>
+{% endblock %}

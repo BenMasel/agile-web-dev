@@ -1,8 +1,23 @@
+# API keys and local config
 app/static/js/config.js
+.env
+.env.*
 
+# Flask instance folder (contains the SQLite DB)
 instance/
+
+# SQLite databases wherever they appear
 *.db
+*.sqlite3
+
+# Python bytecode
 __pycache__/
 *.pyc
-.env
+*.pyo
+
+# Virtual environment
 .venv
+
+# OS noise
+.DS_Store
+Thumbs.db
