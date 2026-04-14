@@ -1,0 +1,127 @@
+# PLACEHOLDER — this data is fictional and used for development/testing only.
+# If you have accurate information or want to add a benefit, please submit a PR.
+
+categories:
+  - id: email
+    label: Student Email
+    description: Benefits unlocked by your @student.uwa.edu.au address
+    accent: blue
+    accent_color: "#6CA0F0"
+    accent_bg: "rgba(100, 160, 255, 0.1)"
+    icon_svg: '<rect x="2" y="4" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 7l7 4.5L16 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>'
+    benefits:
+      - name: GitHub Student Developer Pack
+        description: Free access to GitHub Pro, Copilot, and $200+ worth of developer tools including private repos, CI/CD minutes, and cloud credits.
+        value: "Free"
+        url: "https://education.github.com/pack"
+        tags: [dev, cloud]
+      - name: Microsoft Azure for Students
+        description: $100 USD in Azure credits per year, plus free access to popular services like VMs, databases, and AI APIs — no credit card required.
+        value: "$100 credit"
+        url: "https://azure.microsoft.com/en-au/free/students/"
+        tags: [cloud, dev]
+      - name: JetBrains Student Pack
+        description: Free access to the entire JetBrains IDE suite including IntelliJ IDEA, PyCharm, WebStorm, and more for the duration of your studies.
+        value: "Free"
+        url: "https://www.jetbrains.com/community/education/"
+        tags: [dev]
+      - name: Figma Education
+        description: Free Figma Professional plan — unlimited projects, team libraries, and advanced prototyping tools for students and educators.
+        value: "Free"
+        url: "https://www.figma.com/education/"
+        tags: [design]
+      - name: Autodesk Student Access
+        description: Free access to AutoCAD, Fusion 360, Revit, and the full Autodesk suite for students enrolled in engineering or architecture programs.
+        value: "Free"
+        url: "https://www.autodesk.com/education/edu-software/"
+        tags: [engineering, design]
+      - name: Notion for Students
+        description: Free Notion Plus plan including unlimited blocks, file uploads, and version history — great for notes, databases, and project management.
+        value: "Free"
+        url: "https://www.notion.so/product/notion-for-education"
+        tags: [productivity]
+      - name: Spotify Student
+        description: 50% off Spotify Premium for up to 4 years of study. Includes ad-free listening, downloads, and the Hulu bundle if applicable.
+        value: "50% off"
+        url: "https://www.spotify.com/au/student/"
+        tags: [entertainment]
+      - name: Apple Music Student
+        description: Apple Music at a discounted student rate — includes full catalogue access, spatial audio, and syncing across all your Apple devices.
+        value: "~50% off"
+        url: "https://music.apple.com/au/subscribe"
+        tags: [entertainment]
+
+  - id: guild
+    label: UWA Guild
+    description: Perks available to Guild members — sign up at the Guild Office
+    accent: green
+    accent_color: "#2ECC71"
+    accent_bg: "rgba(46, 204, 113, 0.12)"
+    icon_svg: '<path d="M9 2L2 6v6l7 4 7-4V6L9 2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9" cy="9" r="2" stroke="currentColor" stroke-width="1.1"/>'
+    benefits:
+      - name: Guild Shop Discount
+        description: 10% off all purchases at the UWA Guild shop — stationery, clothing, merchandise, and everyday essentials on campus.
+        value: "10% off"
+        tags: [shopping, on-campus]
+      - name: UniPrint Discount
+        description: Discounted printing rates at UniPrint on campus. Guild members get a reduced per-page rate for both black & white and colour printing.
+        value: "Reduced rate"
+        tags: [on-campus, printing]
+      - name: Tavern & Refectory Discount
+        description: Guild members receive a discount at the Tav and UWA refectory food outlets on campus. Show your Guild card at the register.
+        value: "Discount varies"
+        tags: [food, on-campus]
+      - name: Guild Legal Service
+        description: Free initial legal advice from qualified lawyers for Guild members. Covers tenancy, employment, consumer, and personal matters.
+        value: "Free consultation"
+        tags: [services]
+      - name: Guild Counselling
+        description: Free short-term counselling sessions through the Guild's welfare team. Separate from UWA's student services — shorter wait times.
+        value: "Free"
+        tags: [wellbeing, services]
+      - name: ESS Member Discount
+        description: Engineering Students' Society members receive discounts on event tickets, ESS merchandise, and partner venue bookings.
+        value: "Varies"
+        tags: [clubs, engineering]
+      - name: PHYSSOC Discount
+        description: Physics Society members get access to discounted lab equipment, textbook lending, and cheaper tickets to physics faculty events.
+        value: "Varies"
+        tags: [clubs, science]
+
+  - id: local
+    label: Local Discounts
+    description: Shops and services near campus that offer student discounts
+    accent: amber
+    accent_color: "#D4A340"
+    accent_bg: "rgba(239, 159, 39, 0.1)"
+    icon_svg: '<path d="M2 6h14M4 6V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2M3 6l1 9h10l1-9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>'
+    benefits:
+      - name: Boost Juice — Claremont
+        description: Show your student card for 10% off all smoothies and juices at the Claremont Quarter Boost Juice, a short walk or bus ride from campus.
+        value: "10% off"
+        tags: [food, claremont]
+      - name: Subway — Broadway
+        description: Student discount on footlongs at the Broadway Fair Subway outlet with a valid student ID. Applies all day, every day.
+        value: "$1 off footlong"
+        tags: [food, subiaco]
+      - name: JB Hi-Fi Education Store
+        description: Access the JB Hi-Fi Education pricing portal with your student email for significant discounts on laptops, software, and accessories.
+        value: "Up to 30% off"
+        url: "https://www.jbhifi.com.au/pages/education"
+        tags: [tech, shopping]
+      - name: Cotton On Student Discount
+        description: 20% off full-price items at Cotton On stores with a valid student card. Works in-store at Claremont or Broadway Fair outlets.
+        value: "20% off"
+        tags: [clothing, claremont]
+      - name: Officeworks
+        description: Officeworks matches competitor prices and offers student pricing on select items — worth checking before buying stationery or tech accessories.
+        value: "Price match"
+        tags: [shopping, stationery]
+      - name: Readings & Reviews (UWA Bookshop)
+        description: The campus bookshop offers discounts on required textbooks for enrolled UWA students. Check availability at the start of semester.
+        value: "Varies"
+        tags: [books, on-campus]
+      - name: Chemist Warehouse — Nedlands
+        description: Chemist Warehouse on Stirling Highway offers generic student pricing. Always worth checking if you need health or personal care products.
+        value: "Low prices"
+        tags: [health, nedlands]

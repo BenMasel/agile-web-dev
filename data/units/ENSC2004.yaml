@@ -1,23 +1,22 @@
-code: ENSC1002
-title: Material behaviour from atoms to bridges
-level: 1
+code: ENSC2004
+title: Engineering Mechanics
+level: 2
 credit_points: 6
 semester: 1
 faculty: Engineering
 school: Science & Engineering
 delivery: On-campus
 location: Crawley, Perth
-coordinator: Prof. A. Lee
+coordinator: Prof. Paul Stanwix
 coordinator_dept: Materials Engineering
 availability: 2026 S1
 availability_detail: Feb - Jun
 incompatibilities:
-  - code: ENSC1004
+  - code: MATH1722
     title: Engineering Materials
 
 prerequisites:
-  - Maths Methods ATAR
-  - Physics ATAR
+  - Maths Specialist ATAR
   - or bridging equivalents
 
 assessments:
@@ -31,10 +30,11 @@ assessments:
     weight: 15
 
 learning_outcomes:
-  - Identify and classify engineering materials by structure and properties
-  - Analyse failure modes including yielding, fatigue, fracture and creep
-  - Apply static equilibrium principles to trusses and beam structures
-  - Evaluate sustainability in the context of material reuse and recycling
+  - solve a range of problems that involve calculus and geometry of functions of more than one variable 
+  - approximate functions of several variables by Taylor expansion
+  - employ a range of integration techniques
+  - integrate functions over objects in more than one dimension
+  - work with vector fields and integrate them along paths and over surfaces
 
 associated_clubs:
   - ess
@@ -100,4 +100,4 @@ community:
   would_recommend_pct: 38
   core_rating: 4.1
   reviews_count: 42
-  compare_unit: ENSC1004
+ 

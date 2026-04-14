@@ -159,10 +159,17 @@
     {% endif %}
 
     {# ---- Actions ---- #}
-    <div class="flex gap-2">
+    <div class="flex gap-2 flex-wrap">
       <button class="bg-rc-red text-rc-bg font-medium text-[13px] px-4 py-2 rounded-lg transition hover:bg-rc-red-hover cursor-pointer">Add to study plan</button>
+      <button id="pin-btn"
+              data-unit-code="{{ unit.code }}"
+              class="flex items-center gap-1.5 bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">
+        <svg id="pin-icon" width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M4.5 1.5L11.5 8.5M8 2L11 5L7 7L6.5 11.5L1.5 6.5L6 6L8 2Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        </svg>
+        <span id="pin-label">Pin for resources</span>
+      </button>
       <button class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">View timetable</button>
-      <button class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">Related units</button>
     </div>
   </div>
 
@@ -272,6 +279,43 @@
 
 
 {% block scripts %}
+<script>
+  // ---------------------------------------------------------------------------
+  // Pin unit for Resources page — persisted in localStorage
+  // ---------------------------------------------------------------------------
+  (function () {
+    const STORAGE_KEY = 'stUwa_pinnedUnits';
+    const btn         = document.getElementById('pin-btn');
+    const label       = document.getElementById('pin-label');
+    const icon        = document.getElementById('pin-icon');
+    const unitCode    = btn.dataset.unitCode;
+
+    function getPinned() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch { return []; }
+    }
+
+    function updateBtn() {
+      const pinned = getPinned().includes(unitCode);
+      btn.style.background   = pinned ? 'rgba(255,99,99,0.12)' : '';
+      btn.style.borderColor  = pinned ? 'rgba(255,99,99,0.25)' : '';
+      btn.style.color        = pinned ? '#FF6363' : '';
+      label.textContent      = pinned ? 'Pinned' : 'Pin for resources';
+      icon.style.opacity     = pinned ? '1' : '0.7';
+    }
+
+    btn.addEventListener('click', () => {
+      const current = getPinned();
+      const idx = current.indexOf(unitCode);
+      if (idx === -1) current.push(unitCode);
+      else current.splice(idx, 1);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+      updateBtn();
+    });
+
+    updateBtn();
+  })();
+</script>
 <script>
   // Radar chart — values come from YAML via tojson
   (function () {

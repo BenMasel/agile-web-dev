@@ -41,6 +41,29 @@
       </span>
     </a>
 
+    {# ---- Resources — links to /resources, shows pin count badge ---- #}
+    <a href="{{ url_for('main.resources') }}"
+       class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-white/45 hover:text-white/65 hover:bg-rc-fill transition">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M3.5 1.5L9.5 7.5M7 2L10 5L6.5 6.5L6 11L1 6L5.5 5.5L7 2Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+      </svg>
+      Resources
+      {# Badge shows number of pinned units — updated by JS #}
+      <span id="nav-pin-count"
+            class="hidden text-[9px] font-medium px-1.5 py-[1px] rounded-full bg-rc-red-muted text-rc-red leading-none">
+      </span>
+    </a>
+
+    {# ---- Benefits ---- #}
+    <a href="{{ url_for('main.benefits') }}"
+       class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-white/45 hover:text-white/65 hover:bg-rc-fill transition">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <path d="M6.5 1.5C6.5 1.5 4 3 4 5.5a2.5 2.5 0 0 0 5 0C9 3 6.5 1.5 6.5 1.5z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        <path d="M2.5 9.5h8M4 9.5v2M9 9.5v2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      Benefits
+    </a>
+
     {# ---- Spacer ---- #}
     <div class="flex-1"></div>
 
@@ -110,4 +133,17 @@
   });
 
   document.getElementById('nav-search-btn').addEventListener('click', openSearch);
+
+  // Pin count badge on the Resources link
+  (function () {
+    const badge = document.getElementById('nav-pin-count');
+    if (!badge) return;
+    try {
+      const pinned = JSON.parse(localStorage.getItem('stUwa_pinnedUnits')) || [];
+      if (pinned.length > 0) {
+        badge.textContent = pinned.length;
+        badge.classList.remove('hidden');
+      }
+    } catch {}
+  })();
 </script>

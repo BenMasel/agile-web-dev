@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Student Benefits — stUwa{% endblock %}
+
+{% block content %}
+
+  {# ========== PAGE HEADER ========== #}
+  <div class="flex flex-col gap-1 pt-6 pb-1">
+    <h1 class="text-[18px] font-semibold text-rc-text tracking-tight">Student Benefits</h1>
+    <p class="text-[13px] text-rc-text-tertiary">Discounts and perks available to UWA students — email, Guild, and local</p>
+  </div>
+
+  {# ========== FILTER TABS ========== #}
+  <div class="flex items-center gap-1.5 flex-wrap">
+    <button onclick="filterCategory('all')" id="filter-all"
+            class="filter-btn active-filter text-[12px] font-medium px-3 py-1.5 rounded-[7px] transition">
+      All
+    </button>
+    {% for cat in categories %}
+    <button onclick="filterCategory('{{ cat.id }}')" id="filter-{{ cat.id }}"
+            class="filter-btn text-[12px] font-medium px-3 py-1.5 rounded-[7px] transition"
+            style="--cat-color: {{ cat.accent_color }}; --cat-bg: {{ cat.accent_bg }}">
+      {{ cat.label }}
+    </button>
+    {% endfor %}
+  </div>
+
+  {# ========== CATEGORY SECTIONS ========== #}
+  {% for cat in categories %}
+  <div class="category-section flex flex-col gap-3" data-category="{{ cat.id }}">
+
+    {# ---- Section header ---- #}
+    <div class="flex items-center gap-2.5 pt-1">
+      <div class="w-7 h-7 rounded-[7px] flex items-center justify-center shrink-0"
+           style="background: {{ cat.accent_bg }}">
+        <svg width="14" height="14" viewBox="0 0 18 18" fill="none"
+             style="color: {{ cat.accent_color }}">
+          {{ cat.icon_svg | safe }}
+        </svg>
+      </div>
+      <div>
+        <span class="text-sm font-medium text-white/85">{{ cat.label }}</span>
+        <span class="text-[11px] text-rc-text-tertiary ml-2">{{ cat.description }}</span>
+      </div>
+      <span class="ml-auto text-[11px] text-rc-text-faint">{{ cat.benefits | length }} benefit{% if cat.benefits | length != 1 %}s{% endif %}</span>
+    </div>
+
+    {# ---- Benefits list ---- #}
+    <div class="flex flex-col gap-px overflow-hidden rounded-[10px] bg-rc-fill-light">
+      {% for benefit in cat.benefits %}
+      <div class="benefit-row bg-rc-surface px-4 py-3 flex items-start gap-3.5
+                  {% if not loop.last %}border-b border-rc-border-light{% endif %}"
+           data-tags="{{ benefit.tags | join(' ') }}">
+
+        {# Accent dot #}
+        <div class="w-1.5 h-1.5 rounded-full shrink-0 mt-[6px]"
+             style="background: {{ cat.accent_color }}"></div>
+
+        {# Content #}
+        <div class="flex-1 min-w-0">
+          <div class="flex items-baseline gap-2 flex-wrap">
+            {% if benefit.url is defined %}
+            <a href="{{ benefit.url }}" target="_blank" rel="noopener noreferrer"
+               class="text-[13px] font-medium text-white/85 hover:text-white transition">
+              {{ benefit.name }}
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="inline mb-[1px] ml-[2px] opacity-40">
+                <path d="M4 2H2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h5a1 1 0 0 0 1-1V6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                <path d="M6.5 1.5h2m0 0v2m0-2L5 5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+            {% else %}
+            <span class="text-[13px] font-medium text-white/85">{{ benefit.name }}</span>
+            {% endif %}
+            <span class="text-[11px] font-medium px-1.5 py-[2px] rounded-[4px]"
+                  style="background: {{ cat.accent_bg }}; color: {{ cat.accent_color }}">
+              {{ benefit.value }}
+            </span>
+          </div>
+          <p class="text-[12px] text-white/40 mt-1 leading-relaxed">{{ benefit.description }}</p>
+          {% if benefit.tags %}
+          <div class="flex gap-1 mt-2 flex-wrap">
+            {% for tag in benefit.tags %}
+            <span class="text-[10px] px-1.5 py-[2px] rounded-[4px] bg-rc-fill border border-rc-border text-rc-text-faint">
+              {{ tag }}
+            </span>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+  {% endfor %}
+
+  {# ========== DISCLAIMER ========== #}
+  <div class="bg-rc-fill-subtle border border-rc-border rounded-[10px] p-4 flex items-start gap-3 mt-2">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="shrink-0 mt-[1px]">
+      <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.2)" stroke-width="1.1"/>
+      <path d="M7 6v4M7 4.5v.5" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+    <p class="text-[12px] text-white/35 leading-relaxed">
+      Placeholder data — benefits, values, and URLs may be inaccurate. Always verify with the provider before relying on any discount.
+      Want to add or correct a benefit? <a href="#" class="underline underline-offset-2 hover:text-white/55 transition">Submit a PR</a>.
+    </p>
+  </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<style>
+  .filter-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.45);
+  }
+  .filter-btn:hover {
+    background: rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.65);
+    cursor: pointer;
+  }
+  .active-filter {
+    background: rgba(255,255,255,0.08) !important;
+    border-color: rgba(255,255,255,0.14) !important;
+    color: rgba(255,255,255,0.85) !important;
+  }
+</style>
+<script>
+  function filterCategory(id) {
+    // Update button states
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active-filter'));
+    document.getElementById('filter-' + id).classList.add('active-filter');
+
+    // Show/hide sections
+    document.querySelectorAll('.category-section').forEach(section => {
+      if (id === 'all' || section.dataset.category === id) {
+        section.style.display = '';
+      } else {
+        section.style.display = 'none';
+      }
+    });
+  }
+</script>
+{% endblock %}

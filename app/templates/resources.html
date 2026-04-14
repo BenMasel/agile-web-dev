@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Resources — stUwa{% endblock %}
+
+{% block content_width %}w-full max-w-4xl{% endblock %}
+
+{% block content %}
+
+  {# ========== PAGE HEADER ========== #}
+  <div class="flex flex-col gap-1 pt-6 pb-1">
+    <h1 class="text-[18px] font-semibold text-rc-text tracking-tight">Resources</h1>
+    <p class="text-[13px] text-rc-text-tertiary">Learning materials curated for your pinned units — videos, platforms &amp; textbooks</p>
+  </div>
+
+  {# ========== PINNED UNITS BAR ========== #}
+  <div id="pinned-units-bar" class="flex items-center gap-2 flex-wrap min-h-[26px]">
+    {# Populated by resources.js — shows pinned unit chips with unpin (×) buttons #}
+  </div>
+
+  {# ========== TAB BAR ========== #}
+  <div class="flex items-end gap-0 border-b border-rc-border -mb-2">
+    <button id="tab-videos"     class="tab-btn" onclick="switchTab('videos')">Videos</button>
+    <button id="tab-platforms"  class="tab-btn" onclick="switchTab('platforms')">Platforms</button>
+    <button id="tab-textbooks"  class="tab-btn" onclick="switchTab('textbooks')">Textbooks</button>
+  </div>
+
+  {# ========== VIDEOS TAB ========== #}
+  <div id="tab-content-videos">
+
+    {# Search bar #}
+    <div class="relative">
+      <div class="flex items-center gap-2.5 bg-rc-surface border border-rc-border rounded-[10px] px-4 py-3 focus-within:border-[rgba(255,255,255,0.16)] transition"
+           id="search-bar">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="shrink-0">
+          <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.3)" stroke-width="1.3"/>
+          <line x1="11.2" y1="11.2" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <input id="search-input" type="text"
+               placeholder="Search videos… (press ↩ to search)"
+               autocomplete="off" spellcheck="false"
+               class="flex-1 bg-transparent text-sm text-rc-text placeholder-rc-text-tertiary outline-none"/>
+        <svg id="loading-spinner"
+             class="hidden w-4 h-4 animate-spin text-rc-text-faint shrink-0"
+             viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+        </svg>
+        <button id="clear-btn"
+                class="hidden w-5 h-5 rounded-md bg-rc-fill flex items-center justify-center text-rc-text-faint hover:text-white/60 transition shrink-0 cursor-pointer">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    {# Channel source pills #}
+    <div id="channel-pills" class="flex items-center gap-2 flex-wrap">
+      <span class="text-[11px] text-rc-text-tertiary shrink-0">Searching across:</span>
+      {# Pills injected by JS #}
+    </div>
+
+    {# Hint state — shown before any search #}
+    <div id="hint-state" class="bg-rc-surface border border-rc-border rounded-[10px] p-8 flex flex-col items-center gap-2">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" class="text-rc-text-faint mb-1">
+        <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.3"/>
+        <line x1="18.5" y1="18.5" x2="24" y2="24" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <p class="text-[13px] text-rc-text-secondary">Type a topic and press <kbd class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35 font-sans not-italic">↩</kbd> to search</p>
+      <p class="text-[11px] text-rc-text-tertiary">Searches YouTube channels curated for your pinned units</p>
+    </div>
+
+    {# Error state #}
+    <div id="error-state" class="hidden bg-rc-surface border border-[rgba(255,99,99,0.2)] rounded-[10px] p-5 flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-rc-red-muted flex items-center justify-center shrink-0">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 2v5M7 10v1" stroke="#FF6363" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="7" cy="7" r="6" stroke="#FF6363" stroke-width="1.1"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-[13px] text-rc-text" id="error-title">Search failed</p>
+        <p class="text-[11px] text-rc-text-secondary mt-0.5" id="error-message">Check your API key and try again.</p>
+      </div>
+    </div>
+
+    {# Empty state — no results #}
+    <div id="empty-state" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-8 flex flex-col items-center gap-2">
+      <p class="text-[13px] text-rc-text-secondary">No videos found for that query.</p>
+      <p class="text-[11px] text-rc-text-tertiary">Try different keywords or a broader term.</p>
+    </div>
+
+    {# Results grid #}
+    <div id="results-grid" class="hidden grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+
+  </div>
+
+  {# ========== PLATFORMS TAB ========== #}
+  <div id="tab-content-platforms" class="hidden flex flex-col gap-3">
+    <div id="platforms-grid" class="grid gap-3 grid-cols-1 sm:grid-cols-2"></div>
+    <div id="platforms-empty" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-8 flex flex-col items-center gap-2">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" class="text-rc-text-faint mb-1">
+        <rect x="4" y="6" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M10 20v2M18 20v2M7 22h14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <p class="text-[13px] text-rc-text-secondary">No platform resources yet.</p>
+      <p class="text-[11px] text-rc-text-tertiary">Pin units from their detail pages to see curated platforms here.</p>
+    </div>
+  </div>
+
+  {# ========== TEXTBOOKS TAB ========== #}
+  <div id="tab-content-textbooks" class="hidden flex flex-col gap-3">
+    <div id="textbooks-list" class="flex flex-col gap-2"></div>
+    <div id="textbooks-empty" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-8 flex flex-col items-center gap-2">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" class="text-rc-text-faint mb-1">
+        <path d="M6 4h13a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M9 10h10M9 14h10M9 18h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <p class="text-[13px] text-rc-text-secondary">No textbooks yet.</p>
+      <p class="text-[11px] text-rc-text-tertiary">Pin units from their detail pages to see recommended readings here.</p>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block footer_nav %}
+<div class="flex items-center gap-[3px]">
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">↩</span>
+  <span class="text-[11px] text-rc-text-faint mx-0.5">search</span>
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">esc</span>
+  <span class="text-[11px] text-rc-text-faint">clear</span>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{# All unit resource data — passed from Flask, read by resources.js #}
+<script>
+const UNIT_RESOURCES = {{ unit_resources | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/resources.js') }}"></script>
+{% endblock %}

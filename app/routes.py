@@ -1,6 +1,6 @@
 import os
 import yaml
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, redirect, url_for
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
@@ -99,9 +99,38 @@ def home():
     return render_template('home.html', search_data=build_search_index())
 
 
+@bp.route('/resources')
+def resources():
+    """
+    Resources page — aggregates youtube_channels, platforms, and textbooks
+    from all unit YAML files and passes them as JSON to the template.
+    The JS layer reads pinned units from localStorage and filters accordingly.
+    """
+    unit_resources = [
+        {
+            'code':      u['code'],
+            'title':     u['title'],
+            'resources': u.get('resources', {}),
+        }
+        for u in load_all_yaml('units')
+        if u.get('resources')
+    ]
+    return render_template('resources.html', unit_resources=unit_resources)
+
+
+@bp.route('/benefits')
+def benefits():
+    """
+    Student benefits page — loads categories and benefits from
+    data/benefits/benefits.yaml and passes them to the template.
+    """
+    data = load_yaml('benefits', 'benefits.yaml') or {}
+    return render_template('benefits.html', categories=data.get('categories', []))
+
+
 @bp.route('/videos')
 def videos():
-    return render_template('videos.html')
+    return redirect(url_for('main.resources'))
 
 
 @bp.route('/unit/<code>')
