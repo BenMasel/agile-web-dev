@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}{{ club.name }} — stUwa{% endblock %}
+
+{% block content %}
+
+  {# ========== SEARCH BAR (breadcrumb style) ========== #}
+  <div class="flex items-center gap-2 bg-rc-surface border border-rc-border rounded-[10px] px-3.5 py-2.5">
+    <a href="{{ url_for('main.home') }}"
+       class="flex items-center gap-1.5 text-rc-text-faint hover:text-white/50 transition shrink-0">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M9 11.5L4.5 7 9 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="text-[11px]">home</span>
+    </a>
+    <span class="text-rc-text-faint text-[11px]">/</span>
+    <span class="text-sm text-rc-text flex-1">{{ club.name }}</span>
+    <span class="text-[11px] text-rc-text-faint whitespace-nowrap">club</span>
+  </div>
+
+  {# ========== CLUB PROFILE CARD ========== #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+
+    {# ---- Header ---- #}
+    <div class="flex items-start gap-3.5">
+      <div class="w-[52px] h-[52px] rounded-[12px] flex items-center justify-center shrink-0"
+           style="background: {{ club.accent_bg }}">
+        <svg width="26" height="26" viewBox="0 0 18 18" fill="none"
+             style="color: {{ club.accent_color }}">
+          {{ club.icon_svg | safe }}
+        </svg>
+      </div>
+      <div class="flex-1">
+        <div class="text-xl font-semibold text-rc-text tracking-tight">{{ club.name }}</div>
+        <div class="text-sm text-rc-text-secondary mt-0.5">{{ club.abbreviation }} — {{ club.description | truncate(60, True, '…') }}</div>
+        <div class="flex gap-1.5 flex-wrap mt-2">
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-red-muted text-rc-red">Engineering</span>
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-blue-muted text-rc-blue">{{ club.member_count }}+ members</span>
+          {% if club.active %}
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-green-muted text-rc-green">Active</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <hr class="border-rc-border-light" />
+
+    {# ---- About ---- #}
+    <div class="flex flex-col gap-2">
+      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">About</span>
+      <p class="text-[13px] text-white/55 leading-relaxed">{{ club.description }}</p>
+    </div>
+
+    {# ---- Quick stats ---- #}
+    <div class="grid grid-cols-3 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Founded</span>
+        <span class="text-[13px] font-medium text-white/85">{{ club.founded }}</span>
+        <span class="text-xs text-white/55">{{ 2026 - club.founded }} years running</span>
+      </div>
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Study nights</span>
+        <span class="text-[13px] font-medium text-white/85">{{ club.study_units | length }} units</span>
+        <span class="text-xs text-white/55">during semester</span>
+      </div>
+      <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Location</span>
+        <span class="text-[13px] font-medium text-white/85">{{ club.room.split(' ')[0] }}</span>
+        <span class="text-xs text-white/55">{{ club.room }}</span>
+      </div>
+    </div>
+  </div>
+
+  {# ========== STUDY NIGHTS CARD ========== #}
+  {% if club.study_units %}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded-[7px] bg-rc-amber-muted flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1.5v2M7 10.5v2M1.5 7h2M10.5 7h2M3.1 3.1l1.4 1.4M9.5 9.5l1.4 1.4M9.5 4.5L8.1 5.9M4.5 9.5L3.1 10.9" stroke="#D4A340" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="7" cy="7" r="2.5" stroke="#D4A340" stroke-width="1.1"/>
+        </svg>
+      </div>
+      <span class="text-sm font-medium text-white/85">Study nights</span>
+      <span class="text-[11px] text-rc-text-tertiary ml-auto">units covered this semester</span>
+    </div>
+
+    <hr class="border-rc-border-light" />
+
+    <div class="flex flex-col gap-px overflow-hidden rounded-lg bg-rc-fill-light">
+      {% for su in club.study_units %}
+      <div class="bg-rc-surface px-3.5 py-2.5 flex items-center gap-3">
+        {# Alternate dot colours to break up the list visually #}
+        <div class="w-1.5 h-1.5 rounded-full shrink-0
+          {% if loop.index % 3 == 1 %}bg-rc-red
+          {% elif loop.index % 3 == 2 %}bg-rc-blue
+          {% else %}bg-rc-green
+          {% endif %}"></div>
+        <div class="flex-1">
+          <a href="{{ url_for('main.unit_detail', code=su.code) }}"
+             class="text-[13px] font-medium text-white/80 hover:text-white transition">{{ su.code }}</a>
+          <span class="text-xs text-white/35 ml-2">{{ su.title }}</span>
+        </div>
+        <div class="flex gap-1">
+          {% for day in su.days %}
+          <span class="text-[11px] font-medium px-1.5 py-[2px] rounded-[4px] bg-rc-amber-muted text-rc-amber">{{ day }}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {# Drop-in format note #}
+    {% if club.study_night_note %}
+    <div class="bg-rc-fill-subtle rounded-lg p-3 flex items-start gap-2.5">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="shrink-0 mt-[1px]">
+        <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.2)" stroke-width="1.1"/>
+        <path d="M7 6v4M7 4.5v.5" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <p class="text-[12px] text-white/35 leading-relaxed">{{ club.study_night_note }}</p>
+    </div>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+  {# ========== UPCOMING EVENTS CARD ========== #}
+  {% if club.events %}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded-[7px] bg-rc-blue-muted flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1.5" y="2.5" width="11" height="10" rx="1.5" stroke="#6CA0F0" stroke-width="1.1"/>
+          <path d="M1.5 6h11" stroke="#6CA0F0" stroke-width="1.1"/>
+          <path d="M4.5 1v3M9.5 1v3" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="text-sm font-medium text-white/85">Upcoming calendar</span>
+      <span class="text-[11px] text-rc-text-tertiary ml-auto">Semester 1, 2026</span>
+    </div>
+
+    <hr class="border-rc-border-light" />
+
+    <div class="flex flex-col gap-2">
+      {% for event in club.events %}
+      <div class="flex gap-3 items-start">
+
+        {# Date column #}
+        <div class="flex flex-col items-center gap-[2px] w-10 shrink-0">
+          <span class="text-[10px] text-rc-text-faint uppercase tracking-wide">{{ event.month }}</span>
+          {# Highlight the first event as "upcoming now" in red #}
+          <span class="text-[17px] font-semibold leading-none
+            {% if loop.first %}text-rc-red{% else %}text-white/60{% endif %}">
+            {{ event.day }}
+          </span>
+        </div>
+
+        {# Event card — first event gets red accent, rest are muted #}
+        <div class="flex-1 rounded-lg px-3 py-2.5 flex flex-col gap-1
+          {% if loop.first %}bg-rc-red-muted border border-[rgba(255,99,99,0.15)]
+          {% else %}bg-rc-fill-subtle border border-rc-border{% endif %}">
+
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[13px] font-medium text-white/85">{{ event.title }}</span>
+            {# Event type badge #}
+            {% if event.event_type == 'study_night' %}
+            <span class="text-[10px] font-medium px-1.5 py-[2px] rounded-[4px]
+              {% if loop.first %}bg-rc-red-muted text-rc-red{% else %}bg-rc-amber-muted text-rc-amber{% endif %}">
+              Study night
+            </span>
+            {% elif event.event_type == 'industry' %}
+            <span class="text-[10px] font-medium px-1.5 py-[2px] rounded-[4px] bg-rc-blue-muted text-rc-blue">Industry</span>
+            {% elif event.event_type == 'club' %}
+            <span class="text-[10px] font-medium px-1.5 py-[2px] rounded-[4px] bg-rc-fill text-white/40">Club</span>
+            {% endif %}
+          </div>
+
+          <span class="text-[11px] text-white/35">
+            {% if event.time %}{{ event.time }} · {% endif %}{{ event.location }}
+          </span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {# ---- Actions ---- #}
+    <div class="flex gap-2">
+      <button class="bg-rc-red text-rc-bg font-medium text-[13px] px-4 py-2 rounded-lg transition hover:bg-rc-red-hover cursor-pointer">
+        Join {{ club.abbreviation }}
+      </button>
+      <button class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">Full calendar</button>
+      <button class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">Contact {{ club.abbreviation }}</button>
+    </div>
+  </div>
+  {% endif %}
+
+{% endblock %}
+
+
+{# Override footer shortcuts: club page goes back rather than selecting #}
+{% block footer_nav %}
+<div class="flex items-center gap-[3px]">
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">tab</span>
+  <span class="text-[11px] text-rc-text-faint mx-0.5">navigate</span>
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">esc</span>
+  <span class="text-[11px] text-rc-text-faint">back</span>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+# PLACEHOLDER — this data is fictional and used for development/testing only.
+# If you represent this club or have accurate information, please submit a PR.
+slug: ess
+name: Engineering Students' Society
+abbreviation: ESS
+accent: red
+accent_bg: "rgba(255,99,99,0.18)"
+accent_color: "#FF6363"
+# icon_svg is rendered raw into an <svg> tag via Jinja's |safe filter.
+# Use currentColor for strokes so the accent_color propagates automatically.
+icon_svg: '<path d="M9 2L2 6v6l7 4 7-4V6L9 2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9" cy="9" r="2" stroke="currentColor" stroke-width="1.1"/>'
+
+description: >
+  ESS is the peak student body for engineering students at UWA. We run social
+  events, industry nights, academic support sessions, and advocacy programs to
+  help students thrive throughout their degrees. Our study support arm covers
+  first and second year core engineering units, connecting students with peer
+  tutors and study groups.
+
+founded: 1957
+member_count: 1200
+room: EZONE 218 & 219
+active: true
+
+study_units:
+  - code: ENSC1002
+    title: Material behaviour from atoms to bridges
+    days: [Mon, Wed]
+  - code: MATH1012
+    title: Mathematical Theory & Methods
+    days: [Tue]
+  - code: ENSC2004
+    title: Engineering Mechanics
+    days: [Thu]
+  - code: GENG2140
+    title: Modelling & Simulation
+    days: [Wed, Fri]
+  - code: PHYS1001
+    title: Physics for Scientists & Engineers
+    days: [Mon]
+
+study_night_note: >
+  Study nights are drop-in sessions held in EZONE 218–219. Peer tutors are
+  available the whole session. Bring your notes, past papers, or just show up.
+
+events:
+  - title: ENSC1002 Exam Cram
+    event_type: study_night
+    date: "2026-04-16"
+    month: Apr
+    day: 16
+    time: 6:00 pm – 9:00 pm
+    location: EZONE 218
+  - title: Industry Night — Mining & Resources
+    event_type: industry
+    date: "2026-04-22"
+    month: Apr
+    day: 22
+    time: 5:30 pm – 8:00 pm
+    location: Reid Library Atrium
+  - title: MATH1012 Mid-Sem Blitz
+    event_type: study_night
+    date: "2026-04-28"
+    month: Apr
+    day: 28
+    time: 6:00 pm – 9:00 pm
+    location: EZONE 219
+  - title: Annual General Meeting
+    event_type: club
+    date: "2026-05-03"
+    month: May
+    day: 3
+    time: 5:00 pm – 6:30 pm
+    location: Engineering Lecture Theatre
+  - title: ENSC2004 Mechanics Deep Dive
+    event_type: study_night
+    date: "2026-05-14"
+    month: May
+    day: 14
+    time: 6:00 pm – 9:00 pm
+    location: EZONE 218

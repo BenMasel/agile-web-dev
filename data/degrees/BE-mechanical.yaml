@@ -1,0 +1,198 @@
+slug: BE-mechanical
+title: Bachelor of Engineering (Mechanical)
+faculty: Faculty of Engineering & Mathematical Sciences
+duration_years: 4
+credit_points: 192
+accredited: true
+school: Mechanical Eng.
+school_faculty: Faculty of EMS
+delivery: On-campus
+location: Crawley, Perth
+atar_cutoff: 85.00
+atar_intake_year: 2026
+coordinator: Prof. R. Singh
+coordinator_dept: Mechanical Eng.
+intake: Semester 1
+intake_detail: Feb 2026
+accreditation_body: Engineers AU
+accreditation_note: Washington Accord
+
+overview: >
+  Develop expertise in mechanics, thermodynamics, materials, and design.
+  Graduates are prepared for roles in aerospace, automotive, robotics, and
+  energy sectors. Includes an integrated honours year with a research or
+  industry project.
+
+career_outcomes:
+  grad_salary: 92000
+  employment_rate: 91
+  grad_satisfaction: 4.1
+  postgrad_rate: 28
+  roles:
+    - Mechanical Engineer
+    - Aerospace Engineer
+    - Robotics Engineer
+    - Design Engineer
+    - Structural Analyst
+    - Automotive Engineer
+    - Energy Systems Eng.
+    - Consulting Engineer
+
+# Each year contains semesters; each semester contains units.
+# type: core | elective | honours  (drives dot colour and semester badge)
+years:
+  - year: 1
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: ENSC1002
+            title: Material behaviour from atoms to bridges
+            credit_points: 6
+            type: core
+          - code: MATH1011
+            title: Multivariable calculus
+            credit_points: 6
+            type: core
+          - code: PHYS1001
+            title: Physics for scientists and engineers
+            credit_points: 6
+            type: core
+          - code: GENG1010
+            title: Introduction to engineering
+            credit_points: 6
+            type: elective
+      - number: 2
+        label: Semester 2
+        units:
+          - code: MATH1012
+            title: Mathematical theory and applications
+            credit_points: 6
+            type: core
+          - code: ENSC1003
+            title: Electrical and electronic fundamentals
+            credit_points: 6
+            type: core
+          - code: GENG1001
+            title: Engineering computing
+            credit_points: 6
+            type: core
+          - code: PHYS1002
+            title: Physics for modern life
+            credit_points: 6
+            type: elective
+
+  - year: 2
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: MECH2401
+            title: Engineering mechanics and thermodynamics
+            credit_points: 6
+            type: core
+          - code: MECH2402
+            title: Solid mechanics
+            credit_points: 6
+            type: core
+          - code: MATH2020
+            title: Differential equations
+            credit_points: 6
+            type: core
+          - code: Option A
+            title: Breadth elective (student choice)
+            credit_points: 6
+            type: elective
+      - number: 2
+        label: Semester 2
+        units:
+          - code: MECH2403
+            title: Fluid mechanics
+            credit_points: 6
+            type: core
+          - code: MECH2404
+            title: Engineering design and CAD
+            credit_points: 6
+            type: core
+          - code: GENG2005
+            title: Modelling and simulation
+            credit_points: 6
+            type: core
+          - code: Option B
+            title: Breadth elective (student choice)
+            credit_points: 6
+            type: elective
+
+  - year: 3
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: MECH3401
+            title: Machine dynamics and vibrations
+            credit_points: 6
+            type: core
+          - code: MECH3402
+            title: Heat transfer and combustion
+            credit_points: 6
+            type: core
+          - code: Option C
+            title: Discipline elective
+            credit_points: 6
+            type: elective
+          - code: Option D
+            title: Breadth elective (student choice)
+            credit_points: 6
+            type: elective
+      - number: 2
+        label: Semester 2
+        units:
+          - code: GENG3402
+            title: Systems engineering and project management
+            credit_points: 6
+            type: core
+          - code: MECH3403
+            title: Control systems
+            credit_points: 6
+            type: core
+          - code: Option E
+            title: Discipline elective
+            credit_points: 6
+            type: elective
+          - code: Option F
+            title: Breadth elective (student choice)
+            credit_points: 6
+            type: elective
+
+  - year: 4
+    semesters:
+      - number: 1
+        label: Semester 1 — Honours Year
+        units:
+          - code: MECH4401
+            title: Research project A
+            credit_points: 12
+            type: honours
+          - code: MECH4402
+            title: Advanced manufacturing systems
+            credit_points: 6
+            type: core
+          - code: Option G
+            title: Discipline elective
+            credit_points: 6
+            type: elective
+      - number: 2
+        label: Semester 2 — Honours Year
+        units:
+          - code: MECH4403
+            title: Research project B
+            credit_points: 12
+            type: honours
+          - code: GENG4410
+            title: Engineering ethics and professional practice
+            credit_points: 6
+            type: core
+          - code: Option H
+            title: Discipline elective
+            credit_points: 6
+            type: elective

@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Not Found</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #070A0B;
+      color: #F5F5F5;
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      gap: 0;
+    }
+
+    /* ---- Scanline overlay ---- */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.07) 2px,
+        rgba(0, 0, 0, 0.07) 4px
+      );
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* ---- Ambient glow behind the number ---- */
+    .glow {
+      position: absolute;
+      width: 600px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(255, 99, 99, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+      filter: blur(40px);
+    }
+
+    /* ---- Perspective container — mouse parallax applied here ---- */
+    .perspective-container {
+      perspective: 900px;
+      perspective-origin: center center;
+    }
+
+    /* ---- Glitch number ---- */
+    .glitch-wrap {
+      position: relative;
+      display: inline-block;
+      line-height: 1;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .glitch-base,
+    .glitch-r,
+    .glitch-b {
+      font-size: clamp(100px, 22vw, 220px);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      user-select: none;
+      display: block;
+    }
+
+    .glitch-base {
+      color: #F0F0F0;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* Red channel — sits behind, offset right on glitch */
+    .glitch-r {
+      position: absolute;
+      inset: 0;
+      color: #FF6363;
+      mix-blend-mode: screen;
+      clip-path: inset(0% 0 100% 0); /* hidden until GSAP opens a slice */
+      z-index: 1;
+    }
+
+    /* Blue channel — sits behind, offset left on glitch */
+    .glitch-b {
+      position: absolute;
+      inset: 0;
+      color: #6CA0F0;
+      mix-blend-mode: screen;
+      clip-path: inset(0% 0 100% 0);
+      z-index: 1;
+    }
+
+    /* ---- Category label ---- */
+    .category-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255, 99, 99, 0.7);
+      margin-bottom: 12px;
+    }
+
+    /* ---- Message ---- */
+    .message {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    /* ---- Back button ---- */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 32px;
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.5);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    /* ---- Noise bar that sweeps across ---- */
+    .noise-bar {
+      position: absolute;
+      left: -10%;
+      width: 120%;
+      height: 3px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255,255,255,0.12) 20%,
+        rgba(108,160,240,0.3) 50%,
+        rgba(255,255,255,0.12) 80%,
+        transparent 100%
+      );
+      pointer-events: none;
+      opacity: 0;
+      z-index: 3;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="glow"></div>
+
+  <div style="display:flex; flex-direction:column; align-items:center; position:relative;">
+
+    <div class="category-label">
+      {{ category or "page" }} not found
+    </div>
+
+    <div class="perspective-container">
+    <div class="glitch-wrap" id="glitch-wrap">
+      <span class="glitch-base" id="glitch-base">404</span>
+      <span class="glitch-r"   id="glitch-r"    aria-hidden="true">404</span>
+      <span class="glitch-b"   id="glitch-b"    aria-hidden="true">404</span>
+      <div class="noise-bar"   id="noise-bar"></div>
+    </div>
+    </div> {# /perspective-container #}
+
+    <p class="message">Sorry, we couldn't find that {{ category or "page" }}.</p>
+
+    <a href="/" class="back-btn">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Go back home
+    </a>
+
+  </div>
+
+  <script>
+    const wrap  = document.getElementById('glitch-wrap');
+    const base  = document.getElementById('glitch-base');
+    const r     = document.getElementById('glitch-r');
+    const b     = document.getElementById('glitch-b');
+    const bar   = document.getElementById('noise-bar');
+
+    // ---- Entry animation ----
+    gsap.from([base], {
+      opacity: 0,
+      y: 10,
+      duration: 0.6,
+      ease: 'power3.out',
+      delay: 0.2,
+    });
+
+    // ---- Glitch burst function ----
+    // Fires a rapid sequence of frame-by-frame RGB channel splits,
+    // clip-path slices, and a sweeping noise bar, then snaps back.
+    function runGlitch() {
+      const tl = gsap.timeline({
+        onComplete: () => {
+          // Schedule next glitch at a random interval — keeps it feeling organic
+          gsap.delayedCall(2.5 + Math.random() * 4, runGlitch);
+        }
+      });
+
+      const frames = 5 + Math.floor(Math.random() * 4);
+
+      for (let i = 0; i < frames; i++) {
+        const t  = i * 0.065;
+        const st = 10 + Math.random() * 65;       // slice top %
+        const sh = 6  + Math.random() * 18;        // slice height %
+        const eb = Math.max(0, 100 - st - sh);     // bottom inset for r layer
+        // Blue layer gets a different, offset slice
+        const st2 = (st + 25) % 70;
+        const eb2 = Math.max(0, 100 - st2 - sh);
+
+        tl.to(r, {
+          x: (Math.random() - 0.4) * 18,
+          clipPath: `inset(${st}% 0 ${eb}% 0)`,
+          duration: 0.05,
+          ease: 'none',
+        }, t)
+        .to(b, {
+          x: (Math.random() - 0.6) * 18,
+          clipPath: `inset(${st2}% 0 ${eb2}% 0)`,
+          duration: 0.05,
+          ease: 'none',
+        }, t)
+        .to(wrap, {
+          skewX: (Math.random() - 0.5) * 3,
+          x:     (Math.random() - 0.5) * 4,
+          duration: 0.04,
+          ease: 'none',
+        }, t);
+      }
+
+      // Snap everything back to rest
+      tl.to([r, b], {
+        x: 0,
+        clipPath: 'inset(0% 0 100% 0)',
+        duration: 0.08,
+        ease: 'power2.out',
+      })
+      .to(wrap, {
+        skewX: 0,
+        x: 0,
+        duration: 0.08,
+        ease: 'power2.out',
+      }, '<');
+
+      // Noise bar sweeps through mid-glitch
+      tl.set(bar, { opacity: 1, top: (20 + Math.random() * 60) + '%' }, 0.1)
+        .to(bar, { opacity: 0, duration: 0.12, ease: 'power2.in' }, 0.22);
+
+      return tl;
+    }
+
+    // ---- Mouse parallax ----
+    // Maps cursor position to a gentle rotateX/rotateY on the glitch-wrap.
+    // The base text is never clipped or hidden — only the r/b channels get
+    // clip-path slices during glitch bursts, so 404 is always fully legible.
+    document.addEventListener('mousemove', (e) => {
+      const { innerWidth: w, innerHeight: h } = window;
+      // Normalise to -1 … +1 from screen centre
+      const nx = (e.clientX / w - 0.5) * 2;
+      const ny = (e.clientY / h - 0.5) * 2;
+
+      gsap.to(wrap, {
+        rotateY:  nx * 10,   // tilt left/right up to 10°
+        rotateX: -ny * 6,    // tilt up/down up to 6°
+        duration: 0.8,
+        ease: 'power2.out',
+        overwrite: 'auto',   // don't fight the glitch burst x/skew
+      });
+    });
+
+    // Reset tilt when cursor leaves the window
+    document.addEventListener('mouseleave', () => {
+      gsap.to(wrap, {
+        rotateX: 0,
+        rotateY: 0,
+        duration: 1.2,
+        ease: 'power3.out',
+      });
+    });
+
+    // Kick off the first glitch after a short pause
+    gsap.delayedCall(1.2, runGlitch);
+  </script>
+
+</body>
+</html>
