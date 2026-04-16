@@ -63,12 +63,14 @@ agile-web-dev/
 ├── app/
 │   ├── __init__.py        # Application factory (create_app)
 │   ├── routes.py          # All route handlers and YAML data helpers
+│   ├── docs_bp.py         # Docs blueprint — serves docs/ as /docs/<slug>
 │   ├── db.py              # SQLite connection management
 │   ├── templates/         # Jinja2 HTML templates
 │   │   ├── base.html
 │   │   ├── home.html
 │   │   ├── benefits.html
 │   │   ├── resources.html
+│   │   ├── docs/          # Docs page template
 │   │   ├── unit/
 │   │   ├── degree/
 │   │   └── club/
@@ -83,6 +85,8 @@ agile-web-dev/
 │   ├── clubs/             # One .yaml file per club
 │   ├── benefits/          # Student benefits data
 │   └── schemas/           # JSON schemas for validating YAML files
+├── docs/                  # Markdown documentation (rendered at /docs)
+│   └── overview.md        # Project overview, goals, philosophy, roadmap
 ├── run.py                 # Entry point — creates and runs the Flask app
 ├── pyproject.toml         # Project metadata and dependencies
 └── uv.lock                # Locked dependency versions
@@ -99,6 +103,11 @@ agile-web-dev/
 | [Jinja2](https://jinja.palletsprojects.com/) | Server-side HTML templating (bundled with Flask) |
 | [PyYAML](https://pyyaml.org/) | Parsing YAML content files |
 | [jsonschema](https://python-jsonschema.readthedocs.io/) | Validating YAML data against schemas |
+| [Python-Markdown](https://python-markdown.github.io/) | Rendering `docs/*.md` files as HTML at `/docs` |
 | [uv](https://docs.astral.sh/uv/) | Dependency management and virtual environment |
 | [Fuse.js](https://fusejs.io/) | Client-side fuzzy search |
 | [SQLite](https://www.sqlite.org/) | Lightweight database (via Flask's `g` context) |
+
+### Adding a documentation page
+
+Create a new `.md` file in `docs/` — it will automatically appear in the sidebar at `/docs` with no further configuration needed. The first `# H1` in the file is used as the page title.
