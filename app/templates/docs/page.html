@@ -10,30 +10,37 @@
 <div class="flex gap-8 pt-4 items-start">
 
   {# ======================================================= #}
-  {# SIDEBAR                                                  #}
+  {# LEFT SIDEBAR                                             #}
   {# ======================================================= #}
-  <aside class="w-44 shrink-0 flex flex-col gap-0.5 sticky top-16 self-start">
+  <aside class="w-44 shrink-0 sticky top-16 self-start flex flex-col gap-4">
 
-    <span class="text-[10px] uppercase tracking-wider text-rc-text-tertiary px-2 mb-2">
-      Documentation
-    </span>
+    {# Sectioned navigation — one block per section in _sidebar.yaml #}
+    {% for section in sections %}
+    <div class="flex flex-col gap-0.5">
 
-    {% for doc in all_docs %}
-    <a href="{{ url_for('docs.page', slug=doc.slug) }}"
-       class="text-[12px] px-2.5 py-1.5 rounded-[6px] transition
-              {% if doc.slug == slug %}
-                bg-rc-fill border border-rc-border text-white/85
-              {% else %}
-                text-white/40 hover:text-white/65 hover:bg-rc-fill-light border border-transparent
-              {% endif %}">
-      {{ doc.title }}
-    </a>
+      <span class="text-[10px] font-semibold uppercase tracking-wider text-rc-text-tertiary px-2 mb-1">
+        {{ section.title }}
+      </span>
+
+      {% for doc in section.pages %}
+      <a href="{{ url_for('docs.page', slug=doc.slug) }}"
+         class="text-[12px] px-2.5 py-1.5 rounded-[6px] transition leading-snug
+                {% if doc.slug == slug %}
+                  bg-rc-fill border border-rc-border text-white/85
+                {% else %}
+                  text-white/40 hover:text-white/65 hover:bg-rc-fill-light border border-transparent
+                {% endif %}">
+        {{ doc.title }}
+      </a>
+      {% endfor %}
+
+    </div>
     {% endfor %}
 
-    {# On-page TOC — only shown if the markdown produced headings #}
+    {# On-page TOC — shown below sections if the page has headings #}
     {% if toc and '<li>' in toc %}
-    <div class="mt-5 pt-4 border-t border-rc-border-light">
-      <span class="text-[10px] uppercase tracking-wider text-rc-text-tertiary px-2 mb-2 block">
+    <div class="pt-3 border-t border-rc-border-light flex flex-col gap-0.5">
+      <span class="text-[10px] font-semibold uppercase tracking-wider text-rc-text-tertiary px-2 mb-1">
         On this page
       </span>
       <div class="docs-toc">
@@ -47,8 +54,66 @@
   {# ======================================================= #}
   {# MAIN CONTENT                                             #}
   {# ======================================================= #}
-  <article class="flex-1 min-w-0 docs-content pb-8">
+  <article class="flex-1 min-w-0 docs-content">
+
     {{ content | safe }}
+
+    {# --------------------------------------------------- #}
+    {# PAGE FOOTER — last updated + prev/next              #}
+    {# --------------------------------------------------- #}
+    <div class="mt-12 pt-6 border-t border-rc-border-light">
+
+      {% if last_updated %}
+      <p class="text-[11px] text-white/25 mb-8">Last updated: {{ last_updated }}</p>
+      {% endif %}
+
+      <div class="flex items-stretch gap-3">
+
+        {# Previous page — occupies left half, or invisible spacer if absent #}
+        {% if prev_page %}
+        <a href="{{ url_for('docs.page', slug=prev_page.slug) }}"
+           class="prev-next-card flex-1 flex flex-col gap-1 p-4 rounded-[10px]
+                  bg-rc-surface border border-rc-border
+                  hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.04)]
+                  transition group">
+          <span class="text-[10px] text-white/30 group-hover:text-white/45 transition flex items-center gap-1">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M7.5 2.5L4 6l3.5 3.5" stroke="currentColor" stroke-width="1.2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Previous page
+          </span>
+          <span class="text-[13px] font-medium text-white/70 group-hover:text-white/90 transition">
+            {{ prev_page.title }}
+          </span>
+        </a>
+        {% else %}
+        <div class="flex-1"></div>
+        {% endif %}
+
+        {# Next page — occupies right half, right-aligned #}
+        {% if next_page %}
+        <a href="{{ url_for('docs.page', slug=next_page.slug) }}"
+           class="prev-next-card flex-1 flex flex-col gap-1 p-4 rounded-[10px] text-right
+                  bg-rc-surface border border-rc-border
+                  hover:border-[rgba(255,255,255,0.14)] hover:bg-[rgba(255,255,255,0.04)]
+                  transition group">
+          <span class="text-[10px] text-white/30 group-hover:text-white/45 transition flex items-center gap-1 justify-end">
+            Next page
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M4.5 2.5L8 6l-3.5 3.5" stroke="currentColor" stroke-width="1.2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+          <span class="text-[13px] font-medium text-white/70 group-hover:text-white/90 transition">
+            {{ next_page.title }}
+          </span>
+        </a>
+        {% endif %}
+
+      </div>
+    </div>
+
   </article>
 
 </div>
@@ -57,21 +122,22 @@
 
 
 {% block footer_nav %}
-{# Docs pages don't use keyboard navigation hints #}
+{# Docs pages don't use the keyboard navigation hint bar #}
 {% endblock %}
 
 
 {% block scripts %}
 <style>
   /* ------------------------------------------------------------------ */
-  /* Prose styles for markdown-generated HTML                            */
-  /* Scoped to .docs-content so nothing bleeds into the sidebar or nav  */
+  /* Prose — styles for markdown-generated HTML                          */
+  /* Scoped to .docs-content so nothing bleeds into the sidebar/nav     */
   /* ------------------------------------------------------------------ */
 
   .docs-content {
     color: rgba(255, 255, 255, 0.70);
     font-size: 14px;
     line-height: 1.75;
+    padding-bottom: 2rem;
   }
 
   /* Headings */
@@ -141,7 +207,7 @@
     color: #FF6363;
   }
 
-  /* Fenced code blocks — override inline code styles */
+  /* Fenced code blocks */
   .docs-content pre {
     background: #151515;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -234,7 +300,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* TOC sidebar styles                                                  */
+  /* On-page TOC (sidebar)                                               */
   /* ------------------------------------------------------------------ */
 
   .docs-toc ul {
@@ -262,7 +328,6 @@
     color: rgba(255, 255, 255, 0.65);
     background: rgba(255, 255, 255, 0.04);
   }
-  /* Nested TOC entries are indented */
   .docs-toc ul ul a {
     padding-left: 18px;
   }
