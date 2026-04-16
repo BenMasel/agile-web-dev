@@ -2,6 +2,13 @@
 
 {% block title %}Docs — stUwa{% endblock %}
 
+{% block head %}
+{# Highlight.js — syntax highlighting for fenced code blocks #}
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+{% endblock %}
+
 {# Widen the content column to accommodate the sidebar + prose #}
 {% block content_width %}w-full max-w-5xl{% endblock %}
 
@@ -220,9 +227,9 @@
     background: none;
     border: none;
     padding: 0;
-    color: rgba(255, 255, 255, 0.80);
     font-size: 12.5px;
     border-radius: 0;
+    /* colour intentionally omitted — Highlight.js owns token colours */
   }
 
   /* Blockquote */
@@ -332,4 +339,8 @@
     padding-left: 18px;
   }
 </style>
+<script>
+  // Run after the DOM is ready so all <pre><code> blocks are present.
+  document.addEventListener('DOMContentLoaded', () => hljs.highlightAll());
+</script>
 {% endblock %}

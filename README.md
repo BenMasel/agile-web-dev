@@ -106,6 +106,7 @@ agile-web-dev/
 | [Python-Markdown](https://python-markdown.github.io/) | Rendering `docs/*.md` files as HTML at `/docs` |
 | [uv](https://docs.astral.sh/uv/) | Dependency management and virtual environment |
 | [Fuse.js](https://fusejs.io/) | Client-side fuzzy search |
+| [Highlight.js](https://highlightjs.org/) | Syntax highlighting for code blocks in docs (CDN) |
 | [SQLite](https://www.sqlite.org/) | Lightweight database (via Flask's `g` context) |
 
 ### Adding a documentation page
