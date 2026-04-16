@@ -1,0 +1,23 @@
+code: PHYS1001
+title: Physics for Scientists and Engineers
+level: 1
+credit_points: 6
+semester: 12
+faculty: Engineering
+school: Physics, Mathematics and Computing
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: Department of Physics
+availability: 2026 S1, S2
+availability_detail: Feb – Jun / Jul – Nov
+
+prerequisites:
+  external:
+    - "Physics ATAR or PHYS1030 Physics Bridging Unit"
+
+learning_outcomes:
+  - Apply Newton's laws and principles of mechanics to dynamic systems
+  - Analyse electrical circuits using fundamental circuit laws
+  - Describe wave phenomena and optics principles
+  - Understand the basics of thermodynamics and energy conservation

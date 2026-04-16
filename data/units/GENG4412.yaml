@@ -1,0 +1,23 @@
+code: GENG4412
+title: Engineering Research Project Part 2
+level: 4
+credit_points: 6
+semester: 12
+faculty: Engineering
+school: Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Engineering
+availability: 2026 S1, S2
+availability_detail: Feb – Jun / Jul – Nov
+
+prerequisites:
+  all_of:
+    - GENG4411
+
+learning_outcomes:
+  - Complete and defend a substantial engineering research or design project
+  - Analyse and critically interpret experimental results and findings
+  - Produce a publication-quality technical report documenting the project
+  - Present research outcomes to a panel of academic and industry assessors

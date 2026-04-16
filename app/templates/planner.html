@@ -1,0 +1,728 @@
+{% extends "base.html" %}
+
+{% block title %}Study Planner — stUwa{% endblock %}
+
+{# Wider container for the timeline layout #}
+{% block content_width %}w-full max-w-[90rem]{% endblock %}
+
+{% block content %}
+
+{# ========== CONFIG BAR ========== #}
+<div class="bg-rc-surface border border-rc-border rounded-[10px] px-4 py-3 flex items-center gap-3 flex-wrap">
+  <div class="flex items-center gap-2 shrink-0">
+    <div class="w-6 h-6 rounded-[6px] bg-rc-blue-muted flex items-center justify-center">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="#6CA0F0" stroke-width="1.1"/>
+        <path d="M3.5 5l1.5 1.5L8.5 3.5" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3.5 8.5h6" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="text-sm font-semibold text-rc-text">Study Planner</span>
+  </div>
+
+  <div class="w-px h-4 bg-rc-border shrink-0"></div>
+
+  {# Degree selector #}
+  <div class="flex items-center gap-2">
+    <label class="text-[11px] text-rc-text-tertiary whitespace-nowrap">Degree</label>
+    <select id="degree-select"
+            class="bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
+      <option value="">— select degree —</option>
+      {% for deg in degrees %}
+      <option value="{{ deg.slug }}">{{ deg.title }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  {# Starting year #}
+  <div class="flex items-center gap-2">
+    <label class="text-[11px] text-rc-text-tertiary whitespace-nowrap">Starting</label>
+    <select id="start-year"
+            class="bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
+      {% for y in range(2020, 2030) %}
+      <option value="{{ y }}" {% if y == 2024 %}selected{% endif %}>{{ y }}</option>
+      {% endfor %}
+    </select>
+    <select id="start-sem"
+            class="bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
+      <option value="1" selected>Sem 1</option>
+      <option value="2">Sem 2</option>
+    </select>
+  </div>
+
+  <div class="flex-1"></div>
+
+  {# Stats #}
+  <div id="planner-stats" class="hidden items-center gap-3 text-[11px] text-rc-text-faint">
+    <span><span id="stat-planned" class="text-white/60 font-medium">0</span> CP planned</span>
+    <span class="text-rc-border">|</span>
+    <span><span id="stat-done" class="text-rc-green font-medium">0</span> CP done</span>
+    <span class="text-rc-border">|</span>
+    <span><span id="stat-remaining" class="text-rc-amber font-medium">0</span> CP remaining</span>
+  </div>
+
+  {# Reset #}
+  <button id="reset-btn"
+          class="text-[11px] text-white/30 hover:text-rc-red transition px-2 py-1 rounded-md hover:bg-rc-red-muted cursor-pointer">
+    Reset plan
+  </button>
+</div>
+
+{# ========== EMPTY STATE ========== #}
+<div id="empty-state" class="bg-rc-surface border border-rc-border rounded-[10px] p-12 flex flex-col items-center gap-4 text-center">
+  <div class="w-12 h-12 rounded-[12px] bg-rc-blue-muted flex items-center justify-center">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="3" width="18" height="18" rx="3" stroke="#6CA0F0" stroke-width="1.3"/>
+      <path d="M7 9l3 3L17 7" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M7 15h10" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div>
+    <div class="text-sm font-medium text-white/70 mb-1">Select a degree to get started</div>
+    <div class="text-xs text-white/30">Choose a degree above, then drag units into semesters to build your plan</div>
+  </div>
+</div>
+
+{# ========== SEMESTER TIMELINE ========== #}
+<div id="timeline-wrap" class="hidden flex-col gap-3">
+
+  {# Semester columns — horizontal scroll #}
+  <div class="overflow-x-auto pb-2">
+    <div id="semester-grid" class="flex gap-3" style="min-width: max-content; align-items: flex-start">
+      {# JS renders columns here #}
+    </div>
+  </div>
+
+  {# ---- Legend ---- #}
+  <div class="flex items-center gap-4 px-1">
+    <div class="flex items-center gap-1.5">
+      <div class="w-2 h-2 rounded-full bg-rc-green"></div>
+      <span class="text-[11px] text-white/30">Completed</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-2 h-2 rounded-full bg-rc-blue"></div>
+      <span class="text-[11px] text-white/30">Planned</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-2 h-2 rounded-full bg-rc-red"></div>
+      <span class="text-[11px] text-white/30">Prereqs not met</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-2 h-2 rounded-full bg-white/20"></div>
+      <span class="text-[11px] text-white/30">Unplaced</span>
+    </div>
+    <div class="ml-auto text-[11px] text-rc-text-faint">
+      Click a unit to mark complete · Click <span class="text-white/40">+ add unit</span> to place from pool
+    </div>
+  </div>
+</div>
+
+{# ========== UNIT POOL ========== #}
+<div id="pool-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3">
+  <div class="flex items-center justify-between">
+    <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Remaining units</span>
+    <span id="pool-count" class="text-[11px] text-rc-text-faint"></span>
+  </div>
+  <div id="unit-pool" class="flex flex-wrap gap-1.5">
+    {# JS renders chips here #}
+  </div>
+</div>
+
+{# ========== UNIT PICKER MODAL ========== #}
+<div id="picker-modal" class="hidden fixed inset-0 z-40 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closePicker()"></div>
+  <div class="relative bg-rc-surface border border-rc-border rounded-[12px] p-4 w-full max-w-sm flex flex-col gap-3 shadow-2xl z-50">
+    <div class="flex items-center justify-between">
+      <span class="text-sm font-medium text-white/85" id="picker-title">Add unit to semester</span>
+      <button onclick="closePicker()" class="text-white/30 hover:text-white/60 transition cursor-pointer text-lg leading-none">×</button>
+    </div>
+    <div class="text-[11px] text-rc-text-faint" id="picker-sem-label"></div>
+    <div id="picker-list" class="flex flex-col gap-1 max-h-72 overflow-y-auto">
+      {# JS populates with available units #}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+// ============================================================
+// DATA — embedded from server as JSON
+// ============================================================
+const DEGREES_DATA = {{ degrees | tojson }};
+const UNITS_DATA   = {{ units | tojson }};
+
+const STORAGE_KEY = 'stUwa_planner_v2';
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  degree: null,
+  startYear: 2024,
+  startSem: 1,
+  plan: {},       // { "2024-1": ["MATH1011", ...] }
+  done: [],       // unit codes marked as completed
+};
+
+let pickerTargetSem = null;  // semKey for the open picker
+
+// ============================================================
+// PERSISTENCE
+// ============================================================
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) Object.assign(state, JSON.parse(raw));
+  } catch {}
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function semKey(year, sem) { return `${year}-${sem}`; }
+function parseSemKey(k) {
+  const [y, s] = k.split('-').map(Number);
+  return { year: y, sem: s };
+}
+function semLabel(year, sem) { return `S${sem} ${year}`; }
+
+// Ordered list of semKeys from start up to numYears
+function allSemKeys() {
+  const keys = [];
+  const deg = getDegree();
+  const numYears = deg ? deg.duration_years : 4;
+  for (let y = 0; y < numYears; y++) {
+    for (let s = 1; s <= 2; s++) {
+      const year = state.startYear + y;
+      if (y === 0 && s < state.startSem) continue;
+      keys.push(semKey(year, s));
+    }
+  }
+  return keys;
+}
+
+// All units placed in semesters strictly before the given semKey
+function unitsCompletedBefore(targetKey) {
+  const allKeys = allSemKeys();
+  const idx = allKeys.indexOf(targetKey);
+  const earlier = allKeys.slice(0, idx);
+  const units = [...state.done];
+  for (const k of earlier) {
+    for (const code of (state.plan[k] || [])) {
+      if (!units.includes(code)) units.push(code);
+    }
+  }
+  return units;
+}
+
+// All units considered "complete" for prereq purposes in a semester
+// (placed in earlier sems + explicitly marked done)
+function effectivelyCompletedBefore(targetKey) {
+  return unitsCompletedBefore(targetKey);
+}
+
+function prereqsMet(unitCode, targetSemKey) {
+  const u = UNITS_DATA[unitCode];
+  if (!u || !u.prerequisites) return true;
+  const p = u.prerequisites;
+  const before = effectivelyCompletedBefore(targetSemKey);
+
+  for (const code of (p.all_of || [])) {
+    if (!before.includes(code)) return false;
+  }
+  for (const group of (p.any_of || [])) {
+    if (!group.some(c => before.includes(c))) return false;
+  }
+  return true;
+}
+
+function coreqsMet(unitCode, targetSemKey) {
+  const u = UNITS_DATA[unitCode];
+  if (!u || !u.corequisites) return true;
+  const before = effectivelyCompletedBefore(targetSemKey);
+  const inSem  = state.plan[targetSemKey] || [];
+  return u.corequisites.every(c => before.includes(c) || inSem.includes(c));
+}
+
+function unitAvailableInSem(unitCode, sem) {
+  const u = UNITS_DATA[unitCode];
+  if (!u) return true;
+  const s = u.semester;
+  if (!s || s === 'NS') return true;
+  if (s === 12) return true;
+  return Number(s) === Number(sem);
+}
+
+function getDegree() {
+  return DEGREES_DATA.find(d => d.slug === state.degree) || null;
+}
+
+function getDegreeUnitCodes() {
+  const deg = getDegree();
+  if (!deg) return [];
+  const codes = [];
+  for (const yr of deg.years || []) {
+    for (const sem of yr.semesters || []) {
+      for (const u of sem.units || []) {
+        if (u.code && !/^[A-Z][a-z]/.test(u.code) && !/^Broad/.test(u.code)) {
+          codes.push(u.code);
+        }
+      }
+    }
+  }
+  return codes;
+}
+
+function getDefaultPlan() {
+  const deg = getDegree();
+  if (!deg) return {};
+  const plan = {};
+  const keys = allSemKeys();
+  let semIdx = 0;
+  for (const yr of deg.years || []) {
+    for (const sem of yr.semesters || []) {
+      if (semIdx >= keys.length) break;
+      const key = keys[semIdx++];
+      plan[key] = [];
+      for (const u of sem.units || []) {
+        if (u.code && !/^[A-Z][a-z]/.test(u.code) && !/^Broad/.test(u.code)) {
+          plan[key].push(u.code);
+        }
+      }
+    }
+  }
+  return plan;
+}
+
+// Semester credit points (excluding 0-CP units)
+function semCP(semKey) {
+  return (state.plan[semKey] || []).reduce((sum, code) => {
+    const u = UNITS_DATA[code];
+    return sum + (u ? (u.credit_points || 0) : 0);
+  }, 0);
+}
+
+function isPlaced(unitCode) {
+  return Object.values(state.plan).some(arr => arr.includes(unitCode));
+}
+
+function isDone(unitCode) {
+  return state.done.includes(unitCode);
+}
+
+function semForUnit(unitCode) {
+  for (const [k, arr] of Object.entries(state.plan)) {
+    if (arr.includes(unitCode)) return k;
+  }
+  return null;
+}
+
+function semIsInPast(semKey) {
+  const keys = allSemKeys();
+  const today = new Date();
+  const curYear = today.getFullYear();
+  const curSem  = today.getMonth() < 6 ? 1 : 2;
+  const { year, sem } = parseSemKey(semKey);
+  return year < curYear || (year === curYear && sem < curSem);
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+function render() {
+  const hasDegree = !!state.degree;
+  document.getElementById('empty-state').classList.toggle('hidden', hasDegree);
+  document.getElementById('timeline-wrap').classList.toggle('hidden', !hasDegree);
+  document.getElementById('timeline-wrap').classList.toggle('flex', hasDegree);
+  document.getElementById('pool-wrap').classList.toggle('hidden', !hasDegree);
+  document.getElementById('planner-stats').classList.toggle('hidden', !hasDegree);
+  document.getElementById('planner-stats').classList.toggle('flex', hasDegree);
+
+  if (!hasDegree) return;
+
+  renderGrid();
+  renderPool();
+  renderStats();
+}
+
+function renderGrid() {
+  const container = document.getElementById('semester-grid');
+  container.innerHTML = '';
+  const keys = allSemKeys();
+
+  for (const key of keys) {
+    const { year, sem } = parseSemKey(key);
+    const units  = state.plan[key] || [];
+    const cp     = semCP(key);
+    const isPast = semIsInPast(key);
+
+    const col = document.createElement('div');
+    col.className = 'flex flex-col gap-2';
+    col.style.width = '13rem';
+
+    // Column header
+    col.innerHTML = `
+      <div class="text-[10px] uppercase tracking-widest font-medium px-1
+        ${isPast ? 'text-rc-text-faint' : 'text-white/40'}">
+        ${semLabel(year, sem)}
+        <span class="normal-case tracking-normal font-normal ml-1 text-white/20">${cp > 0 ? cp + ' CP' : ''}</span>
+      </div>
+    `;
+
+    // Card
+    const card = document.createElement('div');
+    card.className = `bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 min-h-[8rem]
+      ${isPast ? 'border-rc-border/50 opacity-70' : 'border-rc-border'}`;
+    card.dataset.semKey = key;
+
+    // Unit cards
+    for (const code of units) {
+      card.appendChild(renderUnitCard(code, key));
+    }
+
+    // Add unit button
+    const addBtn = document.createElement('button');
+    addBtn.className = 'mt-auto text-[11px] text-white/20 hover:text-white/50 border border-dashed border-white/10 hover:border-white/20 rounded-lg py-1.5 text-center transition cursor-pointer';
+    addBtn.textContent = '+ add unit';
+    addBtn.onclick = () => openPicker(key);
+    card.appendChild(addBtn);
+
+    col.appendChild(card);
+    container.appendChild(col);
+  }
+}
+
+function renderUnitCard(code, semKey) {
+  const u    = UNITS_DATA[code];
+  const done = isDone(code);
+  const metP = prereqsMet(code, semKey);
+  const metC = coreqsMet(code, semKey);
+  const ok   = metP && metC;
+
+  let dot  = 'bg-rc-blue';
+  let ring = 'border-rc-border hover:border-white/20';
+  let bg   = 'bg-rc-fill';
+
+  if (done) {
+    dot  = 'bg-rc-green';
+    ring = 'border-[rgba(46,204,113,0.2)]';
+    bg   = 'bg-[rgba(46,204,113,0.06)]';
+  } else if (!ok) {
+    dot  = 'bg-rc-red';
+    ring = 'border-[rgba(255,99,99,0.2)]';
+    bg   = 'bg-rc-red-muted';
+  }
+
+  const missing = [];
+  if (!metP && u && u.prerequisites) {
+    const p = u.prerequisites;
+    const before = effectivelyCompletedBefore(semKey);
+    for (const c of (p.all_of || [])) { if (!before.includes(c)) missing.push(c); }
+    for (const g of (p.any_of || [])) { if (!g.some(c => before.includes(c))) missing.push(`one of [${g.join('/')}]`); }
+  }
+  const tooltip = !ok
+    ? `Prereqs missing: ${missing.join(', ')}`
+    : (done ? 'Mark as incomplete' : 'Mark as complete');
+
+  const el = document.createElement('div');
+  el.className = `group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${ring} ${bg} cursor-pointer transition select-none`;
+  el.title = tooltip;
+  el.dataset.code = code;
+
+  el.innerHTML = `
+    <div class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></div>
+    <div class="flex-1 min-w-0">
+      <div class="text-[11px] font-medium ${done ? 'text-rc-green' : 'text-white/80'} leading-tight">${code}</div>
+      <div class="text-[10px] text-white/30 truncate leading-tight">${u ? u.title : '—'}</div>
+    </div>
+    <div class="flex items-center gap-1 shrink-0">
+      <span class="text-[9px] text-white/20">${u ? (u.credit_points || 0) : 0}CP</span>
+      <button class="remove-btn opacity-0 group-hover:opacity-70 hover:!opacity-100 text-white/30 hover:text-rc-red transition text-[13px] leading-none cursor-pointer ml-0.5 px-0.5"
+              title="Remove from semester"
+              onclick="event.stopPropagation(); removeUnit('${code}', '${semKey}')">×</button>
+    </div>
+  `;
+
+  el.addEventListener('click', () => toggleDone(code));
+  return el;
+}
+
+function renderPool() {
+  const container  = document.getElementById('unit-pool');
+  const allCodes   = getDegreeUnitCodes();
+  const placed     = Object.values(state.plan).flat();
+  const unplaced   = allCodes.filter(c => !placed.includes(c) && !state.done.includes(c));
+
+  document.getElementById('pool-count').textContent =
+    unplaced.length === 0 ? 'All units placed!' : `${unplaced.length} units remaining`;
+
+  container.innerHTML = '';
+
+  if (unplaced.length === 0) {
+    container.innerHTML = '<span class="text-xs text-rc-green">All units placed in your plan.</span>';
+    return;
+  }
+
+  // Separate into groups: available (prereqs could be met) vs locked
+  const allPlaced = [...state.done, ...placed];
+
+  for (const code of unplaced) {
+    const u = UNITS_DATA[code];
+    // Check if prereqs are potentially satisfied by what's already placed
+    const couldPlace = checkPrereqsGeneral(code, allPlaced);
+
+    const chip = document.createElement('button');
+    chip.dataset.code = code;
+    chip.title = u ? u.title : code;
+
+    if (couldPlace) {
+      chip.className = 'flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-[rgba(46,204,113,0.25)] bg-rc-green-muted text-rc-green hover:border-rc-green/40 transition cursor-pointer';
+      chip.innerHTML = `<div class="w-1.5 h-1.5 rounded-full bg-rc-green"></div>${code}`;
+    } else {
+      chip.className = 'flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border border-rc-border text-white/35 hover:border-white/20 hover:text-white/55 transition cursor-pointer';
+      chip.innerHTML = `<div class="w-1.5 h-1.5 rounded-full bg-white/15"></div>${code}`;
+    }
+
+    chip.onclick = () => {
+      // Find a valid semester to open picker for
+      const bestSem = findBestSem(code);
+      openPicker(bestSem || allSemKeys()[0], code);
+    };
+
+    container.appendChild(chip);
+  }
+}
+
+// Does this unit have all prereqs met given a set of completed codes?
+function checkPrereqsGeneral(unitCode, completedList) {
+  const u = UNITS_DATA[unitCode];
+  if (!u || !u.prerequisites) return true;
+  const p = u.prerequisites;
+  for (const c of (p.all_of || [])) {
+    if (!completedList.includes(c)) return false;
+  }
+  for (const g of (p.any_of || [])) {
+    if (!g.some(c => completedList.includes(c))) return false;
+  }
+  return true;
+}
+
+// Find the first semester where prereqs are met and unit is available
+function findBestSem(unitCode) {
+  for (const key of allSemKeys()) {
+    const { sem } = parseSemKey(key);
+    if (unitAvailableInSem(unitCode, sem) && prereqsMet(unitCode, key)) {
+      return key;
+    }
+  }
+  return null;
+}
+
+function renderStats() {
+  const allCodes = getDegreeUnitCodes();
+  const placed   = Object.values(state.plan).flat();
+  let plannedCP  = 0, doneCP = 0, remainCP = 0;
+
+  for (const code of allCodes) {
+    const u = UNITS_DATA[code];
+    const cp = u ? (u.credit_points || 0) : 0;
+    if (isDone(code) || placed.includes(code)) {
+      plannedCP += cp;
+      if (isDone(code)) doneCP += cp;
+    } else {
+      remainCP += cp;
+    }
+  }
+
+  document.getElementById('stat-planned').textContent   = plannedCP;
+  document.getElementById('stat-done').textContent      = doneCP;
+  document.getElementById('stat-remaining').textContent = remainCP;
+}
+
+// ============================================================
+// ACTIONS
+// ============================================================
+function toggleDone(code) {
+  const idx = state.done.indexOf(code);
+  if (idx === -1) state.done.push(code);
+  else state.done.splice(idx, 1);
+  saveState();
+  render();
+}
+
+function removeUnit(code, semKey) {
+  if (!state.plan[semKey]) return;
+  state.plan[semKey] = state.plan[semKey].filter(c => c !== code);
+  saveState();
+  render();
+}
+
+// ============================================================
+// UNIT PICKER MODAL
+// ============================================================
+function openPicker(semKey, preferredCode = null) {
+  pickerTargetSem = semKey;
+  const { year, sem } = parseSemKey(semKey);
+  document.getElementById('picker-sem-label').textContent = `${semLabel(year, sem)}`;
+  document.getElementById('picker-title').textContent = 'Add unit to ' + semLabel(year, sem);
+
+  const allCodes  = getDegreeUnitCodes();
+  const placed    = Object.values(state.plan).flat();
+  const available = allCodes.filter(c => !placed.includes(c) && !isDone(c));
+
+  const list = document.getElementById('picker-list');
+  list.innerHTML = '';
+
+  if (available.length === 0) {
+    list.innerHTML = '<div class="text-xs text-white/30 py-2">No unplaced units remaining.</div>';
+  } else {
+    for (const code of available) {
+      const u = UNITS_DATA[code];
+      const semOk   = unitAvailableInSem(code, sem);
+      const prereqOk = prereqsMet(code, semKey);
+      const ok = semOk && prereqOk;
+
+      const missing = [];
+      if (!prereqOk && u && u.prerequisites) {
+        const p = u.prerequisites;
+        const before = effectivelyCompletedBefore(semKey);
+        for (const c of (p.all_of || [])) { if (!before.includes(c)) missing.push(c); }
+        for (const g of (p.any_of || [])) { if (!g.some(c => before.includes(c))) missing.push(`one of [${g.join('/')}]`); }
+      }
+      const semText = u ? (u.semester === 12 ? 'S1+S2' : u.semester === 'NS' ? 'NS' : `S${u.semester}`) : '';
+
+      const row = document.createElement('div');
+      row.className = `flex items-center gap-2.5 rounded-lg px-3 py-2 cursor-pointer transition
+        ${ok ? 'hover:bg-rc-fill text-white/70' : 'opacity-50 cursor-not-allowed text-white/35'}`;
+      row.innerHTML = `
+        <div class="w-1.5 h-1.5 rounded-full shrink-0 ${ok ? 'bg-rc-green' : 'bg-white/20'}"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[12px] font-medium">${code}</div>
+          <div class="text-[10px] text-white/30 truncate">${u ? u.title : ''}</div>
+          ${missing.length ? `<div class="text-[10px] text-rc-red/70">Missing: ${missing.join(', ')}</div>` : ''}
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <span class="text-[10px] text-white/25">${u ? (u.credit_points || 0) : 0}CP</span>
+          <span class="text-[9px] px-1 py-[1px] rounded bg-rc-fill-light text-white/25">${semText}</span>
+        </div>
+      `;
+
+      if (ok) {
+        row.onclick = () => placeUnit(code, semKey);
+      }
+      list.appendChild(row);
+    }
+  }
+
+  document.getElementById('picker-modal').classList.remove('hidden');
+  document.getElementById('picker-modal').classList.add('flex');
+}
+
+function closePicker() {
+  pickerTargetSem = null;
+  document.getElementById('picker-modal').classList.add('hidden');
+  document.getElementById('picker-modal').classList.remove('flex');
+}
+
+function placeUnit(code, semKey) {
+  if (!state.plan[semKey]) state.plan[semKey] = [];
+  if (!state.plan[semKey].includes(code)) {
+    state.plan[semKey].push(code);
+  }
+  closePicker();
+  saveState();
+  render();
+}
+
+// ============================================================
+// DEGREE SELECTION / RESET
+// ============================================================
+function applyDegree(slug, keepPlan) {
+  state.degree = slug;
+  if (!keepPlan) {
+    state.plan = getDefaultPlan();
+    state.done = [];
+  }
+  saveState();
+  render();
+}
+
+function resetPlan() {
+  if (!state.degree) return;
+  if (!confirm('Reset your plan to the default layout?')) return;
+  state.plan = getDefaultPlan();
+  state.done = [];
+  saveState();
+  render();
+}
+
+// Rebuild default plan when start year/sem changes
+function rebuildTimeline() {
+  const prevPlan = state.plan;
+  // Reassign units from prev plan to new semKeys in order
+  const allKeys = allSemKeys();
+  const allUnits = Object.values(prevPlan).flat();
+
+  state.plan = {};
+  for (const k of allKeys) state.plan[k] = [];
+
+  // Try to re-slot units into the same relative semester position
+  const defPlan = getDefaultPlan();
+  // If units were already placed, keep their relative positions
+  let ui = 0;
+  for (const k of allKeys) {
+    state.plan[k] = defPlan[k] || [];
+  }
+
+  saveState();
+  render();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+
+  // Sync controls to loaded state
+  const degSel  = document.getElementById('degree-select');
+  const yearSel = document.getElementById('start-year');
+  const semSel  = document.getElementById('start-sem');
+
+  if (state.degree) degSel.value = state.degree;
+  yearSel.value = String(state.startYear);
+  semSel.value  = String(state.startSem);
+
+  degSel.addEventListener('change', () => {
+    const slug = degSel.value;
+    if (!slug) { state.degree = null; saveState(); render(); return; }
+    const isNew = slug !== state.degree;
+    state.degree = slug;
+    if (isNew) { state.plan = getDefaultPlan(); state.done = []; }
+    saveState();
+    render();
+  });
+
+  yearSel.addEventListener('change', () => {
+    state.startYear = Number(yearSel.value);
+    rebuildTimeline();
+  });
+
+  semSel.addEventListener('change', () => {
+    state.startSem = Number(semSel.value);
+    rebuildTimeline();
+  });
+
+  document.getElementById('reset-btn').addEventListener('click', resetPlan);
+
+  render();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+code: ELEC3014
+title: Electronic Materials and Devices
+level: 3
+credit_points: 6
+semester: 1
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+availability: 2026 S1
+availability_detail: Feb – Jun
+
+incompatibilities:
+  - code: ENSC3014
+    title: Electronic Materials and Devices
+
+prerequisites:
+  all_of:
+    - MATH1012
+    - PHYS2003
+    - ENSC2003
+
+learning_outcomes:
+  - Describe electron behaviour as particles and waves in semiconductor materials
+  - Analyse carrier dynamics and the physics of pn junctions
+  - Model and design diode and transistor circuits from first principles
+  - Evaluate the performance of semiconductor devices using equivalent circuit models

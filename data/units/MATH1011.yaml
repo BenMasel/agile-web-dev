@@ -1,0 +1,23 @@
+code: MATH1011
+title: Multivariable Calculus
+level: 1
+credit_points: 6
+semester: 12
+faculty: Engineering
+school: Mathematics and Statistics
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Mathematics & Statistics
+availability: 2026 S1, S2
+availability_detail: Feb – Jun / Jul – Nov
+
+prerequisites:
+  external:
+    - "Maths Methods ATAR or MATH1721 Mathematics Foundations: Methods"
+
+learning_outcomes:
+  - Solve a range of problems involving functions of one and several variables
+  - Apply differentiation and integration techniques to vector-valued functions
+  - Evaluate multiple integrals in Cartesian, polar and spherical coordinates
+  - Understand and apply the gradient, divergence and curl operators

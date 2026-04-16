@@ -1,0 +1,29 @@
+code: PHYS2003
+title: Physics for Electrical Engineers
+level: 2
+credit_points: 6
+semester: 1
+faculty: Engineering
+school: Physics, Mathematics and Computing
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: Department of Physics
+availability: 2026 S1
+availability_detail: Feb – Jun
+
+incompatibilities:
+  - code: PHYS2001
+    title: Quantum Physics and Electromagnetism
+
+prerequisites:
+  all_of:
+    - MATH1011
+    - MATH1012
+    - PHYS1001
+
+learning_outcomes:
+  - Analyse magnetic fields, forces, electromagnetic induction and ferromagnetism
+  - Apply the Schrödinger wave equation to standard quantum mechanical potentials
+  - Describe electronic properties of semiconductors using quantum statistical models
+  - Execute and evaluate laboratory experiments in magnetism and quantum phenomena

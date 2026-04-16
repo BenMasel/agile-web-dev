@@ -1,0 +1,21 @@
+code: GENG1010
+title: Introduction to Engineering
+level: 1
+credit_points: 6
+semester: 12
+faculty: Engineering
+school: Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Engineering
+availability: 2026 S1, S2
+availability_detail: Feb – Jun / Jul – Nov
+
+prerequisites: {}
+
+learning_outcomes:
+  - Describe the role of engineers in society and professional ethical obligations
+  - Apply basic engineering design processes to open-ended problems
+  - Communicate technical concepts through written and oral reports
+  - Work effectively in multidisciplinary teams on engineering projects

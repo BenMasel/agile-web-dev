@@ -24,21 +24,15 @@
     {# ---- Separator ---- #}
     <div class="w-px h-3.5 bg-rc-border mx-1 shrink-0"></div>
 
-    {# ---- My Study Plan — placeholder for when auth exists ---- #}
-    <a href="#"
-       title="Available once you sign in"
-       class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-white/35 hover:text-white/55 hover:bg-rc-fill transition cursor-not-allowed select-none">
-      {# Checklist icon #}
+    {# ---- Planner ---- #}
+    <a href="{{ url_for('main.planner') }}"
+       class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-white/45 hover:text-white/65 hover:bg-rc-fill transition">
       <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
         <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.1"/>
         <path d="M3.5 5l1.5 1.5L8.5 3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M3.5 8.5h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
-      My Study Plan
-      {# Pill badge hinting the feature is coming #}
-      <span class="text-[9px] font-medium px-1 py-[1px] rounded bg-rc-fill border border-rc-border text-rc-text-faint leading-none">
-        soon
-      </span>
+      Planner
     </a>
 
     {# ---- Resources — links to /resources, shows pin count badge ---- #}

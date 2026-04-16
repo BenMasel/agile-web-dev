@@ -16,8 +16,9 @@ incompatibilities:
     title: Engineering Materials
 
 prerequisites:
-  - Maths Specialist ATAR
-  - or bridging equivalents
+  all_of:
+    - MATH1011
+    - PHYS1001
 
 assessments:
   - name: Final exam

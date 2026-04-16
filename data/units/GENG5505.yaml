@@ -1,0 +1,23 @@
+code: GENG5505
+title: Project Management and Engineering Practice
+level: 5
+credit_points: 6
+semester: 12
+faculty: Engineering
+school: Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Engineering
+availability: 2026 S1, S2
+availability_detail: Feb – Jun / Jul – Nov
+
+prerequisites:
+  external:
+    - "WAM ≥ 50"
+
+learning_outcomes:
+  - Apply project management frameworks to plan and deliver engineering projects
+  - Manage scope, schedule, cost and quality in complex engineering endeavours
+  - Communicate project status and risks to technical and non-technical stakeholders
+  - Evaluate engineering decisions in the context of sustainability and societal impact

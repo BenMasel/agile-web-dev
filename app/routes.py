@@ -167,6 +167,18 @@ def degree_detail(slug):
     return render_template('degree/detail.html', degree=degree)
 
 
+@bp.route('/planner')
+def planner():
+    """
+    Study planner page.
+    Passes all degrees and unit data as JSON so the client-side planner
+    can compute prerequisite chains and render the semester timeline.
+    """
+    degrees = load_all_yaml('degrees')
+    units = {u['code']: u for u in load_all_yaml('units')}
+    return render_template('planner.html', degrees=degrees, units=units)
+
+
 @bp.route('/club/<slug>')
 def club_detail(slug):
     """

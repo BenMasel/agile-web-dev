@@ -59,7 +59,7 @@
         <span class="text-[13px] font-medium text-white/85">{{ unit.availability }}</span>
         <span class="text-xs text-white/55">{{ unit.availability_detail }}</span>
       </div>
-      {% for incompat in unit.incompatibilities %}
+      {% for incompat in unit.incompatibilities or [] %}
       <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
         <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Incompatibility</span>
         <span class="text-[13px] font-medium text-white/85">{{ incompat.code }}</span>
@@ -70,18 +70,64 @@
 
     {# ---- Prerequisites ---- #}
     <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex flex-col gap-2">
-      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Prerequisites</span>
-      <div class="flex gap-1.5 flex-wrap">
-        {% for prereq in unit.prerequisites %}
-        <span class="text-xs font-medium text-white/60 bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 cursor-pointer transition hover:bg-rc-red-muted hover:text-rc-red hover:border-rc-red/20">
-          {{ prereq }}
+      <div class="flex items-center justify-between">
+        <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Prerequisites</span>
+        {% if unit.corequisites %}
+        <span class="text-[11px] text-rc-text-faint">+ co-reqs below</span>
+        {% endif %}
+      </div>
+      {% set p = unit.prerequisites %}
+      {% if not p or (not p.all_of and not p.any_of and not p.external) %}
+        <span class="text-xs text-white/30 italic">None required</span>
+      {% else %}
+      <div class="flex gap-1.5 flex-wrap items-center">
+        {# External requirements (ATAR, bridging) — amber #}
+        {% for ext in p.external or [] %}
+        <span class="text-xs font-medium text-rc-amber bg-rc-amber-muted border border-rc-amber/15 rounded-md px-2.5 py-1">
+          {{ ext }}
         </span>
+        {% endfor %}
+        {# all_of — blue, link to unit page #}
+        {% for code in p.all_of or [] %}
+        <a href="/unit/{{ code }}"
+           class="text-xs font-medium text-rc-blue bg-rc-blue-muted border border-rc-blue/15 rounded-md px-2.5 py-1 transition hover:border-rc-blue/30">
+          {{ code }}
+        </a>
+        {% endfor %}
+        {# any_of — groups of alternatives, separated by "or" #}
+        {% for group in p.any_of or [] %}
+          {% if not loop.first or p.all_of or p.external %}<span class="text-[10px] text-white/25 px-0.5">+</span>{% endif %}
+          <span class="text-[10px] text-white/25 italic mr-0.5">one of:</span>
+          {% for code in group %}
+          <a href="/unit/{{ code }}"
+             class="text-xs font-medium text-white/55 bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 transition hover:bg-rc-red-muted hover:text-rc-red hover:border-rc-red/20">
+            {{ code }}
+          </a>
+          {% if not loop.last %}<span class="text-[10px] text-white/25">or</span>{% endif %}
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    {# ---- Co-requisites ---- #}
+    {% if unit.corequisites %}
+    <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex flex-col gap-2">
+      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Co-requisites</span>
+      <div class="flex gap-1.5 flex-wrap">
+        {% for code in unit.corequisites %}
+        <a href="/unit/{{ code }}"
+           class="text-xs font-medium text-rc-purple bg-rc-purple-muted border border-rc-purple/15 rounded-md px-2.5 py-1 transition hover:border-rc-purple/30">
+          {{ code }}
+        </a>
         {% endfor %}
       </div>
     </div>
+    {% endif %}
 
     {# ---- Assessment breakdown ---- #}
     {# Bar width scales relative to the highest-weight assessment. #}
+    {% if unit.assessments %}
     {% set max_weight = unit.assessments | map(attribute='weight') | max %}
     <div class="grid grid-cols-2 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
       {% for assessment in unit.assessments %}
@@ -97,8 +143,10 @@
       </div>
       {% endfor %}
     </div>
+    {% endif %}
 
     {# ---- Learning outcomes ---- #}
+    {% if unit.learning_outcomes %}
     <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex flex-col gap-1.5">
       <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Learning outcomes</span>
       {% for outcome in unit.learning_outcomes %}
@@ -108,6 +156,7 @@
       </div>
       {% endfor %}
     </div>
+    {% endif %}
 
     {# ---- Associated Clubs ---- #}
     {% if clubs %}
@@ -174,6 +223,7 @@
   </div>
 
   {# ========== COMMUNITY STATS CARD ========== #}
+  {% if unit.community %}
   {% set c = unit.community %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
 
@@ -274,6 +324,7 @@
       </button>
     </div>
   </div>
+  {% endif %}{# /community #}
 
 {% endblock %}
 
@@ -316,6 +367,7 @@
     updateBtn();
   })();
 </script>
+{% if unit.community %}
 <script>
   // Radar chart — values come from YAML via tojson
   (function () {
@@ -389,4 +441,5 @@
     }
   })();
 </script>
+{% endif %}{# /community radar #}
 {% endblock %}

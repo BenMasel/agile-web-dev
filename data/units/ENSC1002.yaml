@@ -16,9 +16,9 @@ incompatibilities:
     title: Engineering Materials
 
 prerequisites:
-  - Maths Methods ATAR
-  - Physics ATAR
-  - or bridging equivalents
+  external:
+    - "Maths Methods ATAR or MATH1721 Mathematics Foundations: Methods"
+    - "Physics ATAR or PHYS1030 Physics Bridging Unit"
 
 assessments:
   - name: Final exam

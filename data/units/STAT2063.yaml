@@ -1,0 +1,28 @@
+code: STAT2063
+title: Probabilistic Methods and their Applications
+level: 2
+credit_points: 6
+semester: 1
+faculty: Engineering
+school: Mathematics and Statistics
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Mathematics & Statistics
+availability: 2026 S1
+availability_detail: Feb – Jun
+
+incompatibilities:
+  - code: STAT2062
+    title: Fundamentals of Probability with Applications
+
+prerequisites:
+  all_of:
+    - MATH1011
+    - MATH1012
+
+learning_outcomes:
+  - Work with discrete and continuous probability distributions and their properties
+  - Apply multivariate distributions and conditional probability theory
+  - Understand random processes, wide-sense stationarity and power spectral density
+  - Use statistical computing to test probabilistic models and apply the Central Limit Theorem

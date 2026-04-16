@@ -1,0 +1,27 @@
+code: CITS2401
+title: Computer Analysis and Visualisation
+level: 2
+credit_points: 6
+semester: 12
+faculty: Engineering
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+availability: 2026 S1, S2
+availability_detail: Feb – Jun / Jul – Nov
+
+incompatibilities:
+  - code: CITS1401
+    title: Computational Thinking with Python
+
+prerequisites:
+  external:
+    - "Maths Methods ATAR or MATH1721 Mathematics Foundations: Methods"
+
+learning_outcomes:
+  - Implement computational models and data analysis workflows in Python
+  - Apply numerical methods and simulations to solve engineering problems
+  - Visualise data effectively using plotting libraries
+  - Evaluate model accuracy, limitations and uncertainty
