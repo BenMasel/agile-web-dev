@@ -98,7 +98,7 @@ def build_search_index():
             'faculty':       u.get('faculty', ''),
             'credit_points': u.get('credit_points', ''),
             'level':         u.get('level', ''),
-            'semester':      u.get('semester', ''),
+            'availability':  u.get('availability', ''),
             'url':           f'/unit/{u["code"]}',
         })
 

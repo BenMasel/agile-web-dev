@@ -2,15 +2,15 @@ code: ENSC1002
 title: Material behaviour from atoms to bridges
 level: 1
 credit_points: 6
-semester: 1
+availability: [1]
 faculty: Engineering
 school: Science & Engineering
 delivery: On-campus
 location: Crawley, Perth
 coordinator: Prof. A. Lee
 coordinator_dept: Materials Engineering
-availability: 2026 S1
-availability_detail: Feb - Jun
+offered: 2026 S1
+offered_detail: Feb - Jun
 source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ENSC1002"
 handbook_year: 2026
 last_verified: "2026-04-18"

@@ -2,15 +2,15 @@ code: CITS2005
 title: Object Oriented Programming
 level: 2
 credit_points: 6
-semester: 1
+availability: [1]
 faculty: Science
 school: Computer Science and Software Engineering
 delivery: On-campus
 location: Crawley, Perth
 coordinator: TBA
 coordinator_dept: School of Computing
-availability: 2026 S1
-availability_detail: Feb – Jun
+offered: 2026 S1
+offered_detail: Feb – Jun
 source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS2005"
 handbook_year: 2026
 last_verified: "2026-04-18"

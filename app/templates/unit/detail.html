@@ -31,12 +31,12 @@
       <div class="flex gap-1.5 flex-wrap">
         <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-red-muted text-rc-red">Level {{ unit.level }}</span>
         <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-blue-muted text-rc-blue">{{ unit.credit_points }} CP</span>
-        {% if unit.semester is iterable and unit.semester is not string and unit.semester is not number %}
-          {% for s in unit.semester %}
+        {% if unit.availability == 'year_long' %}
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-purple-muted text-rc-purple">Year-long</span>
+        {% elif unit.availability is sequence and unit.availability is not string %}
+          {% for s in unit.availability %}
           <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-amber-muted text-rc-amber">Sem {{ s }}</span>
           {% endfor %}
-        {% else %}
-          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-amber-muted text-rc-amber">Sem {{ unit.semester }}</span>
         {% endif %}
       </div>
     </div>
@@ -62,8 +62,8 @@
       </div>
       <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
         <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Availability</span>
-        <span class="text-[13px] font-medium text-white/85">{{ unit.availability }}</span>
-        <span class="text-xs text-white/55">{{ unit.availability_detail }}</span>
+        <span class="text-[13px] font-medium text-white/85">{{ unit.offered or '—' }}</span>
+        <span class="text-xs text-white/55">{{ unit.offered_detail }}</span>
       </div>
       {% for incompat in unit.incompatibilities or [] %}
       <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">

@@ -2,15 +2,15 @@ code: ELEC4404
 title: Signal Processing
 level: 4
 credit_points: 6
-semester: 1
+availability: [1]
 faculty: Engineering
 school: Electrical Engineering, Computing and Mathematical Sciences
 delivery: On-campus
 location: Crawley, Perth
 coordinator: TBA
 coordinator_dept: School of Electrical Engineering
-availability: 2026 S1
-availability_detail: Feb – Jun
+offered: 2026 S1
+offered_detail: Feb – Jun
 source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC4404"
 handbook_year: 2026
 last_verified: "2026-04-18"

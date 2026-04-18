@@ -4,6 +4,17 @@
 
 {% block content_width %}w-full max-w-[92rem]{% endblock %}
 
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<style>
+  .unit-draggable { cursor: grab; }
+  .unit-draggable:active { cursor: grabbing; }
+  .sortable-ghost { opacity: 0.2 !important; }
+  .sortable-chosen { cursor: grabbing !important; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  .sem-drop-active { border-color: rgba(108,160,240,0.4) !important; background: rgba(108,160,240,0.04) !important; }
+</style>
+{% endblock %}
+
 {% block content %}
 
 {# ========== CONFIG BAR ========== #}
@@ -18,6 +29,7 @@
       </svg>
     </div>
     <span class="text-sm font-semibold text-rc-text">Study Planner</span>
+    <span class="text-[9px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue leading-none">BETA</span>
   </div>
 
   <div class="w-px h-4 bg-rc-border shrink-0"></div>
@@ -134,17 +146,34 @@
       <span class="text-[11px] text-white/30">Shared</span>
     </div>
     <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-red"></div><span class="text-[11px] text-white/30">Prereqs missing</span></div>
-    <div class="ml-auto text-[11px] text-rc-text-faint">Click to mark complete · <span class="text-white/35">+ add unit</span> to place from pool · <span class="text-white/35">×</span> to remove</div>
+    <div class="flex items-center gap-1.5">
+      <div class="w-2 h-6 rounded-sm border border-dashed border-rc-border-light bg-rc-fill-subtle"></div>
+      <span class="text-[11px] text-white/30">Year-long</span>
+    </div>
+    <div class="ml-auto text-[11px] text-rc-text-faint">Click to mark complete · drag from tray below · <span class="text-white/35">×</span> to remove</div>
   </div>
 </div>
 
-{# ========== UNIT POOL ========== #}
-<div id="pool-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3">
-  <div class="flex items-center justify-between">
-    <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Remaining units</span>
-    <span id="pool-count" class="text-[11px] text-rc-text-faint"></span>
+{# ========== UNIT TRAY ========== #}
+<div id="tray-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3">
+  <div class="flex items-center gap-2">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="text-rc-text-tertiary">
+      <rect x="1.5" y="7.5" width="10" height="4" rx="1" stroke="currentColor" stroke-width="1.1"/>
+      <path d="M4 7.5V5a2.5 2.5 0 0 1 5 0v2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+    </svg>
+    <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Unit tray</span>
+    <span id="tray-count" class="text-[11px] text-rc-text-faint"></span>
+    <span class="text-[11px] text-white/20 ml-auto">drag units into semester slots above</span>
   </div>
-  <div id="unit-pool" class="flex flex-wrap gap-1.5"></div>
+  <div id="tray-available" class="flex flex-wrap gap-1.5 min-h-[2.5rem]"></div>
+  <div id="tray-locked-wrap" class="hidden flex-col gap-1.5">
+    <div class="flex items-center gap-2">
+      <div class="h-px flex-1 bg-rc-border-light"></div>
+      <span class="text-[10px] text-white/20 uppercase tracking-widest">prereqs not yet met</span>
+      <div class="h-px flex-1 bg-rc-border-light"></div>
+    </div>
+    <div id="tray-locked" class="flex flex-wrap gap-1.5"></div>
+  </div>
 </div>
 
 {# ========== UNIT PICKER MODAL ========== #}
@@ -263,12 +292,17 @@ function coreqsMet(code, targetKey) {
   return u.corequisites.every(c => resolve(c).some(x => before.includes(x) || inSem.includes(x)));
 }
 
+function isYearLong(code) {
+  return UNITS_DATA[code]?.availability === 'year_long';
+}
+
 function unitSemOk(code, sem) {
   const u = UNITS_DATA[code];
   if (!u) return true;
-  const s = u.semester;
-  if (!s || s === 'NS' || s === 12) return true;
-  return Number(s) === Number(sem);
+  const a = u.availability;
+  if (!a || a === 'year_long') return true;
+  if (Array.isArray(a)) return a.includes(Number(sem));
+  return true;
 }
 
 function getDeg(slug)          { return DEGREES_DATA.find(d => d.slug===slug) || null; }
@@ -320,7 +354,7 @@ function getCrossConflicts() {
 
 function isPlaced(code) { return Object.values(state.plan).some(a => a.includes(code)); }
 function isDone(code)   { return state.done.includes(code); }
-function semCP(k)       { return (state.plan[k]||[]).reduce((s,c) => s+(UNITS_DATA[c]?.credit_points||0),0); }
+function semCP(k)       { return (state.plan[k]||[]).filter(c=>!isYearLong(c)).reduce((s,c) => s+(UNITS_DATA[c]?.credit_points||0),0); }
 
 function semIsPast(k) {
   const {year,sem} = parseKey(k);
@@ -359,15 +393,16 @@ function render() {
   document.getElementById('empty-state').classList.toggle('hidden', has);
   document.getElementById('timeline-wrap').classList.toggle('hidden', !has);
   document.getElementById('timeline-wrap').classList.toggle('flex', has);
-  document.getElementById('pool-wrap').classList.toggle('hidden', !has);
+  document.getElementById('tray-wrap').classList.toggle('hidden', !has);
   document.getElementById('planner-stats').classList.toggle('hidden', !has);
   document.getElementById('planner-stats').classList.toggle('flex', has);
   if (!has) { document.getElementById('conflict-wrap').classList.add('hidden'); return; }
 
   renderConflicts();
   renderGrid();
-  renderPool();
+  renderTray();
   renderStats();
+  initSortables();
 }
 
 // ─── Conflicts ───────────────────────────────────────────
@@ -411,37 +446,125 @@ function renderConflicts() {
 function renderGrid() {
   const container = document.getElementById('semester-grid');
   container.innerHTML = '';
-  for (const key of allSemKeys()) {
-    const {year,sem} = parseKey(key);
-    const units  = state.plan[key] || [];
-    const cp     = semCP(key);
-    const isPast = semIsPast(key);
+  const keys = allSemKeys();
 
-    const col = document.createElement('div');
-    col.style.width = '13.5rem';
-    col.className = 'flex flex-col gap-1.5';
-
-    col.innerHTML = `<div class="text-[10px] uppercase tracking-widest font-medium px-0.5
-      ${isPast ? 'text-rc-text-faint' : 'text-white/40'}">
-      ${semLabel(year,sem)}<span class="normal-case tracking-normal font-normal ml-1 text-white/20">${cp>0?cp+' CP':''}</span>
-    </div>`;
-
-    const card = document.createElement('div');
-    card.className = `bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 min-h-[9rem]
-      ${isPast ? 'border-rc-border/50' : 'border-rc-border'}`;
-    card.dataset.semKey = key;
-
-    for (const code of units) card.appendChild(mkUnitCard(code, key));
-
-    const addBtn = document.createElement('button');
-    addBtn.className = 'mt-auto text-[11px] text-white/20 hover:text-white/50 border border-dashed border-white/10 hover:border-white/20 rounded-lg py-1.5 text-center transition cursor-pointer';
-    addBtn.textContent = '+ add unit';
-    addBtn.onclick = () => openPicker(key);
-    card.appendChild(addBtn);
-
-    col.appendChild(card);
-    container.appendChild(col);
+  // Group consecutive keys by calendar year
+  const yearGroups = [];
+  let i = 0;
+  while (i < keys.length) {
+    const { year: y0 } = parseKey(keys[i]);
+    const group = [keys[i]];
+    if (i + 1 < keys.length && parseKey(keys[i + 1]).year === y0) {
+      group.push(keys[i + 1]);
+      i += 2;
+    } else {
+      i += 1;
+    }
+    yearGroups.push(group);
   }
+
+  for (const yearKeys of yearGroups) {
+    const cluster = document.createElement('div');
+    cluster.className = 'flex flex-col gap-1.5 shrink-0';
+
+    // Collect year_long units from all semester keys in this calendar year
+    const yearLongCodes = [];
+    for (const k of yearKeys) {
+      for (const code of (state.plan[k] || [])) {
+        if (isYearLong(code) && !yearLongCodes.includes(code)) yearLongCodes.push(code);
+      }
+    }
+
+    // Semester columns (standard units only)
+    const semRow = document.createElement('div');
+    semRow.className = 'flex gap-3';
+
+    for (const key of yearKeys) {
+      const { year, sem } = parseKey(key);
+      const units  = (state.plan[key] || []).filter(c => !isYearLong(c));
+      const cp     = semCP(key);
+      const isPast = semIsPast(key);
+
+      const col = document.createElement('div');
+      col.style.width = '13.5rem';
+      col.className = 'flex flex-col gap-1.5';
+
+      col.innerHTML = `<div class="text-[10px] uppercase tracking-widest font-medium px-0.5
+        ${isPast ? 'text-rc-text-faint' : 'text-white/40'}">
+        ${semLabel(year, sem)}<span class="normal-case tracking-normal font-normal ml-1 text-white/20">${cp > 0 ? cp + ' CP' : ''}</span>
+      </div>`;
+
+      const card = document.createElement('div');
+      card.className = `sem-card bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 min-h-[9rem]
+        ${isPast ? 'border-rc-border/50' : 'border-rc-border'}`;
+      card.dataset.semKey = key;
+
+      for (const code of units) card.appendChild(mkUnitCard(code, key));
+
+      const addBtn = document.createElement('button');
+      addBtn.className = 'no-drag mt-auto text-[11px] text-white/20 hover:text-white/50 border border-dashed border-white/10 hover:border-white/20 rounded-lg py-1.5 text-center transition cursor-pointer';
+      addBtn.textContent = '+ add unit';
+      addBtn.onclick = () => openPicker(key);
+      card.appendChild(addBtn);
+
+      col.appendChild(card);
+      semRow.appendChild(col);
+    }
+
+    cluster.appendChild(semRow);
+
+    // Year-long strip — only shown when units are present
+    if (yearLongCodes.length > 0) {
+      const strip = document.createElement('div');
+      strip.className = 'flex items-center gap-2 flex-wrap rounded-lg border border-dashed border-rc-border-light bg-rc-fill-subtle px-3 py-2';
+
+      const lbl = document.createElement('span');
+      lbl.className = 'text-[9px] uppercase tracking-widest text-white/20 shrink-0';
+      lbl.textContent = 'Year-long';
+      strip.appendChild(lbl);
+
+      const div = document.createElement('div');
+      div.className = 'w-px h-3 bg-rc-border-light shrink-0';
+      strip.appendChild(div);
+
+      for (const code of yearLongCodes) strip.appendChild(mkYearLongChip(code, yearKeys[0]));
+      cluster.appendChild(strip);
+    }
+
+    container.appendChild(cluster);
+  }
+}
+
+function mkYearLongChip(code, key) {
+  const u    = UNITS_DATA[code];
+  const done = isDone(code);
+  const ok   = prereqsMet(code, key);
+  const { dot } = dotStyle(code, key);
+
+  const chip = document.createElement('div');
+  chip.className = `group flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-md border cursor-pointer transition select-none
+    ${done ? 'border-[rgba(46,204,113,0.2)] bg-[rgba(46,204,113,0.06)] text-rc-green'
+           : ok  ? 'border-rc-border text-white/50 hover:bg-rc-fill hover:text-white/70'
+                 : 'border-[rgba(255,99,99,0.2)] bg-rc-red-muted text-white/40'}`;
+  chip.title = done ? 'Click to mark incomplete' : ok ? 'Click to mark complete' : `Prereqs not met`;
+
+  chip.innerHTML = `
+    ${dot === 'dot-shared'
+      ? `<div class="w-1 h-1 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
+      : `<div class="w-1 h-1 rounded-full ${dot} shrink-0"></div>`}
+    ${code}
+    <button class="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer text-[12px] leading-none ml-0.5"
+            title="Remove" onclick="event.stopPropagation();removeUnitAnyKey('${code}')">×</button>`;
+
+  chip.addEventListener('click', () => toggleDone(code));
+  return chip;
+}
+
+function removeUnitAnyKey(code) {
+  for (const k of Object.keys(state.plan)) {
+    state.plan[k] = state.plan[k].filter(c => c !== code);
+  }
+  save(); render();
 }
 
 function dotStyle(code, semKey) {
@@ -478,7 +601,8 @@ function mkUnitCard(code, key) {
   }).join('');
 
   const el = document.createElement('div');
-  el.className = `group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${card} cursor-pointer transition select-none hover:brightness-110`;
+  el.className = `unit-draggable group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${card} transition select-none hover:brightness-110`;
+  el.dataset.code = code;
   el.title = tooltip;
 
   el.innerHTML = `
@@ -502,50 +626,92 @@ function mkUnitCard(code, key) {
   return el;
 }
 
-// ─── Pool ─────────────────────────────────────────────────
-function renderPool() {
-  const container = document.getElementById('unit-pool');
-  const allCodes  = allRequiredCodes();
-  const placed    = Object.values(state.plan).flat();
-  const unplaced  = allCodes.filter(c => !placed.includes(c) && !isDone(c));
+// ─── Tray ─────────────────────────────────────────────────
+function renderTray() {
+  const wrap      = document.getElementById('tray-wrap');
+  const avail     = document.getElementById('tray-available');
+  const locked    = document.getElementById('tray-locked');
+  const lockedWrap = document.getElementById('tray-locked-wrap');
+  const countEl   = document.getElementById('tray-count');
 
-  document.getElementById('pool-count').textContent =
-    unplaced.length === 0 ? 'All units placed!' : `${unplaced.length} remaining`;
-  container.innerHTML = '';
+  const allCodes = allRequiredCodes();
+  const placed   = Object.values(state.plan).flat();
+  const unplaced = allCodes.filter(c => !placed.includes(c) && !isDone(c));
+
+  wrap.classList.toggle('hidden', false);
+  wrap.classList.add('flex');
+  avail.innerHTML = '';
+  locked.innerHTML = '';
 
   if (!unplaced.length) {
-    container.innerHTML = '<span class="text-xs text-rc-green">All degree units are placed in your plan.</span>';
+    countEl.textContent = 'All placed!';
+    lockedWrap.classList.add('hidden');
+    lockedWrap.classList.remove('flex');
+    avail.innerHTML = '<span class="text-xs text-rc-green">All degree units are placed in your plan.</span>';
     return;
   }
 
+  countEl.textContent = `${unplaced.length} remaining`;
   const allPlaced = [...state.done, ...placed];
+  let hasLocked = false;
+
   for (const code of unplaced) {
-    const u = UNITS_DATA[code];
-    const couldPlace = prereqsMetGeneral(code, allPlaced);
-    const degs = unitDegrees(code);
-    const shared = degs.length > 1;
-
-    let cls, dotCls;
-    if (couldPlace) {
-      if (shared)          { cls = 'border-[rgba(139,172,240,0.3)] bg-[rgba(139,172,240,0.06)] text-white/60 hover:border-white/20'; dotCls = 'dot-shared'; }
-      else if (degs[0] === state.degrees[1]) { cls = 'border-[rgba(167,139,250,0.3)] bg-rc-purple-muted text-rc-purple hover:border-rc-purple/50'; dotCls = 'bg-rc-purple'; }
-      else                 { cls = 'border-[rgba(108,160,240,0.3)] bg-rc-blue-muted   text-rc-blue   hover:border-rc-blue/50';   dotCls = 'bg-rc-blue'; }
+    const ready = prereqsMetGeneral(code, allPlaced);
+    const card  = mkTrayCard(code, ready);
+    if (ready) {
+      avail.appendChild(card);
     } else {
-      cls = 'border-rc-border text-white/30 hover:border-white/15 hover:text-white/50'; dotCls = 'bg-white/15';
+      locked.appendChild(card);
+      hasLocked = true;
     }
-
-    const chip = document.createElement('button');
-    chip.className = `flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-md border ${cls} transition cursor-pointer`;
-    chip.title = u ? u.title : code;
-    chip.dataset.code = code;
-
-    const dotHtml = dotCls === 'dot-shared'
-      ? `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
-      : `<div class="w-1.5 h-1.5 rounded-full ${dotCls} shrink-0"></div>`;
-    chip.innerHTML = `${dotHtml}${code}`;
-    chip.onclick = () => openPicker(findBestSem(code) || allSemKeys()[0], code);
-    container.appendChild(chip);
   }
+
+  if (hasLocked) { lockedWrap.classList.remove('hidden'); lockedWrap.classList.add('flex'); }
+  else           { lockedWrap.classList.add('hidden');    lockedWrap.classList.remove('flex'); }
+}
+
+function mkTrayCard(code, ready = true) {
+  const u    = UNITS_DATA[code];
+  const degs = unitDegrees(code);
+  const shared = degs.length > 1;
+
+  let dotCls, border, text;
+  if (!ready) {
+    dotCls = 'bg-white/15'; border = 'border-rc-border/50'; text = 'text-white/30';
+  } else if (shared) {
+    dotCls = 'dot-shared'; border = 'border-[rgba(139,172,240,0.25)] bg-[rgba(139,172,240,0.05)]'; text = 'text-white/65';
+  } else if (degs[0] === state.degrees[1]) {
+    dotCls = 'bg-rc-purple'; border = 'border-[rgba(167,139,250,0.25)] bg-rc-purple-muted'; text = 'text-rc-purple';
+  } else {
+    dotCls = 'bg-rc-blue'; border = 'border-[rgba(108,160,240,0.25)] bg-rc-blue-muted'; text = 'text-rc-blue';
+  }
+
+  const badges = degs.map(s => {
+    const i = state.degrees.indexOf(s);
+    const cl = i === 0 ? 'text-rc-blue bg-rc-blue-muted' : 'text-rc-purple bg-rc-purple-muted';
+    return `<span class="text-[8px] font-bold ${cl} px-1 py-[1px] rounded leading-none">D${i+1}</span>`;
+  }).join('');
+
+  const dotHtml = dotCls === 'dot-shared'
+    ? `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
+    : `<div class="w-1.5 h-1.5 rounded-full ${dotCls} shrink-0"></div>`;
+
+  const el = document.createElement('div');
+  el.dataset.code = code;
+  el.className = `unit-draggable flex items-center gap-2 rounded-lg px-2.5 py-2 border ${border} transition select-none hover:brightness-110`;
+  el.style.width = '13.5rem';
+  el.title = ready ? (u?.title || code) : `Locked — prereqs not yet met`;
+  el.innerHTML = `
+    ${dotHtml}
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-1">
+        <span class="text-[11px] font-medium ${text} leading-tight">${code}</span>
+        ${badges}
+      </div>
+      <div class="text-[9px] text-white/30 truncate leading-tight">${u?.title || '—'}</div>
+    </div>
+    <span class="text-[9px] text-white/20 shrink-0">${u?.credit_points || 0}CP</span>`;
+  return el;
 }
 
 function prereqsMetGeneral(code, list) {
@@ -569,6 +735,71 @@ function findBestSem(code) {
     if (unitSemOk(code,sem) && prereqsMet(code,k)) return k;
   }
   return null;
+}
+
+// ─── Sortable drag-and-drop ───────────────────────────────
+function onDragEnd() {
+  const newPlan = {};
+
+  // Preserve year_long placements (they live in the strip, not sem-cards)
+  for (const [k, codes] of Object.entries(state.plan)) {
+    for (const code of codes) {
+      if (isYearLong(code)) {
+        if (!newPlan[k]) newPlan[k] = [];
+        newPlan[k].push(code);
+      }
+    }
+  }
+
+  // Sync standard units from DOM sem-cards
+  document.querySelectorAll('.sem-card').forEach(card => {
+    const key = card.dataset.semKey;
+    if (!newPlan[key]) newPlan[key] = [];
+    card.querySelectorAll(':scope > .unit-draggable[data-code]').forEach(el => {
+      newPlan[key].push(el.dataset.code);
+    });
+  });
+
+  state.plan = newPlan;
+  save();
+  render();
+}
+
+function initSortables() {
+  const sharedGroup = {
+    name: 'planner',
+    pull: true,
+    put: (to, from, el) => !el.classList.contains('no-drag'),
+  };
+
+  // Each semester column card
+  document.querySelectorAll('.sem-card').forEach(card => {
+    Sortable.create(card, {
+      group: sharedGroup,
+      animation: 120,
+      filter: '.no-drag',
+      preventOnFilter: false,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      onAdd(evt) { card.classList.remove('sem-drop-active'); },
+      onDragOver() { card.classList.add('sem-drop-active'); },
+      onDragLeave() { card.classList.remove('sem-drop-active'); },
+      onEnd: onDragEnd,
+    });
+  });
+
+  // Tray — both sections are drop targets and drag sources
+  ['tray-available', 'tray-locked'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    Sortable.create(el, {
+      group: sharedGroup,
+      animation: 120,
+      ghostClass: 'sortable-ghost',
+      chosenClass: 'sortable-chosen',
+      onEnd: onDragEnd,
+    });
+  });
 }
 
 // ─── Stats ────────────────────────────────────────────────
@@ -668,7 +899,10 @@ function buildPickerList(query) {
       for (const c of (p.all_of||[])) if (!resolve(c).some(x=>before.includes(x))) missing.push(c);
       for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>before.includes(x))) missing.push(`one of [${g.join('/')}]`);
     }
-    if (!semOk) missing.push(`only available S${u?.semester}`);
+    if (!semOk) {
+      const a = u?.availability;
+      missing.push(Array.isArray(a) ? `only available S${a.join('/')}` : 'non-standard period');
+    }
 
     const degs = unitDegrees(code);
     const badgeHtml = degs.map(s => {
