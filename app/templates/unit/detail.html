@@ -31,7 +31,13 @@
       <div class="flex gap-1.5 flex-wrap">
         <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-red-muted text-rc-red">Level {{ unit.level }}</span>
         <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-blue-muted text-rc-blue">{{ unit.credit_points }} CP</span>
-        <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-amber-muted text-rc-amber">Sem {{ unit.semester }}</span>
+        {% if unit.semester is iterable and unit.semester is not string and unit.semester is not number %}
+          {% for s in unit.semester %}
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-amber-muted text-rc-amber">Sem {{ s }}</span>
+          {% endfor %}
+        {% else %}
+          <span class="text-[11px] font-medium px-2 py-[3px] rounded-[5px] bg-rc-amber-muted text-rc-amber">Sem {{ unit.semester }}</span>
+        {% endif %}
       </div>
     </div>
 

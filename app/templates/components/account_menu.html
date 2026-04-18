@@ -1,0 +1,83 @@
+{#
+  Account menu component — drop-down triggered by #account-btn.
+  Include this once in a layout that contains an element with id="account-btn".
+  The menu positions itself relative to that button via JS.
+  Usage: {% include "components/account_menu.html" %}
+#}
+
+<div id="account-menu"
+     class="hidden fixed z-[200] w-44 rounded-[10px] bg-rc-surface border border-rc-border shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col py-1"
+     role="menu">
+
+  {# ---- Planner ---- #}
+  <a href="{{ url_for('main.planner') }}"
+     role="menuitem"
+     class="flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-rc-fill hover:text-white/85 transition">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="shrink-0 text-white/30">
+      <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.1"/>
+      <path d="M3.5 5l1.5 1.5L8.5 3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3.5 8.5h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+    </svg>
+    Planner
+  </a>
+
+  <div class="h-px bg-rc-border-light mx-2 my-1"></div>
+
+  {# ---- Settings ---- #}
+  <a href="#"
+     role="menuitem"
+     class="flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-rc-fill hover:text-white/85 transition">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="shrink-0 text-white/30">
+      <circle cx="6.5" cy="6.5" r="1.75" stroke="currentColor" stroke-width="1.1"/>
+      <path d="M6.5 1.5v1M6.5 10.5v1M1.5 6.5h1M10.5 6.5h1M3 3l.7.7M9.3 9.3l.7.7M9.3 3.7L10 3M3 9.3l-.7.7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+    </svg>
+    Settings
+  </a>
+
+</div>
+
+<script>
+(function () {
+  const btn  = document.getElementById('account-btn');
+  const menu = document.getElementById('account-menu');
+  if (!btn || !menu) return;
+
+  function place() {
+    const r = btn.getBoundingClientRect();
+    menu.style.top   = (r.bottom + 6) + 'px';
+    menu.style.right = (window.innerWidth - r.right) + 'px';
+  }
+
+  function open() {
+    place();
+    menu.classList.remove('hidden');
+    menu.classList.add('flex');
+    btn.setAttribute('aria-expanded', 'true');
+  }
+
+  function close() {
+    menu.classList.add('hidden');
+    menu.classList.remove('flex');
+    btn.setAttribute('aria-expanded', 'false');
+  }
+
+  function isOpen() {
+    return !menu.classList.contains('hidden');
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    isOpen() ? close() : open();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (isOpen() && !menu.contains(e.target)) close();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOpen()) close();
+  });
+
+  window.addEventListener('resize', () => { if (isOpen()) place(); });
+})();
+</script>

@@ -2,7 +2,7 @@ code: PHYS1001
 title: Physics for Scientists and Engineers
 level: 1
 credit_points: 6
-semester: 12
+semester: [1, 2]
 faculty: Engineering
 school: Physics, Mathematics and Computing
 delivery: On-campus
