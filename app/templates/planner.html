@@ -96,9 +96,14 @@
     <span><span id="stat-rem" class="text-rc-amber font-medium">0</span> CP left</span>
   </div>
 
+  <button id="auto-btn"
+          class="text-[11px] text-white/50 hover:text-white/80 bg-rc-fill border border-rc-border transition px-3 py-1 rounded-md hover:border-white/15 cursor-pointer">
+    Auto
+  </button>
+
   <button id="reset-btn"
-          class="text-[11px] text-white/30 hover:text-rc-red transition px-2 py-1 rounded-md hover:bg-rc-red-muted cursor-pointer">
-    Reset
+          class="text-[11px] font-medium text-rc-red/70 hover:text-rc-red bg-rc-red-muted border border-rc-red/15 hover:border-rc-red/30 transition px-3 py-1 rounded-md cursor-pointer">
+    Clean slate
   </button>
 </div>
 
@@ -150,7 +155,7 @@
       <div class="w-2 h-6 rounded-sm border border-dashed border-rc-border-light bg-rc-fill-subtle"></div>
       <span class="text-[11px] text-white/30">Year-long</span>
     </div>
-    <div class="ml-auto text-[11px] text-rc-text-faint">Click to mark complete · drag from tray below · <span class="text-white/35">×</span> to remove</div>
+    <div class="ml-auto text-[11px] text-rc-text-faint">Right-click to mark complete · drag from tray below · <span class="text-white/35">×</span> to remove</div>
   </div>
 </div>
 
@@ -174,6 +179,14 @@
     </div>
     <div id="tray-locked" class="flex flex-wrap gap-1.5"></div>
   </div>
+</div>
+
+{# ========== PREREQ TOOLTIP ========== #}
+<div id="planner-tooltip"
+     class="hidden fixed z-[300] pointer-events-none flex-col gap-2 bg-rc-surface border border-rc-border rounded-[8px] shadow-[0_8px_28px_rgba(0,0,0,0.55)] p-2.5"
+     style="max-width:200px">
+  <div class="text-[9px] uppercase tracking-wider text-rc-text-tertiary">Missing prerequisites</div>
+  <div id="planner-tooltip-list" class="flex flex-wrap gap-1"></div>
 </div>
 
 {# ========== UNIT PICKER MODAL ========== #}
@@ -203,6 +216,44 @@ const UNITS_DATA   = {{ units   | tojson }};
 const STORAGE_KEY  = 'stUwa_planner_v3';
 
 // ─────────────────────────────────────────────────────────
+// TOOLTIP
+// ─────────────────────────────────────────────────────────
+const _tt     = document.getElementById('planner-tooltip');
+const _ttList = document.getElementById('planner-tooltip-list');
+
+function showTooltip(anchor, missingCodes) {
+  if (!missingCodes.length) return;
+
+  _ttList.innerHTML = missingCodes.map(c =>
+    `<span class="text-[10px] font-medium text-rc-blue bg-rc-blue-muted border border-[rgba(108,160,240,0.15)] rounded px-1.5 py-[2px]">${c}</span>`
+  ).join('');
+
+  // Show first so we can measure it
+  _tt.classList.remove('hidden');
+  _tt.classList.add('flex');
+
+  const ar = anchor.getBoundingClientRect();
+  const tw = _tt.offsetWidth;
+  const th = _tt.offsetHeight;
+
+  // Prefer above; fall back to below if clipped
+  const topAbove = ar.top - th - 8;
+  const top = topAbove >= 4 ? topAbove : ar.bottom + 8;
+
+  // Centre horizontally over the anchor, clamped to viewport
+  let left = ar.left + ar.width / 2 - tw / 2;
+  left = Math.max(6, Math.min(left, window.innerWidth - tw - 6));
+
+  _tt.style.top  = top  + 'px';
+  _tt.style.left = left + 'px';
+}
+
+function hideTooltip() {
+  _tt.classList.add('hidden');
+  _tt.classList.remove('flex');
+}
+
+// ─────────────────────────────────────────────────────────
 // STATE
 // ─────────────────────────────────────────────────────────
 let state = {
@@ -210,7 +261,7 @@ let state = {
   startYear: 2024,
   startSem: 1,
   plan: {},           // { "2024-1": ["CODE", …] }
-  done: [],           // unit codes marked completed
+  done: [],           // unit codes marked completed — immovable, persist through degree changes
   substitutions: {},  // { "CITS1401": "CITS2401" } — treat key as if code is value
 };
 let pickerTargetSem = null;
@@ -463,9 +514,19 @@ function renderGrid() {
     yearGroups.push(group);
   }
 
-  for (const yearKeys of yearGroups) {
+  for (const [yi, yearKeys] of yearGroups.entries()) {
+    const { year: calYear } = parseKey(yearKeys[0]);
     const cluster = document.createElement('div');
     cluster.className = 'flex flex-col gap-1.5 shrink-0';
+    cluster.style.width = '15rem';
+
+    // Year header
+    const yearHdr = document.createElement('div');
+    yearHdr.className = 'flex items-baseline gap-1.5 px-0.5';
+    yearHdr.innerHTML = `
+      <span class="text-[10px] uppercase tracking-widest font-semibold text-white/50">Year ${yi + 1}</span>
+      <span class="text-[10px] text-white/20 normal-case tracking-normal font-normal">${calYear}</span>`;
+    cluster.appendChild(yearHdr);
 
     // Collect year_long units from all semester keys in this calendar year
     const yearLongCodes = [];
@@ -475,27 +536,20 @@ function renderGrid() {
       }
     }
 
-    // Semester columns (standard units only)
-    const semRow = document.createElement('div');
-    semRow.className = 'flex gap-3';
-
+    // Semester sections stacked vertically
     for (const key of yearKeys) {
       const { year, sem } = parseKey(key);
       const units  = (state.plan[key] || []).filter(c => !isYearLong(c));
       const cp     = semCP(key);
       const isPast = semIsPast(key);
 
-      const col = document.createElement('div');
-      col.style.width = '13.5rem';
-      col.className = 'flex flex-col gap-1.5';
-
-      col.innerHTML = `<div class="text-[10px] uppercase tracking-widest font-medium px-0.5
-        ${isPast ? 'text-rc-text-faint' : 'text-white/40'}">
-        ${semLabel(year, sem)}<span class="normal-case tracking-normal font-normal ml-1 text-white/20">${cp > 0 ? cp + ' CP' : ''}</span>
-      </div>`;
+      const semLbl = document.createElement('div');
+      semLbl.className = `text-[9px] uppercase tracking-widest font-medium px-0.5 ${isPast ? 'text-rc-text-faint' : 'text-white/30'}`;
+      semLbl.innerHTML = `Sem ${sem}<span class="normal-case tracking-normal font-normal ml-1 text-white/20">${cp > 0 ? cp + ' CP' : ''}</span>`;
+      cluster.appendChild(semLbl);
 
       const card = document.createElement('div');
-      card.className = `sem-card bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 min-h-[9rem]
+      card.className = `sem-card bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 min-h-[8rem]
         ${isPast ? 'border-rc-border/50' : 'border-rc-border'}`;
       card.dataset.semKey = key;
 
@@ -507,11 +561,8 @@ function renderGrid() {
       addBtn.onclick = () => openPicker(key);
       card.appendChild(addBtn);
 
-      col.appendChild(card);
-      semRow.appendChild(col);
+      cluster.appendChild(card);
     }
-
-    cluster.appendChild(semRow);
 
     // Year-long strip — only shown when units are present
     if (yearLongCodes.length > 0) {
@@ -542,21 +593,31 @@ function mkYearLongChip(code, key) {
   const { dot } = dotStyle(code, key);
 
   const chip = document.createElement('div');
-  chip.className = `group flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-md border cursor-pointer transition select-none
-    ${done ? 'border-[rgba(46,204,113,0.2)] bg-[rgba(46,204,113,0.06)] text-rc-green'
-           : ok  ? 'border-rc-border text-white/50 hover:bg-rc-fill hover:text-white/70'
-                 : 'border-[rgba(255,99,99,0.2)] bg-rc-red-muted text-white/40'}`;
-  chip.title = done ? 'Click to mark incomplete' : ok ? 'Click to mark complete' : `Prereqs not met`;
+  chip.className = `group flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-md border transition select-none
+    ${done ? 'border-rc-border/40 text-white/30 opacity-50 cursor-default'
+           : ok  ? 'border-rc-border text-white/50 hover:bg-rc-fill hover:text-white/70 cursor-pointer'
+                 : 'border-[rgba(255,99,99,0.2)] bg-rc-red-muted text-white/40 cursor-pointer'}`;
 
   chip.innerHTML = `
     ${dot === 'dot-shared'
       ? `<div class="w-1 h-1 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
       : `<div class="w-1 h-1 rounded-full ${dot} shrink-0"></div>`}
     ${code}
-    <button class="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer text-[12px] leading-none ml-0.5"
-            title="Remove" onclick="event.stopPropagation();removeUnitAnyKey('${code}')">×</button>`;
+    ${done ? '' : `<button class="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer text-[12px] leading-none ml-0.5"
+            title="Remove" onclick="event.stopPropagation();removeUnitAnyKey('${code}')">×</button>`}`;
 
-  chip.addEventListener('click', () => toggleDone(code));
+  chip.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const isDoneNow = isDone(code);
+    ContextMenu.open(e.clientX, e.clientY, [
+      { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
+      { label: 'Slot in…', submenu: buildYearLongSlotSubmenu(code) },
+      { separator: true },
+      { label: isDoneNow ? 'Mark incomplete' : 'Mark complete', action: () => toggleDone(code) },
+      ...(isDoneNow ? [] : [{ separator: true }, { label: 'Remove from slot', action: () => removeUnitAnyKey(code) }]),
+    ]);
+  });
+
   return chip;
 }
 
@@ -570,7 +631,7 @@ function removeUnitAnyKey(code) {
 function dotStyle(code, semKey) {
   const done = isDone(code);
   const ok   = prereqsMet(code, semKey) && coreqsMet(code, semKey);
-  if (done) return { dot: 'bg-rc-green', card: 'border-[rgba(46,204,113,0.18)] bg-[rgba(46,204,113,0.05)]' };
+  if (done) return { dot: 'bg-rc-green', card: 'border-rc-border/40' };
   if (!ok)  return { dot: 'bg-rc-red',   card: 'border-[rgba(255,99,99,0.18)]  bg-rc-red-muted' };
   if (isShared(code)) return { dot: 'dot-shared', card: 'border-[rgba(139,172,240,0.22)]' };
   const degs = unitDegrees(code);
@@ -579,7 +640,7 @@ function dotStyle(code, semKey) {
 }
 
 function mkUnitCard(code, key) {
-  const u   = UNITS_DATA[code];
+  const u    = UNITS_DATA[code];
   const {dot, card} = dotStyle(code, key);
   const done = isDone(code);
 
@@ -590,7 +651,6 @@ function mkUnitCard(code, key) {
     for (const c of (p.all_of||[])) if (!resolve(c).some(x=>before.includes(x))) missingPrereqs.push(c);
     for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>before.includes(x))) missingPrereqs.push(`one of [${g.join('/')}]`);
   }
-  const tooltip = missingPrereqs.length ? `Missing: ${missingPrereqs.join(', ')}` : done ? 'Click to mark incomplete' : 'Click to mark complete';
 
   // Degree badge(s)
   const degs = unitDegrees(code);
@@ -601,9 +661,14 @@ function mkUnitCard(code, key) {
   }).join('');
 
   const el = document.createElement('div');
-  el.className = `unit-draggable group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${card} transition select-none hover:brightness-110`;
+  // Done units get unit-done class (blocks drag) and reduced opacity (historical)
+  el.className = `unit-draggable group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${card} transition select-none${done ? ' unit-done opacity-50 cursor-default' : ' hover:brightness-110'}`;
   el.dataset.code = code;
-  el.title = tooltip;
+
+  if (missingPrereqs.length && !done) {
+    el.addEventListener('mouseenter', () => showTooltip(el, missingPrereqs));
+    el.addEventListener('mouseleave', hideTooltip);
+  }
 
   el.innerHTML = `
     ${dot === 'dot-shared'
@@ -611,18 +676,29 @@ function mkUnitCard(code, key) {
       : `<div class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></div>`}
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-1">
-        <span class="text-[11px] font-medium ${done?'text-rc-green':'text-white/80'} leading-tight">${code}</span>
+        <span class="text-[11px] font-medium text-white/80 leading-tight">${code}</span>
         ${badges}
       </div>
       <div class="text-[9px] text-white/30 truncate leading-tight">${u?.title||'—'}</div>
     </div>
     <div class="flex items-center gap-0.5 shrink-0">
       <span class="text-[9px] text-white/20">${u?.credit_points||0}CP</span>
-      <button class="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer px-0.5 text-[13px] leading-none"
-              title="Remove" onclick="event.stopPropagation();removeUnit('${code}','${key}')">×</button>
+      ${done ? '' : `<button class="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer px-0.5 text-[13px] leading-none"
+              title="Remove" onclick="event.stopPropagation();removeUnit('${code}','${key}')">×</button>`}
     </div>`;
 
-  el.addEventListener('click', () => toggleDone(code));
+  el.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const isDoneNow = isDone(code);
+    ContextMenu.open(e.clientX, e.clientY, [
+      { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
+      { label: 'Slot in…', submenu: buildSlotSubmenu(code) },
+      { separator: true },
+      { label: isDoneNow ? 'Mark incomplete' : 'Mark complete', action: () => toggleDone(code) },
+      ...(isDoneNow ? [] : [{ separator: true }, { label: 'Remove from slot', action: () => removeUnit(code, key) }]),
+    ]);
+  });
+
   return el;
 }
 
@@ -699,8 +775,21 @@ function mkTrayCard(code, ready = true) {
   const el = document.createElement('div');
   el.dataset.code = code;
   el.className = `unit-draggable flex items-center gap-2 rounded-lg px-2.5 py-2 border ${border} transition select-none hover:brightness-110`;
-  el.style.width = '13.5rem';
-  el.title = ready ? (u?.title || code) : `Locked — prereqs not yet met`;
+  el.style.width = '15rem';
+
+  if (!ready) {
+    const missing = [];
+    const p = UNITS_DATA[code]?.prerequisites;
+    if (p) {
+      const have = [...state.done, ...Object.values(state.plan).flat()];
+      for (const c of (p.all_of||[])) if (!resolve(c).some(x=>have.includes(x))) missing.push(c);
+      for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>have.includes(x))) missing.push(`one of [${g.join('/')}]`);
+    }
+    if (missing.length) {
+      el.addEventListener('mouseenter', () => showTooltip(el, missing));
+      el.addEventListener('mouseleave', hideTooltip);
+    }
+  }
   el.innerHTML = `
     ${dotHtml}
     <div class="flex-1 min-w-0">
@@ -711,6 +800,15 @@ function mkTrayCard(code, ready = true) {
       <div class="text-[9px] text-white/30 truncate leading-tight">${u?.title || '—'}</div>
     </div>
     <span class="text-[9px] text-white/20 shrink-0">${u?.credit_points || 0}CP</span>`;
+
+  el.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    ContextMenu.open(e.clientX, e.clientY, [
+      { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
+      { label: 'Slot in…', submenu: buildSlotSubmenu(code) },
+    ]);
+  });
+
   return el;
 }
 
@@ -735,6 +833,63 @@ function findBestSem(code) {
     if (unitSemOk(code,sem) && prereqsMet(code,k)) return k;
   }
   return null;
+}
+
+function moveToSlot(code, targetKey) {
+  for (const k of Object.keys(state.plan)) {
+    state.plan[k] = (state.plan[k] || []).filter(c => c !== code);
+  }
+  if (!state.plan[targetKey]) state.plan[targetKey] = [];
+  if (!state.plan[targetKey].includes(code)) state.plan[targetKey].push(code);
+  save(); render();
+}
+
+function buildSlotSubmenu(code) {
+  const keys       = allSemKeys();
+  const currentKey = keys.find(k => (state.plan[k] || []).includes(code));
+  const items      = [];
+
+  const years = {};
+  for (const k of keys) {
+    const { year, sem } = parseKey(k);
+    if (!years[year]) years[year] = [];
+    years[year].push({ k, sem });
+  }
+
+  let first = true;
+  for (const [year, sems] of Object.entries(years)) {
+    if (!first) items.push({ separator: true });
+    first = false;
+    items.push({ header: true, label: String(year) });
+    for (const { k, sem } of sems) {
+      const isCurrent = k === currentKey;
+      const semAvail  = unitSemOk(code, sem);
+      items.push({
+        label:    `Sem ${sem}`,
+        checked:  isCurrent,
+        disabled: !semAvail && !isCurrent,
+        action:   isCurrent ? null : () => moveToSlot(code, k),
+      });
+    }
+  }
+  return items;
+}
+
+function buildYearLongSlotSubmenu(code) {
+  const keys = allSemKeys();
+  const yearEntries = [];
+  const seen = new Set();
+  for (const k of keys) {
+    const { year } = parseKey(k);
+    if (!seen.has(year)) { seen.add(year); yearEntries.push({ year, k }); }
+  }
+  const currentKey  = keys.find(k => (state.plan[k] || []).includes(code));
+  const currentYear = currentKey ? parseKey(currentKey).year : null;
+  return yearEntries.map(({ year, k }, i) => ({
+    label:   `Year ${i + 1} · ${year}`,
+    checked: year === currentYear,
+    action:  year === currentYear ? null : () => moveToSlot(code, k),
+  }));
 }
 
 // ─── Sortable drag-and-drop ───────────────────────────────
@@ -777,11 +932,12 @@ function initSortables() {
     Sortable.create(card, {
       group: sharedGroup,
       animation: 120,
-      filter: '.no-drag',
+      filter: '.no-drag, .unit-done',
       preventOnFilter: false,
       ghostClass: 'sortable-ghost',
       chosenClass: 'sortable-chosen',
-      onAdd(evt) { card.classList.remove('sem-drop-active'); },
+      onStart()  { hideTooltip(); card.classList.remove('sem-drop-active'); },
+      onAdd()    { card.classList.remove('sem-drop-active'); },
       onDragOver() { card.classList.add('sem-drop-active'); },
       onDragLeave() { card.classList.remove('sem-drop-active'); },
       onEnd: onDragEnd,
@@ -962,26 +1118,41 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyDegrees(resetPlan) {
     const d1 = d1Sel.value, d2 = d2Sel.value;
     state.degrees = d2 ? [d1, d2].filter(Boolean) : [d1].filter(Boolean);
-    if (resetPlan) { state.plan = getDefaultPlan(); state.done = []; state.substitutions = {}; }
+    if (resetPlan) {
+      // Preserve completed units in their historical slots; clear everything else
+      const keptPlan = {};
+      for (const [k, codes] of Object.entries(state.plan)) {
+        const kept = codes.filter(c => state.done.includes(c));
+        if (kept.length) keptPlan[k] = kept;
+      }
+      state.plan = keptPlan;
+      state.substitutions = {};
+    }
     save(); render();
   }
 
   d1Sel.addEventListener('change', () => applyDegrees(true));
-  d2Sel.addEventListener('change', () => applyDegrees(!!d1Sel.value)); // keep plan if just adding D2
+  d2Sel.addEventListener('change', () => applyDegrees(false));
 
   yearSel.addEventListener('change', () => {
     state.startYear = Number(yearSel.value);
-    state.plan = getDefaultPlan(); save(); render();
+    save(); render();
   });
   semSel.addEventListener('change', () => {
     state.startSem = Number(semSel.value);
-    state.plan = getDefaultPlan(); save(); render();
+    save(); render();
+  });
+
+  document.getElementById('auto-btn').addEventListener('click', () => {
+    if (!state.degrees.length) return;
+    state.plan = getDefaultPlan();
+    save(); render();
   });
 
   document.getElementById('reset-btn').addEventListener('click', () => {
     if (!state.degrees.length) return;
-    if (!confirm('Reset plan to defaults?')) return;
-    state.plan = getDefaultPlan(); state.done = []; state.substitutions = {};
+    if (!confirm('Move all units back to the tray? This clears your layout.')) return;
+    state.plan = {}; state.done = []; state.substitutions = {};
     save(); render();
   });
 
