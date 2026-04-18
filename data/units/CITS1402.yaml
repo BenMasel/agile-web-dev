@@ -1,0 +1,30 @@
+code: CITS1402
+title: Relational Database Management Systems
+level: 1
+credit_points: 6
+semester: 12
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+availability: 2026 S1, S2
+availability_detail: Feb – Jun / Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS1402"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities:
+  - code: CITS2232
+    title: Databases
+
+prerequisites:
+  external:
+    - "Mathematics Applications ATAR or MATH1720 Mathematics Fundamentals"
+
+learning_outcomes:
+  - Model real-world domains as entity-relationship diagrams and relational schemas
+  - Design and normalise relational databases to reduce redundancy
+  - Write SQL queries including joins, aggregations and subqueries
+  - Build database-connected applications using a programming language and API

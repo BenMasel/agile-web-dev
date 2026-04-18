@@ -207,6 +207,31 @@
     </div>
     {% endif %}
 
+    {# ---- Provenance footer ---- #}
+    <div class="flex items-center gap-3 flex-wrap text-[11px] text-rc-text-faint border-t border-rc-border-light pt-3 -mb-1">
+      {% if unit.source_url %}
+      <a href="{{ unit.source_url }}" target="_blank" rel="noopener"
+         class="flex items-center gap-1 hover:text-white/60 transition">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M5 2H2a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M8 1h3v3M11 1 6 6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Official handbook {% if unit.handbook_year %}{{ unit.handbook_year }}{% endif %}
+      </a>
+      <span class="text-rc-text-faint/40">·</span>
+      {% endif %}
+      {% if unit.last_verified %}
+      <span>verified {{ unit.last_verified }}</span>
+      {% if unit.last_verified | string < '2025-10-18' %}
+      <span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber">may be outdated</span>
+      {% endif %}
+      <span class="text-rc-text-faint/40">·</span>
+      {% endif %}
+      {% if git_meta %}
+      <span>edited {{ git_meta.relative }}{% if git_meta.author %} by {{ git_meta.author }}{% endif %}</span>
+      {% endif %}
+    </div>
+
     {# ---- Actions ---- #}
     <div class="flex gap-2 flex-wrap">
       <button class="bg-rc-red text-rc-bg font-medium text-[13px] px-4 py-2 rounded-lg transition hover:bg-rc-red-hover cursor-pointer">Add to study plan</button>
@@ -238,6 +263,11 @@
         </svg>
       </div>
       <span class="text-sm font-medium text-white/85">Community stats</span>
+      {% if c.data_quality == 'verified' %}
+      <span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">✓ Verified</span>
+      {% else %}
+      <span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber">~ Estimates</span>
+      {% endif %}
       <span class="text-[11px] text-rc-text-tertiary ml-auto">{{ c.votes }} votes</span>
     </div>
 

@@ -1,0 +1,28 @@
+code: CITS1003
+title: Introduction to Cybersecurity
+level: 1
+credit_points: 6
+semester: 12
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+availability: 2026 S1, S2
+availability_detail: Feb – Jun / Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS1003"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities:
+  - code: CITS3004
+    title: Cybersecurity
+
+prerequisites: {}
+
+learning_outcomes:
+  - Describe the key domains of cybersecurity following the ACS Cyber Security Body of Knowledge
+  - Apply risk management strategies to identify and mitigate information security threats
+  - Understand human, regulatory, and ethical aspects of cybersecurity practice
+  - Analyse software platform and infrastructure security vulnerabilities

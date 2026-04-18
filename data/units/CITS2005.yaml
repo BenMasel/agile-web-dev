@@ -1,0 +1,33 @@
+code: CITS2005
+title: Object Oriented Programming
+level: 2
+credit_points: 6
+semester: 1
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+availability: 2026 S1
+availability_detail: Feb – Jun
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS2005"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities:
+  - code: CITS1001
+    title: Software Engineering with Java
+
+prerequisites:
+  any_of:
+    - [CITS1401, CITS2401]
+    - [MATH1011, MATH1721]
+  external:
+    - "Mathematics Methods ATAR"
+
+learning_outcomes:
+  - Design and implement object-oriented programs in Java using classes and inheritance
+  - Apply generics, exceptions and concurrency in Java applications
+  - Use software engineering principles to structure and document code
+  - Evaluate design trade-offs in object-oriented systems

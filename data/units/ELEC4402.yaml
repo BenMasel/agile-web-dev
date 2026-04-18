@@ -11,6 +11,9 @@ coordinator: TBA
 coordinator_dept: School of Electrical Engineering
 availability: 2026 S2
 availability_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC4402"
+handbook_year: 2026
+last_verified: "2026-04-18"
 
 prerequisites:
   all_of:

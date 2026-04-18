@@ -11,6 +11,9 @@ coordinator: TBA
 coordinator_dept: School of Engineering
 availability: 2026 S1, S2
 availability_detail: Feb – Jun / Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=GENG4412"
+handbook_year: 2026
+last_verified: "2026-04-18"
 
 prerequisites:
   all_of:

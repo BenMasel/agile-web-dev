@@ -1,4 +1,7 @@
 import os
+import subprocess
+from datetime import datetime, timezone
+from functools import lru_cache
 import yaml
 from flask import Blueprint, render_template, redirect, url_for
 
@@ -12,6 +15,42 @@ bp = Blueprint('main', __name__)
 # ---------------------------------------------------------------------------
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'data')
+REPO_ROOT = os.path.dirname(os.path.dirname(__file__))
+
+
+def relative_time(dt):
+    now = datetime.now(timezone.utc)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    delta = now - dt
+    days = delta.days
+    if days < 1:
+        return 'today'
+    if days < 7:
+        return f'{days}d ago'
+    if days < 30:
+        return f'{days // 7}w ago'
+    if days < 365:
+        return f'{days // 30}mo ago'
+    return f'{days // 365}y ago'
+
+
+@lru_cache(maxsize=512)
+def git_last_modified(filepath):
+    try:
+        result = subprocess.run(
+            ['git', 'log', '-1', '--format=%ai\t%an', '--', filepath],
+            capture_output=True, text=True, cwd=REPO_ROOT, timeout=3,
+        )
+        line = result.stdout.strip()
+        if not line:
+            return None
+        parts = line.split('\t', 1)
+        dt = datetime.fromisoformat(parts[0].strip()[:19])
+        author = parts[1].strip() if len(parts) > 1 else None
+        return {'date': dt, 'author': author, 'relative': relative_time(dt)}
+    except Exception:
+        return None
 
 
 def load_yaml(subfolder, filename):
@@ -144,14 +183,15 @@ def unit_detail(code):
     if unit is None:
         return render_template('404.html', category='unit'), 404
 
-    # Load each associated club so the template has icon/accent info.
     clubs = []
     for slug in unit.get('associated_clubs', []):
         club = load_yaml('clubs', f'{slug}.yaml')
         if club:
             clubs.append(club)
 
-    return render_template('unit/detail.html', unit=unit, clubs=clubs)
+    filepath = os.path.join('data', 'units', f'{code}.yaml')
+    git_meta = git_last_modified(filepath)
+    return render_template('unit/detail.html', unit=unit, clubs=clubs, git_meta=git_meta)
 
 
 @bp.route('/degree/<slug>')
@@ -164,7 +204,9 @@ def degree_detail(slug):
     if degree is None:
         return render_template('404.html', category='degree'), 404
 
-    return render_template('degree/detail.html', degree=degree)
+    filepath = os.path.join('data', 'degrees', f'{slug}.yaml')
+    git_meta = git_last_modified(filepath)
+    return render_template('degree/detail.html', degree=degree, git_meta=git_meta)
 
 
 @bp.route('/planner')

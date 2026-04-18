@@ -1,0 +1,28 @@
+code: CITS3200
+title: Professional Computing
+level: 3
+credit_points: 6
+semester: 2
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+availability: 2026 S2
+availability_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS3200"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  any_of:
+    - [CITS2002, CITS2200]
+  external:
+    - "Completion of at least 90 credit points"
+
+learning_outcomes:
+  - Apply agile project management and software engineering methodologies in a team context
+  - Evaluate ethical, social and legal implications of computing systems
+  - Communicate technical requirements and status to diverse stakeholders
+  - Function effectively in a software development team across multiple roles

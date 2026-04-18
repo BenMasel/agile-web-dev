@@ -11,6 +11,9 @@ coordinator: TBA
 coordinator_dept: School of Electrical Engineering
 availability: 2026 S1
 availability_detail: Feb – Jun
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC3014"
+handbook_year: 2026
+last_verified: "2026-04-18"
 
 incompatibilities:
   - code: ENSC3014

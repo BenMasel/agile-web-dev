@@ -11,6 +11,9 @@ coordinator: Prof. Paul Stanwix
 coordinator_dept: Materials Engineering
 availability: 2026 S1
 availability_detail: Feb - Jun
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ENSC2004"
+handbook_year: 2026
+last_verified: "2026-04-18"
 incompatibilities:
   - code: MATH1722
     title: Engineering Materials
@@ -68,6 +71,7 @@ resources:
 # Community stats are crowd-sourced. Eventually these will live in the DB
 # (submitted by users), but for now they are seeded here.
 community:
+  data_quality: seeded
   votes: 247
   overall_rating: 3.4
   pass_rate: 72
