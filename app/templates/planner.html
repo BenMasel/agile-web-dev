@@ -5,13 +5,15 @@
 {% block content_width %}w-full max-w-[92rem]{% endblock %}
 
 {% block head %}
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
 <style>
   .unit-draggable { cursor: grab; }
   .unit-draggable:active { cursor: grabbing; }
-  .sortable-ghost { opacity: 0.2 !important; }
-  .sortable-chosen { cursor: grabbing !important; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-  .sem-drop-active { border-color: rgba(108,160,240,0.4) !important; background: rgba(108,160,240,0.04) !important; }
+  .unit-draggable.unit-done { cursor: no-drop !important; }
+  .unit-draggable.dragging { opacity: 0.35; }
+  .slot-box { transition: background 0.1s, border-color 0.1s; }
+  .slot-box.drop-hover { background: rgba(108,160,240,0.08) !important; border-color: rgba(108,160,240,0.45) !important; border-style: solid !important; }
+  .tray-drag-over { border-color: rgba(108,160,240,0.3) !important; }
 </style>
 {% endblock %}
 
@@ -265,6 +267,7 @@ let state = {
   substitutions: {},  // { "CITS1401": "CITS2401" } — treat key as if code is value
 };
 let pickerTargetSem = null;
+let dragState = null; // { code, fromKey: 'tray'|semKey, fromSlot: null|number }
 
 // ─────────────────────────────────────────────────────────
 // PERSISTENCE
@@ -303,7 +306,7 @@ function unitsBefore(targetKey) {
   const idx = keys.indexOf(targetKey);
   const earlyKeys = keys.slice(0, idx);
   const list = [...state.done];
-  for (const k of earlyKeys) for (const c of (state.plan[k]||[])) if (!list.includes(c)) list.push(c);
+  for (const k of earlyKeys) for (const c of (state.plan[k]||[])) if (c && !list.includes(c)) list.push(c);
   // expand substitutions: if X→Y, also add Y when X is present
   const extras = [];
   for (const c of list) for (const [from, to] of Object.entries(state.substitutions))
@@ -345,6 +348,27 @@ function coreqsMet(code, targetKey) {
 
 function isYearLong(code) {
   return UNITS_DATA[code]?.availability === 'year_long';
+}
+
+function getRegular(key) {
+  return (state.plan[key] || []).filter(c => c && !isYearLong(c));
+}
+
+function setRegular(key, regular) {
+  const yearLong = (state.plan[key] || []).filter(c => c && isYearLong(c));
+  state.plan[key] = [...regular.filter(Boolean), ...yearLong];
+}
+
+// Sparse slot array — index = slot position, value = code or null
+function getSlots(key) {
+  return (state.plan[key] || []).filter(c => !c || !isYearLong(c));
+}
+
+function setSlots(key, slots) {
+  const yearLong = (state.plan[key] || []).filter(c => c && isYearLong(c));
+  let end = slots.length;
+  while (end > 0 && !slots[end - 1]) end--;
+  state.plan[key] = [...slots.slice(0, end), ...yearLong];
 }
 
 function unitSemOk(code, sem) {
@@ -453,7 +477,6 @@ function render() {
   renderGrid();
   renderTray();
   renderStats();
-  initSortables();
 }
 
 // ─── Conflicts ───────────────────────────────────────────
@@ -549,14 +572,41 @@ function renderGrid() {
       cluster.appendChild(semLbl);
 
       const card = document.createElement('div');
-      card.className = `sem-card bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 min-h-[8rem]
+      card.className = `sem-card bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 transition
         ${isPast ? 'border-rc-border/50' : 'border-rc-border'}`;
       card.dataset.semKey = key;
 
-      for (const code of units) card.appendChild(mkUnitCard(code, key));
+      // 4 discrete slot drop-targets
+      const slotsContainer = document.createElement('div');
+      slotsContainer.className = 'flex flex-col gap-1.5';
+      for (let i = 0; i < 4; i++) {
+        slotsContainer.appendChild(buildSemSlot(key, i, units[i] || null));
+      }
+      card.appendChild(slotsContainer);
+
+      // 5th slot — hidden unless triggered by drag or already occupied
+      const fifthSlot = buildSemSlot(key, 4, units[4] || null, true);
+      if (!units[4]) fifthSlot.classList.add('hidden');
+      card.appendChild(fifthSlot);
+
+      // Show 5th slot when dragging over a full card; hide when leaving
+      let enterCount = 0;
+      card.addEventListener('dragenter', e => {
+        e.preventDefault();
+        enterCount++;
+        if (units.length >= 4) fifthSlot.classList.remove('hidden');
+      });
+      card.addEventListener('dragleave', () => {
+        enterCount--;
+        if (enterCount <= 0) {
+          enterCount = 0;
+          if (!units[4]) fifthSlot.classList.add('hidden');
+        }
+      });
+      card.addEventListener('dragover', e => e.preventDefault());
 
       const addBtn = document.createElement('button');
-      addBtn.className = 'no-drag mt-auto text-[11px] text-white/20 hover:text-white/50 border border-dashed border-white/10 hover:border-white/20 rounded-lg py-1.5 text-center transition cursor-pointer';
+      addBtn.className = 'mt-1 text-[11px] text-white/20 hover:text-white/50 border border-dashed border-white/10 hover:border-white/20 rounded-lg py-1.5 text-center transition cursor-pointer';
       addBtn.textContent = '+ add unit';
       addBtn.onclick = () => openPicker(key);
       card.appendChild(addBtn);
@@ -628,6 +678,32 @@ function removeUnitAnyKey(code) {
   save(); render();
 }
 
+function buildSemSlot(semKey, slotIdx, code, isFifth = false) {
+  const slot = document.createElement('div');
+  slot.className = `slot-box rounded-lg border border-dashed ${isFifth ? 'border-white/[0.04]' : 'border-white/[0.07]'} min-h-10 transition`;
+  slot.dataset.slot = slotIdx;
+  slot.dataset.semKey = semKey;
+
+  if (code) {
+    slot.classList.remove('border-dashed');
+    slot.classList.add('border-transparent');
+    slot.appendChild(mkUnitCard(code, semKey, slotIdx));
+  }
+
+  slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drop-hover'); });
+  slot.addEventListener('dragleave', e => {
+    if (!slot.contains(e.relatedTarget)) slot.classList.remove('drop-hover');
+  });
+  slot.addEventListener('drop', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    slot.classList.remove('drop-hover');
+    handleSlotDrop(semKey, slotIdx);
+  });
+
+  return slot;
+}
+
 function dotStyle(code, semKey) {
   const done = isDone(code);
   const ok   = prereqsMet(code, semKey) && coreqsMet(code, semKey);
@@ -639,7 +715,7 @@ function dotStyle(code, semKey) {
   return { dot: 'bg-rc-blue', card: 'border-rc-border' };
 }
 
-function mkUnitCard(code, key) {
+function mkUnitCard(code, key, slotIdx = 0) {
   const u    = UNITS_DATA[code];
   const {dot, card} = dotStyle(code, key);
   const done = isDone(code);
@@ -662,7 +738,7 @@ function mkUnitCard(code, key) {
 
   const el = document.createElement('div');
   // Done units get unit-done class (blocks drag) and reduced opacity (historical)
-  el.className = `unit-draggable group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${card} transition select-none${done ? ' unit-done opacity-50 cursor-default' : ' hover:brightness-110'}`;
+  el.className = `unit-draggable group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${card} transition select-none${done ? ' unit-done opacity-50' : ' hover:brightness-110'}`;
   el.dataset.code = code;
 
   if (missingPrereqs.length && !done) {
@@ -686,6 +762,21 @@ function mkUnitCard(code, key) {
       ${done ? '' : `<button class="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer px-0.5 text-[13px] leading-none"
               title="Remove" onclick="event.stopPropagation();removeUnit('${code}','${key}')">×</button>`}
     </div>`;
+
+  if (!done) {
+    el.draggable = true;
+    el.addEventListener('dragstart', e => {
+      dragState = { code, fromKey: key, fromSlot: slotIdx };
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', code);
+      setTimeout(() => el.classList.add('dragging'), 0);
+      hideTooltip();
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      dragState = null;
+    });
+  }
 
   el.addEventListener('contextmenu', e => {
     e.preventDefault();
@@ -801,6 +892,20 @@ function mkTrayCard(code, ready = true) {
     </div>
     <span class="text-[9px] text-white/20 shrink-0">${u?.credit_points || 0}CP</span>`;
 
+  if (ready) {
+    el.draggable = true;
+    el.addEventListener('dragstart', e => {
+      dragState = { code, fromKey: 'tray', fromSlot: null };
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', code);
+      setTimeout(() => el.classList.add('dragging'), 0);
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      dragState = null;
+    });
+  }
+
   el.addEventListener('contextmenu', e => {
     e.preventDefault();
     ContextMenu.open(e.clientX, e.clientY, [
@@ -892,70 +997,85 @@ function buildYearLongSlotSubmenu(code) {
   }));
 }
 
-// ─── Sortable drag-and-drop ───────────────────────────────
-function onDragEnd() {
-  const newPlan = {};
+// ─── HTML5 drag-and-drop ─────────────────────────────────
+function handleSlotDrop(targetKey, targetSlot) {
+  if (!dragState) return;
+  const { code, fromKey, fromSlot } = dragState;
 
-  // Preserve year_long placements (they live in the strip, not sem-cards)
-  for (const [k, codes] of Object.entries(state.plan)) {
-    for (const code of codes) {
-      if (isYearLong(code)) {
-        if (!newPlan[k]) newPlan[k] = [];
-        newPlan[k].push(code);
+  const toSlots = getSlots(targetKey);
+  while (toSlots.length <= targetSlot) toSlots.push(null);
+
+  const displaced = toSlots[targetSlot]; // unit currently in the target slot (may be null)
+
+  // Place dragged unit in the exact target slot
+  toSlots[targetSlot] = code;
+
+  if (fromKey !== 'tray') {
+    if (fromKey === targetKey) {
+      // Same sem: swap — put displaced into the vacated source slot
+      if (fromSlot !== null && fromSlot !== targetSlot) {
+        while (toSlots.length <= fromSlot) toSlots.push(null);
+        toSlots[fromSlot] = displaced || null;
       }
+    } else {
+      // Different sem: null out source slot; displaced goes to tray
+      const fromSlots = getSlots(fromKey);
+      if (fromSlot !== null) {
+        while (fromSlots.length <= fromSlot) fromSlots.push(null);
+        fromSlots[fromSlot] = null;
+      }
+      setSlots(fromKey, fromSlots);
     }
   }
+  // From tray: displaced (if any) is removed from plan → reappears in tray automatically
 
-  // Sync standard units from DOM sem-cards
-  document.querySelectorAll('.sem-card').forEach(card => {
-    const key = card.dataset.semKey;
-    if (!newPlan[key]) newPlan[key] = [];
-    card.querySelectorAll(':scope > .unit-draggable[data-code]').forEach(el => {
-      newPlan[key].push(el.dataset.code);
-    });
-  });
+  setSlots(targetKey, toSlots);
 
-  state.plan = newPlan;
-  save();
-  render();
+  const finalIdx = getSlots(targetKey).indexOf(code);
+  const isFifth  = finalIdx >= 4;
+
+  save(); render();
+
+  if (isFifth) {
+    const slot5  = document.querySelector(`.slot-box[data-sem-key="${targetKey}"][data-slot="4"]`);
+    const unitEl = slot5?.querySelector('.unit-draggable');
+    if (unitEl) {
+      const tl = gsap.timeline();
+      tl.to(unitEl, { x: -5, duration: 0.07, ease: 'power1.out' })
+        .to(unitEl, { x:  5, duration: 0.07, ease: 'power1.inOut' })
+        .to(unitEl, { x: -4, duration: 0.07, ease: 'power1.inOut' })
+        .to(unitEl, { x:  4, duration: 0.07, ease: 'power1.inOut' })
+        .to(unitEl, { x: -2, duration: 0.07, ease: 'power1.inOut' })
+        .to(unitEl, { x:  0, duration: 0.07, ease: 'power1.in' });
+    }
+  }
 }
 
-function initSortables() {
-  const sharedGroup = {
-    name: 'planner',
-    pull: true,
-    put: (to, from, el) => !el.classList.contains('no-drag'),
-  };
+function handleTrayDrop() {
+  if (!dragState) return;
+  const { code, fromKey, fromSlot } = dragState;
+  if (fromKey && fromKey !== 'tray') {
+    const fromSlots = getSlots(fromKey);
+    if (fromSlot !== null && fromSlot < fromSlots.length) {
+      fromSlots[fromSlot] = null;
+    } else {
+      // Fallback: scan and null out
+      for (let i = 0; i < fromSlots.length; i++) {
+        if (fromSlots[i] === code) { fromSlots[i] = null; break; }
+      }
+    }
+    setSlots(fromKey, fromSlots);
+    save(); render();
+  }
+}
 
-  // Each semester column card
-  document.querySelectorAll('.sem-card').forEach(card => {
-    Sortable.create(card, {
-      group: sharedGroup,
-      animation: 120,
-      filter: '.no-drag, .unit-done',
-      preventOnFilter: false,
-      ghostClass: 'sortable-ghost',
-      chosenClass: 'sortable-chosen',
-      onStart()  { hideTooltip(); card.classList.remove('sem-drop-active'); },
-      onAdd()    { card.classList.remove('sem-drop-active'); },
-      onDragOver() { card.classList.add('sem-drop-active'); },
-      onDragLeave() { card.classList.remove('sem-drop-active'); },
-      onEnd: onDragEnd,
-    });
-  });
-
-  // Tray — both sections are drop targets and drag sources
-  ['tray-available', 'tray-locked'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    Sortable.create(el, {
-      group: sharedGroup,
-      animation: 120,
-      ghostClass: 'sortable-ghost',
-      chosenClass: 'sortable-chosen',
-      onEnd: onDragEnd,
-    });
-  });
+function initDragDrop() {
+  const trayWrap = document.getElementById('tray-wrap');
+  if (trayWrap) {
+    trayWrap.addEventListener('dragover',  e => { e.preventDefault(); trayWrap.classList.add('tray-drag-over'); });
+    trayWrap.addEventListener('dragleave', e => { if (!trayWrap.contains(e.relatedTarget)) trayWrap.classList.remove('tray-drag-over'); });
+    trayWrap.addEventListener('drop',      e => { e.preventDefault(); trayWrap.classList.remove('tray-drag-over'); handleTrayDrop(); });
+  }
 }
 
 // ─── Stats ────────────────────────────────────────────────
@@ -1103,6 +1223,7 @@ function placeUnit(code, key) {
 // ─────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   load();
+  initDragDrop();
 
   const d1Sel   = document.getElementById('degree1-select');
   const d2Sel   = document.getElementById('degree2-select');
@@ -1151,8 +1272,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('reset-btn').addEventListener('click', () => {
     if (!state.degrees.length) return;
-    if (!confirm('Move all units back to the tray? This clears your layout.')) return;
-    state.plan = {}; state.done = []; state.substitutions = {};
+    if (!confirm('Clear your plan? Completed units will stay in place.')) return;
+    const keptPlan = {};
+    for (const [k, codes] of Object.entries(state.plan)) {
+      const kept = codes.filter(c => state.done.includes(c));
+      if (kept.length) keptPlan[k] = kept;
+    }
+    state.plan = keptPlan;
+    state.substitutions = {};
     save(); render();
   });
 
