@@ -62,8 +62,22 @@
       </div>
       <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
         <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Availability</span>
-        <span class="text-[13px] font-medium text-white/85">{{ unit.offered or '—' }}</span>
-        <span class="text-xs text-white/55">{{ unit.offered_detail }}</span>
+        {% set av = unit.availability %}
+        {% if av == 'year_long' %}
+          <span class="text-[13px] font-medium text-white/85">Year Long</span>
+          <span class="text-xs text-white/55">Feb – Nov</span>
+        {% elif av == [1, 2] %}
+          <span class="text-[13px] font-medium text-white/85">S1, S2</span>
+          <span class="text-xs text-white/55">Feb – Jun / Jul – Nov</span>
+        {% elif av == [1] %}
+          <span class="text-[13px] font-medium text-white/85">S1</span>
+          <span class="text-xs text-white/55">Feb – Jun</span>
+        {% elif av == [2] %}
+          <span class="text-[13px] font-medium text-white/85">S2</span>
+          <span class="text-xs text-white/55">Jul – Nov</span>
+        {% else %}
+          <span class="text-[13px] font-medium text-white/85">—</span>
+        {% endif %}
       </div>
       {% for incompat in unit.incompatibilities or [] %}
       <div class="bg-rc-surface p-3 flex flex-col gap-[3px]">
