@@ -1,0 +1,6 @@
+id: email
+label: Student Email
+description: Benefits unlocked by your @student.uwa.edu.au address
+accent_color: "#6CA0F0"
+accent_bg: "rgba(100, 160, 255, 0.1)"
+icon_svg: '<rect x="2" y="4" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M2 7l7 4.5L16 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>'

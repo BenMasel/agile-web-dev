@@ -77,15 +77,25 @@
             </span>
           </div>
           <p class="text-[12px] text-white/40 mt-1 leading-relaxed">{{ benefit.description }}</p>
-          {% if benefit.tags %}
-          <div class="flex gap-1 mt-2 flex-wrap">
+          <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+            {% if benefit.tags %}
             {% for tag in benefit.tags %}
             <span class="text-[10px] px-1.5 py-[2px] rounded-[4px] bg-rc-fill border border-rc-border text-rc-text-faint">
               {{ tag }}
             </span>
             {% endfor %}
+            {% endif %}
+            {% if benefit.git_meta %}
+            <span class="text-[10px] text-rc-text-faint ml-auto flex items-center gap-1"
+                  title="Last updated {{ benefit.git_meta.date.strftime('%d %b %Y') }} by {{ benefit.git_meta.author }}">
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none" class="opacity-50">
+                <circle cx="4.5" cy="4.5" r="3.5" stroke="currentColor" stroke-width="1"/>
+                <path d="M4.5 2.5v2l1.5 1" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              {{ benefit.git_meta.relative }}
+            </span>
+            {% endif %}
           </div>
-          {% endif %}
         </div>
 
       </div>

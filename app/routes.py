@@ -160,11 +160,36 @@ def resources():
 @bp.route('/benefits')
 def benefits():
     """
-    Student benefits page — loads categories and benefits from
-    data/benefits/benefits.yaml and passes them to the template.
+    Student benefits page — loads category metadata and individual benefit files
+    from data/benefits/<category>/, attaching git timestamps to each benefit.
     """
-    data = load_yaml('benefits', 'benefits.yaml') or {}
-    return render_template('benefits.html', categories=data.get('categories', []))
+    benefits_dir = os.path.join(DATA_DIR, 'benefits')
+    categories = []
+
+    for cat_id in sorted(os.listdir(benefits_dir)):
+        cat_dir = os.path.join(benefits_dir, cat_id)
+        if not os.path.isdir(cat_dir):
+            continue
+
+        cat_data = load_yaml(f'benefits/{cat_id}', '_category.yaml')
+        if not cat_data:
+            continue
+
+        cat_benefits = []
+        for filename in sorted(os.listdir(cat_dir)):
+            if filename.startswith('_') or not filename.endswith('.yaml'):
+                continue
+            benefit = load_yaml(f'benefits/{cat_id}', filename)
+            if not benefit:
+                continue
+            filepath = os.path.join('data', 'benefits', cat_id, filename)
+            benefit['git_meta'] = git_last_modified(filepath)
+            cat_benefits.append(benefit)
+
+        cat_data['benefits'] = cat_benefits
+        categories.append(cat_data)
+
+    return render_template('benefits.html', categories=categories)
 
 
 @bp.route('/videos')

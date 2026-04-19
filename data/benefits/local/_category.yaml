@@ -1,0 +1,6 @@
+id: local
+label: Local Discounts
+description: Shops and services near campus that offer student discounts
+accent_color: "#D4A340"
+accent_bg: "rgba(239, 159, 39, 0.1)"
+icon_svg: '<path d="M2 6h14M4 6V4a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v2M3 6l1 9h10l1-9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>'

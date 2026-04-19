@@ -1,0 +1,6 @@
+id: guild
+label: UWA Guild
+description: Perks available to Guild members — sign up at the Guild Office
+accent_color: "#2ECC71"
+accent_bg: "rgba(46, 204, 113, 0.12)"
+icon_svg: '<path d="M9 2L2 6v6l7 4 7-4V6L9 2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9" cy="9" r="2" stroke="currentColor" stroke-width="1.1"/>'
