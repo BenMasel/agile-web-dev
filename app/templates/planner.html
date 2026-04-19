@@ -19,171 +19,202 @@
 
 {% block content %}
 
-{# ========== CONFIG BAR ========== #}
-<div class="bg-rc-surface border border-rc-border rounded-[10px] px-4 py-3 flex items-center gap-3 flex-wrap">
+<div class="flex gap-4 items-start">
 
-  <div class="flex items-center gap-2 shrink-0">
-    <div class="w-6 h-6 rounded-[6px] bg-rc-blue-muted flex items-center justify-center">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-        <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="#6CA0F0" stroke-width="1.1"/>
-        <path d="M3.5 5l1.5 1.5L8.5 3.5" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M3.5 8.5h6" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round"/>
+{# ══════════════════════════════════════════════════════════════
+   SIDEBAR
+══════════════════════════════════════════════════════════════ #}
+<aside class="w-[17rem] shrink-0 flex flex-col gap-3 sticky top-[2.75rem] max-h-[calc(100vh-3.25rem)] overflow-y-auto pb-6">
+
+  {# ── Config card ── #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-4">
+
+    {# Brand #}
+    <div class="flex items-center gap-2">
+      <div class="w-6 h-6 rounded-[6px] bg-rc-blue-muted flex items-center justify-center shrink-0">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="#6CA0F0" stroke-width="1.1"/>
+          <path d="M3.5 5l1.5 1.5L8.5 3.5" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M3.5 8.5h6" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="text-sm font-semibold text-rc-text">Study Planner</span>
+      <span class="text-[9px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue leading-none ml-auto">BETA</span>
+    </div>
+
+    <div class="h-px bg-rc-border-light -mx-4"></div>
+
+    {# Primary degree #}
+    <div class="flex flex-col gap-1.5">
+      <div class="flex items-center gap-1.5">
+        <div class="w-1.5 h-1.5 rounded-full bg-rc-blue shrink-0"></div>
+        <label class="text-[11px] text-rc-text-tertiary">Primary degree</label>
+      </div>
+      <select id="degree1-select"
+              class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
+        <option value="">— select degree —</option>
+        {% for deg in degrees %}
+        <option value="{{ deg.slug }}">{{ deg.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {# Second degree #}
+    <div class="flex flex-col gap-1.5">
+      <div class="flex items-center gap-1.5">
+        <div class="w-1.5 h-1.5 rounded-full bg-rc-purple shrink-0"></div>
+        <label class="text-[11px] text-rc-text-tertiary">Second degree</label>
+      </div>
+      <select id="degree2-select"
+              class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-purple/40 cursor-pointer transition">
+        <option value="">— none —</option>
+        {% for deg in degrees %}
+        <option value="{{ deg.slug }}">{{ deg.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {# Starting year / sem #}
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[11px] text-rc-text-tertiary">Starting</label>
+      <div class="flex gap-2">
+        <select id="start-year"
+                class="flex-1 bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
+          {% for y in range(2020, 2030) %}
+          <option value="{{ y }}" {% if y == 2024 %}selected{% endif %}>{{ y }}</option>
+          {% endfor %}
+        </select>
+        <select id="start-sem"
+                class="bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
+          <option value="1" selected>Sem 1</option>
+          <option value="2">Sem 2</option>
+        </select>
+      </div>
+    </div>
+
+    {# Stats #}
+    <div id="planner-stats" class="hidden flex-col gap-1.5 pt-0.5">
+      <div class="h-px bg-rc-border-light -mx-4"></div>
+      <div class="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 text-[11px] text-rc-text-faint">
+        <div class="flex items-center gap-1">
+          <div class="w-1.5 h-1.5 rounded-full bg-rc-blue"></div>
+          <span><span id="stat-d1" class="text-white/60 font-medium">0</span> D1</span>
+        </div>
+        <div id="stat-d2-wrap" class="hidden items-center gap-1">
+          <div class="w-1.5 h-1.5 rounded-full bg-rc-purple"></div>
+          <span><span id="stat-d2" class="text-white/60 font-medium">0</span> D2</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="w-1.5 h-1.5 rounded-full bg-rc-green"></div>
+          <span><span id="stat-done" class="text-rc-green font-medium">0</span> CP done</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="w-1.5 h-1.5 rounded-full bg-rc-amber"></div>
+          <span><span id="stat-rem" class="text-rc-amber font-medium">0</span> CP left</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-px bg-rc-border-light -mx-4"></div>
+
+    {# Action buttons #}
+    <div class="flex gap-2">
+      <button id="auto-btn"
+              class="flex-1 text-[11px] text-white/50 hover:text-white/80 bg-rc-fill border border-rc-border transition px-3 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer">
+        Auto-fill
+      </button>
+      <button id="reset-btn"
+              class="text-[11px] font-medium text-rc-red/70 hover:text-rc-red bg-rc-red-muted border border-rc-red/15 hover:border-rc-red/30 transition px-3 py-1.5 rounded-[7px] cursor-pointer">
+        Clear
+      </button>
+    </div>
+
+  </div>
+
+  {# ── Unit tray ── #}
+  <div id="tray-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2">
+    <div class="flex items-center gap-2 px-1">
+      <svg width="12" height="12" viewBox="0 0 13 13" fill="none" class="text-rc-text-tertiary shrink-0">
+        <rect x="1.5" y="7.5" width="10" height="4" rx="1" stroke="currentColor" stroke-width="1.1"/>
+        <path d="M4 7.5V5a2.5 2.5 0 0 1 5 0v2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Unit tray</span>
+      <span id="tray-count" class="text-[11px] text-rc-text-faint ml-auto"></span>
+    </div>
+    <div id="tray-available" class="flex flex-col gap-1.5 min-h-[2rem]"></div>
+    <div id="tray-locked-wrap" class="hidden flex-col gap-1.5">
+      <div class="flex items-center gap-2 py-1">
+        <div class="h-px flex-1 bg-rc-border-light"></div>
+        <span class="text-[10px] text-white/20 uppercase tracking-widest">prereqs not met</span>
+        <div class="h-px flex-1 bg-rc-border-light"></div>
+      </div>
+      <div id="tray-locked" class="flex flex-col gap-1.5"></div>
+    </div>
+  </div>
+
+</aside>
+
+{# ══════════════════════════════════════════════════════════════
+   MAIN CONTENT
+══════════════════════════════════════════════════════════════ #}
+<div class="flex-1 min-w-0 flex flex-col gap-3">
+
+  {# Conflict warnings #}
+  <div id="conflict-wrap" class="hidden bg-rc-surface border border-[rgba(212,163,64,0.25)] rounded-[10px] p-4 flex flex-col gap-3">
+    <div class="flex items-center gap-2">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M7 2L13 12H1L7 2Z" stroke="#D4A340" stroke-width="1.1" stroke-linejoin="round"/>
+        <path d="M7 6v3" stroke="#D4A340" stroke-width="1.1" stroke-linecap="round"/>
+        <circle cx="7" cy="10.5" r="0.6" fill="#D4A340"/>
+      </svg>
+      <span class="text-[11px] font-medium text-rc-amber">Double degree conflicts</span>
+      <span class="text-[11px] text-rc-text-faint ml-1">— units incompatible between your two degrees</span>
+    </div>
+    <div id="conflict-list" class="flex flex-col gap-2"></div>
+  </div>
+
+  {# Empty state #}
+  <div id="empty-state" class="bg-rc-surface border border-rc-border rounded-[10px] p-12 flex flex-col items-center gap-4 text-center">
+    <div class="w-12 h-12 rounded-[12px] bg-rc-blue-muted flex items-center justify-center">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="18" height="18" rx="3" stroke="#6CA0F0" stroke-width="1.3"/>
+        <path d="M7 9l3 3L17 7" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M7 15h10" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round"/>
       </svg>
     </div>
-    <span class="text-sm font-semibold text-rc-text">Study Planner</span>
-    <span class="text-[9px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue leading-none">BETA</span>
-  </div>
-
-  <div class="w-px h-4 bg-rc-border shrink-0"></div>
-
-  {# Primary degree #}
-  <div class="flex items-center gap-1.5">
-    <div class="w-2 h-2 rounded-full bg-rc-blue shrink-0"></div>
-    <label class="text-[11px] text-rc-text-tertiary whitespace-nowrap">D1</label>
-    <select id="degree1-select"
-            class="bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
-      <option value="">— select degree —</option>
-      {% for deg in degrees %}
-      <option value="{{ deg.slug }}">{{ deg.title }}</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  {# Second degree (toggle) #}
-  <div class="flex items-center gap-1.5">
-    <div class="w-2 h-2 rounded-full bg-rc-purple shrink-0"></div>
-    <label class="text-[11px] text-rc-text-tertiary whitespace-nowrap">D2</label>
-    <select id="degree2-select"
-            class="bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 text-[12px] text-white/70 outline-none focus:border-rc-purple/40 cursor-pointer transition">
-      <option value="">— none (single degree) —</option>
-      {% for deg in degrees %}
-      <option value="{{ deg.slug }}">{{ deg.title }}</option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <div class="w-px h-4 bg-rc-border shrink-0"></div>
-
-  {# Starting year/sem #}
-  <div class="flex items-center gap-2">
-    <label class="text-[11px] text-rc-text-tertiary whitespace-nowrap">Starting</label>
-    <select id="start-year"
-            class="bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
-      {% for y in range(2020, 2030) %}
-      <option value="{{ y }}" {% if y == 2024 %}selected{% endif %}>{{ y }}</option>
-      {% endfor %}
-    </select>
-    <select id="start-sem"
-            class="bg-rc-fill border border-rc-border rounded-md px-2.5 py-1 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
-      <option value="1" selected>Sem 1</option>
-      <option value="2">Sem 2</option>
-    </select>
-  </div>
-
-  <div class="flex-1"></div>
-
-  {# Stats #}
-  <div id="planner-stats" class="hidden items-center gap-3 text-[11px] text-rc-text-faint">
-    <div class="flex items-center gap-1">
-      <div class="w-1.5 h-1.5 rounded-full bg-rc-blue"></div>
-      <span><span id="stat-d1" class="text-white/60 font-medium">0</span> D1</span>
+    <div>
+      <div class="text-sm font-medium text-white/70 mb-1">Select a degree to get started</div>
+      <div class="text-xs text-white/30">Pick a primary degree from the sidebar, optionally add a second for a double degree plan</div>
     </div>
-    <div id="stat-d2-wrap" class="hidden items-center gap-1">
-      <div class="w-1.5 h-1.5 rounded-full bg-rc-purple"></div>
-      <span><span id="stat-d2" class="text-white/60 font-medium">0</span> D2</span>
+  </div>
+
+  {# Semester timeline #}
+  <div id="timeline-wrap" class="hidden flex-col gap-3">
+    <div class="overflow-x-auto pb-2">
+      <div id="semester-grid" class="flex gap-3" style="min-width: max-content; align-items: flex-start"></div>
     </div>
-    <span class="text-rc-border">|</span>
-    <span><span id="stat-done" class="text-rc-green font-medium">0</span> CP done</span>
-    <span class="text-rc-border">|</span>
-    <span><span id="stat-rem" class="text-rc-amber font-medium">0</span> CP left</span>
-  </div>
-
-  <button id="auto-btn"
-          class="text-[11px] text-white/50 hover:text-white/80 bg-rc-fill border border-rc-border transition px-3 py-1 rounded-md hover:border-white/15 cursor-pointer">
-    Auto
-  </button>
-
-  <button id="reset-btn"
-          class="text-[11px] font-medium text-rc-red/70 hover:text-rc-red bg-rc-red-muted border border-rc-red/15 hover:border-rc-red/30 transition px-3 py-1 rounded-md cursor-pointer">
-    Clean slate
-  </button>
-</div>
-
-{# ========== CONFLICT WARNINGS ========== #}
-<div id="conflict-wrap" class="hidden bg-rc-surface border border-[rgba(212,163,64,0.25)] rounded-[10px] p-4 flex flex-col gap-3">
-  <div class="flex items-center gap-2">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M7 2L13 12H1L7 2Z" stroke="#D4A340" stroke-width="1.1" stroke-linejoin="round"/>
-      <path d="M7 6v3" stroke="#D4A340" stroke-width="1.1" stroke-linecap="round"/>
-      <circle cx="7" cy="10.5" r="0.6" fill="#D4A340"/>
-    </svg>
-    <span class="text-[11px] font-medium text-rc-amber">Double degree conflicts</span>
-    <span class="text-[11px] text-rc-text-faint ml-1">— units incompatible between your two degrees</span>
-  </div>
-  <div id="conflict-list" class="flex flex-col gap-2"></div>
-</div>
-
-{# ========== EMPTY STATE ========== #}
-<div id="empty-state" class="bg-rc-surface border border-rc-border rounded-[10px] p-12 flex flex-col items-center gap-4 text-center">
-  <div class="w-12 h-12 rounded-[12px] bg-rc-blue-muted flex items-center justify-center">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="3" width="18" height="18" rx="3" stroke="#6CA0F0" stroke-width="1.3"/>
-      <path d="M7 9l3 3L17 7" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M7 15h10" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round"/>
-    </svg>
-  </div>
-  <div>
-    <div class="text-sm font-medium text-white/70 mb-1">Select a degree to get started</div>
-    <div class="text-xs text-white/30">Pick a primary degree (D1), optionally add a second (D2) for a double degree plan</div>
-  </div>
-</div>
-
-{# ========== SEMESTER TIMELINE ========== #}
-<div id="timeline-wrap" class="hidden flex-col gap-3">
-  <div class="overflow-x-auto pb-2">
-    <div id="semester-grid" class="flex gap-3" style="min-width: max-content; align-items: flex-start"></div>
-  </div>
-
-  <div class="flex items-center gap-5 px-1 flex-wrap">
-    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-green"></div><span class="text-[11px] text-white/30">Completed</span></div>
-    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-blue"></div><span class="text-[11px] text-white/30">D1 planned</span></div>
-    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-purple"></div><span class="text-[11px] text-white/30">D2 planned</span></div>
-    <div class="flex items-center gap-1.5">
-      <div class="w-2 h-2 rounded-full" style="background: linear-gradient(135deg, #6CA0F0 50%, #A78BFA 50%)"></div>
-      <span class="text-[11px] text-white/30">Shared</span>
+    <div class="flex items-center gap-4 px-1 flex-wrap">
+      <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-green"></div><span class="text-[11px] text-white/30">Completed</span></div>
+      <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-blue"></div><span class="text-[11px] text-white/30">D1</span></div>
+      <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-purple"></div><span class="text-[11px] text-white/30">D2</span></div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-2 h-2 rounded-full" style="background: linear-gradient(135deg, #6CA0F0 50%, #A78BFA 50%)"></div>
+        <span class="text-[11px] text-white/30">Shared</span>
+      </div>
+      <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-red"></div><span class="text-[11px] text-white/30">Prereqs missing</span></div>
+      <div class="flex items-center gap-1.5">
+        <div class="w-2 h-6 rounded-sm border border-dashed border-rc-border-light bg-rc-fill-subtle"></div>
+        <span class="text-[11px] text-white/30">Year-long</span>
+      </div>
+      <div class="ml-auto text-[11px] text-rc-text-faint">Right-click units to mark complete · <span class="text-white/35">×</span> to remove</div>
     </div>
-    <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-red"></div><span class="text-[11px] text-white/30">Prereqs missing</span></div>
-    <div class="flex items-center gap-1.5">
-      <div class="w-2 h-6 rounded-sm border border-dashed border-rc-border-light bg-rc-fill-subtle"></div>
-      <span class="text-[11px] text-white/30">Year-long</span>
-    </div>
-    <div class="ml-auto text-[11px] text-rc-text-faint">Right-click to mark complete · drag from tray below · <span class="text-white/35">×</span> to remove</div>
   </div>
-</div>
 
-{# ========== UNIT TRAY ========== #}
-<div id="tray-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3">
-  <div class="flex items-center gap-2">
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="text-rc-text-tertiary">
-      <rect x="1.5" y="7.5" width="10" height="4" rx="1" stroke="currentColor" stroke-width="1.1"/>
-      <path d="M4 7.5V5a2.5 2.5 0 0 1 5 0v2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-    </svg>
-    <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Unit tray</span>
-    <span id="tray-count" class="text-[11px] text-rc-text-faint"></span>
-    <span class="text-[11px] text-white/20 ml-auto">drag units into semester slots above</span>
-  </div>
-  <div id="tray-available" class="flex flex-wrap gap-1.5 min-h-[2.5rem]"></div>
-  <div id="tray-locked-wrap" class="hidden flex-col gap-1.5">
-    <div class="flex items-center gap-2">
-      <div class="h-px flex-1 bg-rc-border-light"></div>
-      <span class="text-[10px] text-white/20 uppercase tracking-widest">prereqs not yet met</span>
-      <div class="h-px flex-1 bg-rc-border-light"></div>
-    </div>
-    <div id="tray-locked" class="flex flex-wrap gap-1.5"></div>
-  </div>
-</div>
+</div>{# end main #}
 
-{# ========== PREREQ TOOLTIP ========== #}
+</div>{# end flex wrapper #}
+
+{# ── Prereq tooltip (fixed) ── #}
 <div id="planner-tooltip"
      class="hidden fixed z-[300] pointer-events-none flex-col gap-2 bg-rc-surface border border-rc-border rounded-[8px] shadow-[0_8px_28px_rgba(0,0,0,0.55)] p-2.5"
      style="max-width:200px">
@@ -191,7 +222,7 @@
   <div id="planner-tooltip-list" class="flex flex-wrap gap-1"></div>
 </div>
 
-{# ========== UNIT PICKER MODAL ========== #}
+{# ── Unit picker modal (fixed) ── #}
 <div id="picker-modal" class="hidden fixed inset-0 z-40 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0">
   <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closePicker()"></div>
   <div class="relative bg-rc-surface border border-rc-border rounded-[12px] p-4 w-full max-w-md flex flex-col gap-3 shadow-2xl z-50">
@@ -438,25 +469,56 @@ function semIsPast(k) {
 }
 
 function getDefaultPlan() {
-  // Merge default plans of all selected degrees, distributing by degree year/sem order
-  const plan = {};
   const keys = allSemKeys();
+
+  // Seed plan with done units locked in their current slots — they are never moved
+  const plan = {};
+  for (const [k, codes] of Object.entries(state.plan)) {
+    const kept = codes.filter(c => state.done.includes(c));
+    if (kept.length) plan[k] = [...kept];
+  }
+
+  // Build a queue of units in degree-structure order, skipping done/duplicate codes
+  const queued = new Set(state.done);
+  const queue  = []; // { code, preferredKey }
+
   for (const slug of state.degrees) {
     const d = getDeg(slug);
     if (!d) continue;
-    let i = 0;
-    for (const yr of (d.years||[])) {
-      for (const sm of (yr.semesters||[])) {
-        if (i >= keys.length) break;
-        const k = keys[i++];
-        if (!plan[k]) plan[k] = [];
-        for (const u of (sm.units||[])) {
-          if (!u.code || /^[A-Z][a-z]/.test(u.code) || /^Broad/.test(u.code) || /Elective/.test(u.code)) continue;
-          if (!plan[k].includes(u.code)) plan[k].push(u.code);
+    let ki = 0;
+    for (const yr of (d.years || [])) {
+      for (const sm of (yr.semesters || [])) {
+        if (ki >= keys.length) break;
+        const preferredKey = keys[ki++];
+        for (const u of (sm.units || [])) {
+          if (!u.code) continue;
+          if (/^[A-Z][a-z]/.test(u.code) || /^Broad/.test(u.code) || /Elective/.test(u.code)) continue;
+          if (!queued.has(u.code)) {
+            queue.push({ code: u.code, preferredKey });
+            queued.add(u.code);
+          }
         }
       }
     }
   }
+
+  // Place each unit at its preferred semester if there's room, else spill forward
+  for (const { code, preferredKey } of queue) {
+    const startIdx = Math.max(0, keys.indexOf(preferredKey));
+    for (let ki = startIdx; ki < keys.length; ki++) {
+      const k = keys[ki];
+      const { sem } = parseKey(k);
+      if (!unitSemOk(code, sem)) continue;
+      // Count ALL non-year_long units already in this slot (including done) toward the cap
+      const count = (plan[k] || []).filter(c => c && !isYearLong(c)).length;
+      if (count < 4) {
+        if (!plan[k]) plan[k] = [];
+        if (!plan[k].includes(code)) plan[k].push(code);
+        break;
+      }
+    }
+  }
+
   return plan;
 }
 
@@ -470,7 +532,7 @@ function render() {
   document.getElementById('timeline-wrap').classList.toggle('flex', has);
   document.getElementById('tray-wrap').classList.toggle('hidden', !has);
   document.getElementById('planner-stats').classList.toggle('hidden', !has);
-  document.getElementById('planner-stats').classList.toggle('flex', has);
+  document.getElementById('planner-stats').classList.toggle('flex-col', has);
   if (!has) { document.getElementById('conflict-wrap').classList.add('hidden'); return; }
 
   renderConflicts();
@@ -537,18 +599,31 @@ function renderGrid() {
     yearGroups.push(group);
   }
 
+  const currentCalYear = new Date().getFullYear();
+
   for (const [yi, yearKeys] of yearGroups.entries()) {
     const { year: calYear } = parseKey(yearKeys[0]);
+    const isCurrent = calYear === currentCalYear;
+
     const cluster = document.createElement('div');
     cluster.className = 'flex flex-col gap-1.5 shrink-0';
     cluster.style.width = '15rem';
+
+    if (isCurrent) {
+      cluster.style.background   = 'rgba(255,255,255,0.018)';
+      cluster.style.borderRadius = '12px';
+      cluster.style.outline      = '1px solid rgba(255,255,255,0.055)';
+      cluster.style.padding      = '6px';
+      cluster.style.width        = 'calc(15rem + 12px)';
+    }
 
     // Year header
     const yearHdr = document.createElement('div');
     yearHdr.className = 'flex items-baseline gap-1.5 px-0.5';
     yearHdr.innerHTML = `
-      <span class="text-[10px] uppercase tracking-widest font-semibold text-white/50">Year ${yi + 1}</span>
-      <span class="text-[10px] text-white/20 normal-case tracking-normal font-normal">${calYear}</span>`;
+      <span class="text-[10px] uppercase tracking-widest font-semibold ${isCurrent ? 'text-white/70' : 'text-white/50'}">Year ${yi + 1}</span>
+      <span class="text-[10px] normal-case tracking-normal font-normal ${isCurrent ? 'text-white/35' : 'text-white/20'}">${calYear}</span>
+      ${isCurrent ? '<span class="text-[9px] font-semibold px-1.5 py-[1px] rounded-full bg-rc-amber-muted text-rc-amber leading-none ml-0.5">now</span>' : ''}`;
     cluster.appendChild(yearHdr);
 
     // Collect year_long units from all semester keys in this calendar year
@@ -866,7 +941,7 @@ function mkTrayCard(code, ready = true) {
   const el = document.createElement('div');
   el.dataset.code = code;
   el.className = `unit-draggable flex items-center gap-2 rounded-lg px-2.5 py-2 border ${border} transition select-none hover:brightness-110`;
-  el.style.width = '15rem';
+  el.style.width = '100%';
 
   if (!ready) {
     const missing = [];
@@ -1104,7 +1179,7 @@ function renderStats() {
 
   const d2wrap = document.getElementById('stat-d2-wrap');
   if (state.degrees.length > 1) { d2wrap.classList.remove('hidden'); d2wrap.classList.add('flex'); }
-  else { d2wrap.classList.add('hidden'); d2wrap.classList.remove('flex'); }
+  else                           { d2wrap.classList.add('hidden');    d2wrap.classList.remove('flex'); }
 }
 
 // ─────────────────────────────────────────────────────────
