@@ -3,7 +3,7 @@
   Opened by OnboardingModal.open(); closed by OnboardingModal.close().
   Step 0: Welcome
   Step 1: Unit selection (current semester)
-  Step 2: Degree prediction
+  Step 2: Degree prediction + conflict check
   Step 3: Done
 #}
 
@@ -88,7 +88,7 @@
       {# Not found message #}
       <div id="ob-not-found" class="hidden text-center py-4">
         <p class="text-[12px] text-white/40">We haven't got that unit yet.</p>
-        <a href="https://github.com/your-repo/issues/new?template=unit-request.md"
+        <a href="https://github.com/BenMasel/agile-web-dev/issues/new"
            target="_blank" rel="noopener noreferrer"
            class="inline-block mt-2 text-[12px] text-rc-blue/80 hover:text-rc-blue transition underline underline-offset-2">
           Submit a request?
@@ -103,7 +103,7 @@
                 class="flex-1 py-2 rounded-[8px] bg-rc-fill border border-rc-border text-[12px] text-white/40 hover:text-white/65 transition">
           Back
         </button>
-        <button id="ob-step1-next" onclick="OnboardingModal.goTo(2)"
+        <button onclick="OnboardingModal.goTo(2)"
                 class="flex-[2] py-2 rounded-[8px] bg-rc-blue/90 hover:bg-rc-blue text-[13px] font-medium text-white transition">
           Next
         </button>
@@ -119,16 +119,49 @@
         </p>
       </div>
 
-      <div id="ob-degree-list" class="flex flex-col gap-1.5 overflow-y-auto" style="max-height: 16rem;"></div>
+      <div id="ob-degree-list" class="flex flex-col gap-1.5 overflow-y-auto" style="max-height: 14rem;"></div>
 
-      <div class="flex items-center gap-2 mt-1">
+      {# Conflict warning — shown when existing planner units would be overwritten #}
+      <div id="ob-conflict" class="hidden rounded-[8px] border border-rc-amber/30 p-3 flex flex-col gap-2"
+           style="background: rgba(212,163,64,0.07);">
+        <div class="flex items-center gap-2">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="shrink-0 text-rc-amber">
+            <path d="M6 1L1 10h10L6 1z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+            <path d="M6 5v2.5M6 9v.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+          <span class="text-[12px] font-medium text-rc-amber">Existing units found for this semester</span>
+        </div>
+        <div id="ob-conflict-codes" class="flex flex-wrap gap-1"></div>
+        <p class="text-[11px] text-white/40 leading-relaxed">
+          Replace them with your new selection, or add your new units alongside the existing ones.
+        </p>
+      </div>
+
+      {# Normal actions #}
+      <div id="ob-actions-normal" class="flex items-center gap-2 mt-1">
         <button onclick="OnboardingModal.goTo(1)"
                 class="flex-1 py-2 rounded-[8px] bg-rc-fill border border-rc-border text-[12px] text-white/40 hover:text-white/65 transition">
           Back
         </button>
-        <button onclick="OnboardingModal.finish()"
+        <button onclick="OnboardingModal.checkAndFinish()"
                 class="flex-[2] py-2 rounded-[8px] bg-rc-green/80 hover:bg-rc-green/95 text-[13px] font-medium text-white transition">
           Set up planner
+        </button>
+      </div>
+
+      {# Conflict actions — shown when conflict detected #}
+      <div id="ob-actions-conflict" class="hidden flex items-center gap-2 mt-1">
+        <button onclick="OnboardingModal.goTo(1)"
+                class="flex-1 py-2 rounded-[8px] bg-rc-fill border border-rc-border text-[12px] text-white/40 hover:text-white/65 transition">
+          Back
+        </button>
+        <button onclick="OnboardingModal.finish('merge')"
+                class="flex-1 py-2 rounded-[8px] bg-rc-fill border border-rc-amber/25 text-[12px] text-rc-amber hover:bg-rc-amber-muted transition">
+          Add alongside
+        </button>
+        <button onclick="OnboardingModal.finish('overwrite')"
+                class="flex-1 py-2 rounded-[8px] bg-rc-green/80 hover:bg-rc-green/95 text-[12px] font-medium text-white transition">
+          Replace
         </button>
       </div>
     </div>
@@ -202,15 +235,21 @@
 
 <script>
 (function () {
-  let obData = null;   // { units: [...], degrees: [...] }
+  let obData = null;
   let fuse   = null;
-  let selected = [];   // codes chosen in step 1
-  let chosenDegrees = []; // slugs chosen in step 2
+  let selected = [];
+  let chosenDegrees = [];
 
-  const overlay  = document.getElementById('onboarding-overlay');
-  const steps    = document.querySelectorAll('.ob-step');
-  const dots     = document.querySelectorAll('.ob-step-dot');
-  let   curStep  = 0;
+  const overlay = document.getElementById('onboarding-overlay');
+  const steps   = document.querySelectorAll('.ob-step');
+  const dots    = document.querySelectorAll('.ob-step-dot');
+  let curStep   = 0;
+
+  function currentSemKey() {
+    const now = new Date();
+    const sem = now.getMonth() < 6 ? 1 : 2;
+    return `${now.getFullYear()}-${sem}`;
+  }
 
   async function loadData() {
     if (obData) return;
@@ -229,25 +268,21 @@
 
   function updateDots(step) {
     dots.forEach((d, i) => {
-      d.classList.toggle('active', i === step);
-      d.classList.toggle('done',   i < step);
-      d.classList.remove('active');
+      d.classList.remove('active', 'done');
       if (i === step) d.classList.add('active');
       else if (i < step) d.classList.add('done');
     });
   }
 
   function showStep(n) {
-    steps.forEach((s, i) => {
-      s.classList.toggle('hidden', i !== n);
-    });
+    steps.forEach((s, i) => s.classList.toggle('hidden', i !== n));
     updateDots(n);
     curStep = n;
     if (n === 1) setupStep1();
     if (n === 2) setupStep2();
   }
 
-  // ---- Step 1 helpers ----
+  // ---- Step 1 ----
   function renderChips() {
     const container = document.getElementById('ob-chips');
     container.innerHTML = '';
@@ -305,16 +340,20 @@
     input.focus();
   }
 
-  // ---- Step 2 helpers ----
+  // ---- Step 2 ----
   function scoreDegreeFit(deg) {
     if (!selected.length) return 0;
     const degCodes = new Set(deg.codes);
-    const hits = selected.filter(c => degCodes.has(c)).length;
-    return hits / selected.length;
+    return selected.filter(c => degCodes.has(c)).length / selected.length;
   }
 
   function setupStep2() {
-    const list    = document.getElementById('ob-degree-list');
+    // Reset conflict UI
+    document.getElementById('ob-conflict').classList.add('hidden');
+    document.getElementById('ob-actions-normal').classList.remove('hidden');
+    document.getElementById('ob-actions-conflict').classList.add('hidden');
+
+    const list     = document.getElementById('ob-degree-list');
     const subtitle = document.getElementById('ob-deg-subtitle');
     list.innerHTML = '';
 
@@ -335,15 +374,14 @@
         : "We couldn't match your units to a degree. Choose manually.";
     }
 
-    // Pre-select top match if good confidence, otherwise nothing
     chosenDegrees = (scored[0]?.score >= 0.5) ? [scored[0].slug] : [];
 
-    scored.forEach((d, i) => {
+    scored.forEach(d => {
       const row = document.createElement('div');
       row.className = 'ob-deg-row' + (chosenDegrees.includes(d.slug) ? ' selected' : '');
       row.dataset.slug = d.slug;
 
-      const pct = Math.round(d.score * 100);
+      const pct   = Math.round(d.score * 100);
       const badge = d.score > 0
         ? `<span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue ml-auto shrink-0">${pct}% match</span>`
         : '';
@@ -360,46 +398,60 @@
 
       const cb = row.querySelector('input');
       function toggle() {
-        if (cb.checked) {
-          if (!chosenDegrees.includes(d.slug)) chosenDegrees.push(d.slug);
-          row.classList.add('selected');
-        } else {
-          chosenDegrees = chosenDegrees.filter(s => s !== d.slug);
-          row.classList.remove('selected');
-        }
+        if (cb.checked) { if (!chosenDegrees.includes(d.slug)) chosenDegrees.push(d.slug); row.classList.add('selected'); }
+        else            { chosenDegrees = chosenDegrees.filter(s => s !== d.slug); row.classList.remove('selected'); }
       }
-      row.onclick = (e) => {
-        if (e.target !== cb) cb.checked = !cb.checked;
-        toggle();
-      };
-      cb.onclick = (e) => e.stopPropagation();
+      row.onclick = (e) => { if (e.target !== cb) cb.checked = !cb.checked; toggle(); };
+      cb.onclick  = (e) => e.stopPropagation();
       cb.onchange = toggle;
-
       list.appendChild(row);
     });
   }
 
-  // ---- Finish ----
-  function finish() {
-    // Read existing planner state
+  // ---- Conflict check ----
+  function checkAndFinish() {
+    if (!selected.length) { finish('overwrite'); return; }
+
     let state = {};
     try { state = JSON.parse(localStorage.getItem('stUwa_planner_v3') || '{}'); } catch(e) {}
 
-    // Write chosen degrees
+    const key      = currentSemKey();
+    const existing = ((state.plan && state.plan[key]) || []).filter(c => c && !selected.includes(c));
+
+    if (!existing.length) { finish('overwrite'); return; }
+
+    // Show inline conflict warning
+    const conflictEl    = document.getElementById('ob-conflict');
+    const conflictCodes = document.getElementById('ob-conflict-codes');
+    conflictCodes.innerHTML = '';
+    existing.forEach(code => {
+      const chip = document.createElement('span');
+      chip.style.cssText = 'font-size:11px; padding:2px 8px; border-radius:5px; background:rgba(212,163,64,0.12); border:1px solid rgba(212,163,64,0.25); color:#D4A340; display:inline-block;';
+      chip.textContent = code;
+      conflictCodes.appendChild(chip);
+    });
+    conflictEl.classList.remove('hidden');
+    document.getElementById('ob-actions-normal').classList.add('hidden');
+    document.getElementById('ob-actions-conflict').classList.remove('hidden');
+  }
+
+  // ---- Write to planner ----
+  function finish(mode) {
+    let state = {};
+    try { state = JSON.parse(localStorage.getItem('stUwa_planner_v3') || '{}'); } catch(e) {}
+
+    const key = currentSemKey();
+    state.plan = state.plan || {};
+
     if (chosenDegrees.length) state.degrees = chosenDegrees;
 
-    // Write current-sem units as completed (they're already done)
     if (selected.length) {
-      state.done = Array.from(new Set([...(state.done || []), ...selected]));
-      // Place in current semester slot
-      const now = new Date();
-      const sem = now.getMonth() < 6 ? 1 : 2;
-      const yr  = now.getFullYear();
-      const key = `${yr}_s${sem}`;
-      const existing = (state.plan && state.plan[key]) ? state.plan[key] : [];
-      const merged   = Array.from(new Set([...existing, ...selected]));
-      state.plan = state.plan || {};
-      state.plan[key] = merged;
+      if (mode === 'merge') {
+        const existing = (state.plan[key] || []).filter(c => c);
+        state.plan[key] = Array.from(new Set([...existing, ...selected]));
+      } else {
+        state.plan[key] = [...selected];
+      }
     }
 
     localStorage.setItem('stUwa_planner_v3', JSON.stringify(state));
@@ -411,6 +463,8 @@
   window.OnboardingModal = {
     open() {
       overlay.classList.remove('hidden');
+      selected = [];
+      chosenDegrees = [];
       showStep(0);
       loadData();
     },
@@ -419,6 +473,7 @@
       localStorage.setItem('stUwa_onboarded', '1');
     },
     goTo(n) { showStep(n); },
+    checkAndFinish,
     finish,
     _removeUnit(code) {
       selected = selected.filter(c => c !== code);
@@ -428,12 +483,13 @@
 
   // First-visit auto-open
   if (!localStorage.getItem('stUwa_onboarded')) {
-    document.addEventListener('DOMContentLoaded', () => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(() => OnboardingModal.open(), 600));
+    } else {
       setTimeout(() => OnboardingModal.open(), 600);
-    });
+    }
   }
 
-  // Close on overlay click
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) OnboardingModal.close();
   });

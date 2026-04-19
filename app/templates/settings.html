@@ -284,7 +284,7 @@ function exportPlan() {
 // ── Clear all ────────────────────────────────────────────
 function clearAllData() {
   if (!confirm('Clear all local stUwa data? This cannot be undone.')) return;
-  const keys = ['stUwa_planner_v3', 'stUwa_pinnedUnits', NOTIF_KEY];
+  const keys = ['stUwa_planner_v3', NOTIF_KEY];
   keys.forEach(k => localStorage.removeItem(k));
   showPlannerSize();
   // Reset toggles to off

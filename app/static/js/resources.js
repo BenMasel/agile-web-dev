@@ -1,36 +1,41 @@
 // resources.js — drives the /resources page
-// Reads pinned units from localStorage and aggregates channels, platforms,
-// and textbooks across those units. Falls back to all units if none are pinned.
+// Reads the current semester's units from the planner state in localStorage
+// and aggregates channels, platforms, and textbooks across those units.
+// Falls back to all units if the planner has no current-semester units.
 
 const YOUTUBE_API_KEY = CONFIG.YOUTUBE_API_KEY;
-const STORAGE_KEY = 'stUwa_pinnedUnits';
 
 // ---------------------------------------------------------------------------
-// localStorage helpers
+// Current semester units from planner state
 // ---------------------------------------------------------------------------
 
-function getPinnedUnits() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+function getCurrentSemKey() {
+  const now = new Date();
+  const sem = now.getMonth() < 6 ? 1 : 2;
+  return `${now.getFullYear()}-${sem}`;
 }
 
-function setPinnedUnits(codes) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(codes));
+// Returns the unit codes the user has in their planner for the current semester.
+// Empty array means no planner data — callers should fall back to "all".
+function getCurrentSemCodes() {
+  try {
+    const state = JSON.parse(localStorage.getItem('stUwa_planner_v3') || '{}');
+    const key   = getCurrentSemKey();
+    return (state.plan && state.plan[key] || []).filter(c => c);
+  } catch {}
+  return [];
 }
 
 // ---------------------------------------------------------------------------
 // Active resource helpers
-// If units are pinned, aggregate only from those. Otherwise show all.
 // ---------------------------------------------------------------------------
 
+// Returns entries from UNIT_RESOURCES that match the user's current units.
+// Falls back to all UNIT_RESOURCES if the planner has no current-semester data.
 function getActiveUnits() {
-  const pinned = getPinnedUnits();
-  if (pinned.length === 0) return UNIT_RESOURCES;
-  return UNIT_RESOURCES.filter(u => pinned.includes(u.code));
+  const codes = getCurrentSemCodes();
+  if (codes.length === 0) return UNIT_RESOURCES;
+  return UNIT_RESOURCES.filter(u => codes.includes(u.code));
 }
 
 function getActiveChannels() {
@@ -96,53 +101,37 @@ function formatDate(dateStr) {
 }
 
 // ---------------------------------------------------------------------------
-// Pinned units bar
+// Current units bar
 // ---------------------------------------------------------------------------
 
-const pinnedBar = document.getElementById('pinned-units-bar');
+const currentBar = document.getElementById('current-units-bar');
 
-function renderPinnedBar() {
-  pinnedBar.innerHTML = '';
+function renderCurrentBar() {
+  currentBar.innerHTML = '';
 
-  const pinned = getPinnedUnits();
+  const codes = getCurrentSemCodes();
 
   const label = document.createElement('span');
   label.className = 'text-[11px] text-rc-text-tertiary shrink-0';
-  label.textContent = 'Pinned units:';
-  pinnedBar.appendChild(label);
+  currentBar.appendChild(label);
 
-  if (pinned.length === 0) {
+  if (codes.length === 0) {
+    label.textContent = 'Showing all resources —';
     const hint = document.createElement('span');
     hint.className = 'text-[11px] text-rc-text-faint';
-    hint.textContent = 'none — pin units from their pages to personalise results';
-    pinnedBar.appendChild(hint);
+    hint.textContent = 'set up your planner to filter by semester';
+    currentBar.appendChild(hint);
     return;
   }
 
-  for (const code of pinned) {
+  label.textContent = 'Your units this semester:';
+  for (const code of codes) {
     const chip = document.createElement('span');
-    chip.className = 'flex items-center gap-1.5 text-[11px] px-2 py-[3px] rounded-md bg-rc-red-muted border border-rc-red/20 text-rc-red';
-    chip.innerHTML = `
-      ${escapeHtml(code)}
-      <button data-unpin="${escapeHtml(code)}"
-              title="Unpin ${escapeHtml(code)}"
-              class="opacity-50 hover:opacity-100 transition cursor-pointer">
-        <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-          <path d="M1 1l6 6M7 1L1 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-        </svg>
-      </button>
-    `;
-    pinnedBar.appendChild(chip);
+    chip.className = 'text-[11px] px-2 py-[3px] rounded-md bg-rc-blue-muted border border-rc-blue/20 text-rc-blue';
+    chip.textContent = code;
+    currentBar.appendChild(chip);
   }
 }
-
-pinnedBar.addEventListener('click', e => {
-  const btn = e.target.closest('[data-unpin]');
-  if (!btn) return;
-  const code = btn.dataset.unpin;
-  setPinnedUnits(getPinnedUnits().filter(c => c !== code));
-  refresh();
-});
 
 // ---------------------------------------------------------------------------
 // Channel pills (Videos tab)
@@ -160,7 +149,7 @@ function renderChannelPills() {
   if (channels.length === 0) {
     const msg = document.createElement('span');
     msg.className = 'text-[11px] text-rc-text-faint';
-    msg.textContent = 'no channels — pin a unit with YouTube resources to enable search';
+    msg.textContent = 'no channels available for your current units';
     pillsContainer.appendChild(msg);
     return;
   }
@@ -420,7 +409,7 @@ async function runSearch() {
   const channels = getActiveChannels();
   if (channels.length === 0) {
     document.getElementById('error-title').textContent   = 'No YouTube channels available';
-    document.getElementById('error-message').textContent = 'Pin a unit that has YouTube resources to enable video search.';
+    document.getElementById('error-message').textContent = 'None of your current units have YouTube resources configured.';
     showVideoState('error');
     return;
   }
@@ -457,16 +446,14 @@ input.addEventListener('input', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Global refresh — called after any pin/unpin action
+// Global refresh
 // ---------------------------------------------------------------------------
 
 function refresh() {
-  renderPinnedBar();
+  renderCurrentBar();
   renderChannelPills();
-  // Re-render the current non-video tab if active
   if (currentTab === 'platforms') renderPlatforms();
   if (currentTab === 'textbooks') renderTextbooks();
-  // If a video search was in progress, re-run it
   if (input.value.trim() && currentTab === 'videos') runSearch();
 }
 
@@ -492,6 +479,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 switchTab('videos');
-renderPinnedBar();
+renderCurrentBar();
 renderChannelPills();
 input.focus();
