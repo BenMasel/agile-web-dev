@@ -221,6 +221,16 @@ def planner():
     return render_template('planner.html', degrees=degrees, units=units)
 
 
+@bp.route('/auth')
+def auth():
+    return render_template('auth.html')
+
+
+@bp.route('/settings')
+def settings():
+    return render_template('settings.html')
+
+
 @bp.route('/club/<slug>')
 def club_detail(slug):
     """

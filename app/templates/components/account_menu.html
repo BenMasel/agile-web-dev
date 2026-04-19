@@ -25,7 +25,7 @@
   <div class="h-px bg-rc-border-light mx-2 my-1"></div>
 
   {# ---- Settings ---- #}
-  <a href="#"
+  <a href="{{ url_for('main.settings') }}"
      role="menuitem"
      class="flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-rc-fill hover:text-white/85 transition">
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="shrink-0 text-white/30">
@@ -33,6 +33,19 @@
       <path d="M6.5 1.5v1M6.5 10.5v1M1.5 6.5h1M10.5 6.5h1M3 3l.7.7M9.3 9.3l.7.7M9.3 3.7L10 3M3 9.3l-.7.7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
     </svg>
     Settings
+  </a>
+
+  <div class="h-px bg-rc-border-light mx-2 my-1"></div>
+
+  {# ---- Sign in ---- #}
+  <a href="{{ url_for('main.auth') }}"
+     role="menuitem"
+     class="flex items-center gap-2.5 px-3 py-2 text-[13px] text-rc-red/70 hover:bg-rc-red-muted hover:text-rc-red transition">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="shrink-0">
+      <path d="M5 2.5H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      <path d="M8.5 9L11 6.5 8.5 4M11 6.5H5.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Sign in
   </a>
 
 </div>
