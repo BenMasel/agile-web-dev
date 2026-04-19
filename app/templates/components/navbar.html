@@ -23,11 +23,23 @@
     {# ---- Separator ---- #}
     <div class="w-px h-3.5 bg-rc-border mx-1 shrink-0"></div>
 
-    {# ---- Resources — links to /resources, shows pin count badge ---- #}
+    {# ---- Planner ---- #}
+    <a href="{{ url_for('main.planner') }}"
+       class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-white/45 hover:text-white/65 hover:bg-rc-fill transition">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+        <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.1"/>
+        <path d="M4 4.5h5M4 6.5h5M4 8.5h3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      Planner
+    </a>
+
+    {# ---- Resources ---- #}
     <a href="{{ url_for('main.resources') }}"
        class="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-white/45 hover:text-white/65 hover:bg-rc-fill transition">
       <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-        <path d="M3.5 1.5L9.5 7.5M7 2L10 5L6.5 6.5L6 11L1 6L5.5 5.5L7 2Z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        <path d="M2 9.5V4a1 1 0 0 1 1-1h3.5v6.5H2z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        <path d="M6.5 3h3a1 1 0 0 1 1 1v5.5H6.5V3z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+        <path d="M1.5 9.5h10" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
       Resources
     </a>

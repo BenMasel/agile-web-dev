@@ -9,21 +9,6 @@
      class="hidden fixed z-[200] w-44 rounded-[10px] bg-rc-surface border border-rc-border shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col py-1"
      role="menu">
 
-  {# ---- Planner ---- #}
-  <a href="{{ url_for('main.planner') }}"
-     role="menuitem"
-     class="flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-rc-fill hover:text-white/85 transition">
-    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="shrink-0 text-white/30">
-      <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="currentColor" stroke-width="1.1"/>
-      <path d="M3.5 5l1.5 1.5L8.5 3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M3.5 8.5h6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-    </svg>
-    Planner
-    <span class="ml-auto text-[9px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue leading-none">BETA</span>
-  </a>
-
-  <div class="h-px bg-rc-border-light mx-2 my-1"></div>
-
   {# ---- Settings ---- #}
   <a href="{{ url_for('main.settings') }}"
      role="menuitem"
