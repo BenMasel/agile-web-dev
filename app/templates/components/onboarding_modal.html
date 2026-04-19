@@ -1,0 +1,441 @@
+{#
+  Onboarding modal — multi-step first-visit flow.
+  Opened by OnboardingModal.open(); closed by OnboardingModal.close().
+  Step 0: Welcome
+  Step 1: Unit selection (current semester)
+  Step 2: Degree prediction
+  Step 3: Done
+#}
+
+<div id="onboarding-overlay"
+     class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4"
+     style="background: rgba(0,0,0,0.72); backdrop-filter: blur(4px);">
+
+  <div id="onboarding-modal"
+       class="w-full max-w-md rounded-[14px] bg-rc-surface border border-rc-border shadow-[0_24px_64px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden"
+       style="max-height: 90vh;">
+
+    {# ---- Step indicator ---- #}
+    <div class="flex items-center gap-1.5 px-5 pt-5 pb-0">
+      <div class="ob-step-dot rounded-full transition-all duration-300" data-step="0"></div>
+      <div class="ob-step-dot rounded-full transition-all duration-300" data-step="1"></div>
+      <div class="ob-step-dot rounded-full transition-all duration-300" data-step="2"></div>
+      <div class="ob-step-dot rounded-full transition-all duration-300" data-step="3"></div>
+      <button onclick="OnboardingModal.close()"
+              class="ml-auto text-white/20 hover:text-white/50 transition rounded p-0.5">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    {# ---- Step 0: Welcome ---- #}
+    <div id="ob-step-0" class="ob-step flex flex-col gap-4 px-5 pt-5 pb-6">
+      <div>
+        <h2 class="text-[16px] font-semibold text-white/90 tracking-tight">Welcome to stUwa</h2>
+        <p class="text-[13px] text-white/45 mt-1 leading-relaxed">
+          Let's get your planner set up. We'll ask a couple of quick questions so we can pre-fill your study timeline.
+        </p>
+      </div>
+      <div class="flex flex-col gap-2 text-[12px] text-white/40">
+        <div class="flex items-center gap-2">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="shrink-0 text-rc-blue">
+            <path d="M2 6l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Which units you're studying this semester
+        </div>
+        <div class="flex items-center gap-2">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="shrink-0 text-rc-blue">
+            <path d="M2 6l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Predict your degree from your unit choices
+        </div>
+        <div class="flex items-center gap-2">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="shrink-0 text-rc-blue">
+            <path d="M2 6l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Pre-fill your planner automatically
+        </div>
+      </div>
+      <button onclick="OnboardingModal.goTo(1)"
+              class="mt-1 w-full py-2.5 rounded-[8px] bg-rc-blue/90 hover:bg-rc-blue text-[13px] font-medium text-white transition">
+        Get started
+      </button>
+    </div>
+
+    {# ---- Step 1: Unit selection ---- #}
+    <div id="ob-step-1" class="ob-step hidden flex flex-col gap-3 px-5 pt-5 pb-6">
+      <div>
+        <h2 class="text-[16px] font-semibold text-white/90 tracking-tight">What are you studying?</h2>
+        <p class="text-[13px] text-white/45 mt-1">Add the units you're enrolled in <em>this semester</em>.</p>
+      </div>
+
+      {# Search box #}
+      <div class="relative">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"
+             class="absolute left-3 top-1/2 -translate-y-1/2 text-white/25 pointer-events-none">
+          <circle cx="5.5" cy="5.5" r="3.5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M8.5 8.5l2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        </svg>
+        <input id="ob-unit-search" type="text" placeholder="Search by unit code or name…"
+               class="w-full bg-rc-fill border border-rc-border rounded-[8px] pl-8 pr-3 py-2 text-[13px] text-white/80 placeholder-white/25 outline-none focus:border-white/20 transition"/>
+      </div>
+
+      {# Search results #}
+      <div id="ob-results" class="flex flex-col gap-px overflow-y-auto rounded-[8px] border border-rc-border bg-rc-fill-light"
+           style="max-height: 10rem; display: none;"></div>
+
+      {# Not found message #}
+      <div id="ob-not-found" class="hidden text-center py-4">
+        <p class="text-[12px] text-white/40">We haven't got that unit yet.</p>
+        <a href="https://github.com/your-repo/issues/new?template=unit-request.md"
+           target="_blank" rel="noopener noreferrer"
+           class="inline-block mt-2 text-[12px] text-rc-blue/80 hover:text-rc-blue transition underline underline-offset-2">
+          Submit a request?
+        </a>
+      </div>
+
+      {# Selected chips #}
+      <div id="ob-chips" class="flex flex-wrap gap-1.5 min-h-[1.75rem]"></div>
+
+      <div class="flex items-center gap-2 mt-1">
+        <button onclick="OnboardingModal.goTo(0)"
+                class="flex-1 py-2 rounded-[8px] bg-rc-fill border border-rc-border text-[12px] text-white/40 hover:text-white/65 transition">
+          Back
+        </button>
+        <button id="ob-step1-next" onclick="OnboardingModal.goTo(2)"
+                class="flex-[2] py-2 rounded-[8px] bg-rc-blue/90 hover:bg-rc-blue text-[13px] font-medium text-white transition">
+          Next
+        </button>
+      </div>
+    </div>
+
+    {# ---- Step 2: Degree prediction ---- #}
+    <div id="ob-step-2" class="ob-step hidden flex flex-col gap-3 px-5 pt-5 pb-6">
+      <div>
+        <h2 class="text-[16px] font-semibold text-white/90 tracking-tight">Your degree</h2>
+        <p id="ob-deg-subtitle" class="text-[13px] text-white/45 mt-1 leading-relaxed">
+          Based on your units, here's our best guess. Confirm or change below.
+        </p>
+      </div>
+
+      <div id="ob-degree-list" class="flex flex-col gap-1.5 overflow-y-auto" style="max-height: 16rem;"></div>
+
+      <div class="flex items-center gap-2 mt-1">
+        <button onclick="OnboardingModal.goTo(1)"
+                class="flex-1 py-2 rounded-[8px] bg-rc-fill border border-rc-border text-[12px] text-white/40 hover:text-white/65 transition">
+          Back
+        </button>
+        <button onclick="OnboardingModal.finish()"
+                class="flex-[2] py-2 rounded-[8px] bg-rc-green/80 hover:bg-rc-green/95 text-[13px] font-medium text-white transition">
+          Set up planner
+        </button>
+      </div>
+    </div>
+
+    {# ---- Step 3: Done ---- #}
+    <div id="ob-step-3" class="ob-step hidden flex flex-col items-center gap-4 px-5 pt-6 pb-7 text-center">
+      <div class="w-12 h-12 rounded-full bg-rc-green/10 border border-rc-green/20 flex items-center justify-center">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" class="text-rc-green">
+          <path d="M4 10l4 4 8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="text-[16px] font-semibold text-white/90">You're all set</h2>
+        <p class="text-[13px] text-white/40 mt-1 leading-relaxed">
+          Your planner has been pre-filled. Head to the Planner to review and adjust your timeline.
+        </p>
+      </div>
+      <div class="flex gap-2 w-full mt-1">
+        <button onclick="OnboardingModal.close()"
+                class="flex-1 py-2 rounded-[8px] bg-rc-fill border border-rc-border text-[12px] text-white/50 hover:text-white/70 transition">
+          Dismiss
+        </button>
+        <a href="/planner"
+           class="flex-[2] py-2 rounded-[8px] bg-rc-blue/90 hover:bg-rc-blue text-[13px] font-medium text-white transition text-center">
+          Go to Planner
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+  .ob-step-dot {
+    width: 5px; height: 5px;
+    background: rgba(255,255,255,0.12);
+  }
+  .ob-step-dot.active {
+    width: 18px;
+    background: rgba(108,160,240,0.9);
+  }
+  .ob-step-dot.done {
+    background: rgba(46,204,113,0.6);
+  }
+  .ob-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 8px 3px 9px;
+    background: rgba(108,160,240,0.12);
+    border: 1px solid rgba(108,160,240,0.2);
+    border-radius: 6px;
+    font-size: 11px; color: rgba(108,160,240,0.9);
+  }
+  .ob-chip button {
+    line-height: 1; color: rgba(108,160,240,0.5);
+  }
+  .ob-chip button:hover { color: rgba(108,160,240,0.9); }
+  .ob-deg-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: rgba(255,255,255,0.03);
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .ob-deg-row:hover { border-color: rgba(255,255,255,0.13); }
+  .ob-deg-row.selected {
+    border-color: rgba(108,160,240,0.4);
+    background: rgba(108,160,240,0.07);
+  }
+  .ob-deg-row input[type=checkbox] { accent-color: #6CA0F0; margin-top: 1px; }
+</style>
+
+<script>
+(function () {
+  let obData = null;   // { units: [...], degrees: [...] }
+  let fuse   = null;
+  let selected = [];   // codes chosen in step 1
+  let chosenDegrees = []; // slugs chosen in step 2
+
+  const overlay  = document.getElementById('onboarding-overlay');
+  const steps    = document.querySelectorAll('.ob-step');
+  const dots     = document.querySelectorAll('.ob-step-dot');
+  let   curStep  = 0;
+
+  async function loadData() {
+    if (obData) return;
+    try {
+      const r = await fetch('/api/onboarding-data');
+      obData = await r.json();
+      fuse = new Fuse(obData.units, {
+        keys: ['code', 'title'],
+        threshold: 0.35,
+        minMatchCharLength: 2,
+      });
+    } catch (e) {
+      console.error('onboarding-data fetch failed', e);
+    }
+  }
+
+  function updateDots(step) {
+    dots.forEach((d, i) => {
+      d.classList.toggle('active', i === step);
+      d.classList.toggle('done',   i < step);
+      d.classList.remove('active');
+      if (i === step) d.classList.add('active');
+      else if (i < step) d.classList.add('done');
+    });
+  }
+
+  function showStep(n) {
+    steps.forEach((s, i) => {
+      s.classList.toggle('hidden', i !== n);
+    });
+    updateDots(n);
+    curStep = n;
+    if (n === 1) setupStep1();
+    if (n === 2) setupStep2();
+  }
+
+  // ---- Step 1 helpers ----
+  function renderChips() {
+    const container = document.getElementById('ob-chips');
+    container.innerHTML = '';
+    selected.forEach(code => {
+      const chip = document.createElement('div');
+      chip.className = 'ob-chip';
+      chip.innerHTML = `${code}<button onclick="OnboardingModal._removeUnit('${code}')">&times;</button>`;
+      container.appendChild(chip);
+    });
+  }
+
+  function renderResults(query) {
+    const resultsEl  = document.getElementById('ob-results');
+    const notFoundEl = document.getElementById('ob-not-found');
+    if (!query.trim() || !fuse) {
+      resultsEl.style.display = 'none';
+      notFoundEl.classList.add('hidden');
+      return;
+    }
+    const hits = fuse.search(query).slice(0, 8);
+    if (!hits.length) {
+      resultsEl.style.display = 'none';
+      notFoundEl.classList.remove('hidden');
+      return;
+    }
+    notFoundEl.classList.add('hidden');
+    resultsEl.style.display = 'flex';
+    resultsEl.innerHTML = '';
+    hits.forEach(({ item }) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      const already = selected.includes(item.code);
+      row.className = `flex items-center gap-2.5 px-3 py-2 text-left transition ${already ? 'opacity-40 cursor-default' : 'hover:bg-rc-fill'}`;
+      row.innerHTML = `
+        <span class="text-[11px] font-semibold text-rc-blue/80 w-[4.5rem] shrink-0">${item.code}</span>
+        <span class="text-[12px] text-white/65 truncate">${item.title}</span>
+        ${already ? '<span class="ml-auto text-[10px] text-white/25">added</span>' : ''}
+      `;
+      if (!already) {
+        row.onclick = () => {
+          selected.push(item.code);
+          renderChips();
+          document.getElementById('ob-unit-search').value = '';
+          renderResults('');
+        };
+      }
+      resultsEl.appendChild(row);
+    });
+  }
+
+  function setupStep1() {
+    renderChips();
+    const input = document.getElementById('ob-unit-search');
+    input.oninput = (e) => renderResults(e.target.value);
+    input.focus();
+  }
+
+  // ---- Step 2 helpers ----
+  function scoreDegreeFit(deg) {
+    if (!selected.length) return 0;
+    const degCodes = new Set(deg.codes);
+    const hits = selected.filter(c => degCodes.has(c)).length;
+    return hits / selected.length;
+  }
+
+  function setupStep2() {
+    const list    = document.getElementById('ob-degree-list');
+    const subtitle = document.getElementById('ob-deg-subtitle');
+    list.innerHTML = '';
+
+    if (!obData) {
+      subtitle.textContent = "No data available — choose your degree manually.";
+      return;
+    }
+
+    const scored = obData.degrees
+      .map(d => ({ ...d, score: scoreDegreeFit(d) }))
+      .sort((a, b) => b.score - a.score);
+
+    if (!selected.length) {
+      subtitle.textContent = "No units selected — choose your degree below.";
+    } else {
+      subtitle.textContent = scored[0]?.score > 0
+        ? "Based on your units, here's our best guess. Confirm or change below."
+        : "We couldn't match your units to a degree. Choose manually.";
+    }
+
+    // Pre-select top match if good confidence, otherwise nothing
+    chosenDegrees = (scored[0]?.score >= 0.5) ? [scored[0].slug] : [];
+
+    scored.forEach((d, i) => {
+      const row = document.createElement('div');
+      row.className = 'ob-deg-row' + (chosenDegrees.includes(d.slug) ? ' selected' : '');
+      row.dataset.slug = d.slug;
+
+      const pct = Math.round(d.score * 100);
+      const badge = d.score > 0
+        ? `<span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue ml-auto shrink-0">${pct}% match</span>`
+        : '';
+
+      row.innerHTML = `
+        <input type="checkbox" ${chosenDegrees.includes(d.slug) ? 'checked' : ''} />
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <span class="text-[13px] text-white/80 font-medium leading-tight">${d.title}</span>
+            ${badge}
+          </div>
+        </div>
+      `;
+
+      const cb = row.querySelector('input');
+      function toggle() {
+        if (cb.checked) {
+          if (!chosenDegrees.includes(d.slug)) chosenDegrees.push(d.slug);
+          row.classList.add('selected');
+        } else {
+          chosenDegrees = chosenDegrees.filter(s => s !== d.slug);
+          row.classList.remove('selected');
+        }
+      }
+      row.onclick = (e) => {
+        if (e.target !== cb) cb.checked = !cb.checked;
+        toggle();
+      };
+      cb.onclick = (e) => e.stopPropagation();
+      cb.onchange = toggle;
+
+      list.appendChild(row);
+    });
+  }
+
+  // ---- Finish ----
+  function finish() {
+    // Read existing planner state
+    let state = {};
+    try { state = JSON.parse(localStorage.getItem('stUwa_planner_v3') || '{}'); } catch(e) {}
+
+    // Write chosen degrees
+    if (chosenDegrees.length) state.degrees = chosenDegrees;
+
+    // Write current-sem units as completed (they're already done)
+    if (selected.length) {
+      state.done = Array.from(new Set([...(state.done || []), ...selected]));
+      // Place in current semester slot
+      const now = new Date();
+      const sem = now.getMonth() < 6 ? 1 : 2;
+      const yr  = now.getFullYear();
+      const key = `${yr}_s${sem}`;
+      const existing = (state.plan && state.plan[key]) ? state.plan[key] : [];
+      const merged   = Array.from(new Set([...existing, ...selected]));
+      state.plan = state.plan || {};
+      state.plan[key] = merged;
+    }
+
+    localStorage.setItem('stUwa_planner_v3', JSON.stringify(state));
+    localStorage.setItem('stUwa_onboarded', '1');
+    showStep(3);
+  }
+
+  // ---- Public API ----
+  window.OnboardingModal = {
+    open() {
+      overlay.classList.remove('hidden');
+      showStep(0);
+      loadData();
+    },
+    close() {
+      overlay.classList.add('hidden');
+      localStorage.setItem('stUwa_onboarded', '1');
+    },
+    goTo(n) { showStep(n); },
+    finish,
+    _removeUnit(code) {
+      selected = selected.filter(c => c !== code);
+      renderChips();
+    },
+  };
+
+  // First-visit auto-open
+  if (!localStorage.getItem('stUwa_onboarded')) {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => OnboardingModal.open(), 600);
+    });
+  }
+
+  // Close on overlay click
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) OnboardingModal.close();
+  });
+})();
+</script>

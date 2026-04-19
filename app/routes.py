@@ -1,9 +1,10 @@
 import os
+import re
 import subprocess
 from datetime import datetime, timezone
 from functools import lru_cache
 import yaml
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, jsonify
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
@@ -244,6 +245,32 @@ def planner():
     degrees = load_all_yaml('degrees')
     units = {u['code']: u for u in load_all_yaml('units')}
     return render_template('planner.html', degrees=degrees, units=units)
+
+
+@bp.route('/api/onboarding-data')
+def onboarding_data():
+    units = [
+        {
+            'code':  u.get('code', ''),
+            'title': u.get('title', ''),
+        }
+        for u in load_all_yaml('units')
+        if u.get('code')
+    ]
+    degrees = []
+    for d in load_all_yaml('degrees'):
+        codes = []
+        for yr in (d.get('years') or []):
+            for sm in (yr.get('semesters') or []):
+                for u in (sm.get('units') or []):
+                    if u.get('code'):
+                        codes.append(u['code'])
+        degrees.append({
+            'slug':  d.get('slug', ''),
+            'title': d.get('title', ''),
+            'codes': codes,
+        })
+    return jsonify({'units': units, 'degrees': degrees})
 
 
 @bp.route('/auth')

@@ -37,6 +37,19 @@
 
   <div class="h-px bg-rc-border-light mx-2 my-1"></div>
 
+  {# ---- Onboard ---- #}
+  <button onclick="document.getElementById('account-menu').classList.add('hidden'); document.getElementById('account-menu').classList.remove('flex'); OnboardingModal.open();"
+          role="menuitem"
+          class="flex items-center gap-2.5 px-3 py-2 text-[13px] text-white/60 hover:bg-rc-fill hover:text-white/85 transition w-full text-left">
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="shrink-0 text-white/30">
+      <path d="M6.5 1.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z" stroke="currentColor" stroke-width="1.1"/>
+      <path d="M2 11.5c0-2.2 2-4 4.5-4s4.5 1.8 4.5 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+    </svg>
+    Onboard
+  </button>
+
+  <div class="h-px bg-rc-border-light mx-2 my-1"></div>
+
   {# ---- Sign in ---- #}
   <a href="{{ url_for('main.auth') }}"
      role="menuitem"
