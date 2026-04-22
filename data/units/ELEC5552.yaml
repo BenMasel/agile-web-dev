@@ -1,0 +1,32 @@
+code: ELEC5552
+title: Electrical and Electronic Engineering Design Project
+level: 5
+credit_points: 6
+availability: [2]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S2
+offered_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC5552"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - ELEC3014
+    - ELEC3015
+    - ELEC3016
+    - ELEC3020
+    - ELEC3021
+  external:
+    - "Completion of 96 credit points, WAM ≥ 50"
+
+learning_outcomes:
+  - Integrate skills from multiple EEE sub-disciplines into a capstone design project
+  - Apply engineering design methodology to an open-ended real-world problem
+  - Manage project scope, timeline and resources in a team environment
+  - Communicate design outcomes through professional reports and presentations

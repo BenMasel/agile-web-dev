@@ -178,8 +178,14 @@ function buildRow(item, index) {
   if (item.type === 'unit') {
     label  = `<span class="text-[13px] font-medium text-white/85">${item.code}</span>`;
     sub    = `<span class="text-[11px] text-white/35 truncate">${item.title}</span>`;
-    badges = `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(255,99,99,0.12)] text-[#FF6363] shrink-0">${item.credit_points} CP</span>
-              <span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(239,159,39,0.1)] text-[#D4A340] shrink-0">Sem ${item.semester}</span>`;
+    const avail = item.availability;
+    let availBadge = '';
+    if (avail === 'year_long') {
+      availBadge = `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(167,139,250,0.12)] text-[#A78BFA] shrink-0">Year-long</span>`;
+    } else if (Array.isArray(avail)) {
+      availBadge = avail.map(s => `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(239,159,39,0.1)] text-[#D4A340] shrink-0">Sem ${s}</span>`).join('');
+    }
+    badges = `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(255,99,99,0.12)] text-[#FF6363] shrink-0">${item.credit_points} CP</span>${availBadge}`;
   } else if (item.type === 'degree') {
     label  = `<span class="text-[13px] font-medium text-white/85">${item.title}</span>`;
     sub    = `<span class="text-[11px] text-white/35 truncate">${item.faculty}</span>`;

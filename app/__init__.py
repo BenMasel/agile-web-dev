@@ -21,4 +21,8 @@ def create_app():
     from app import routes
     app.register_blueprint(routes.bp)
 
+    # Register the docs blueprint (/docs).
+    from app.docs_bp import docs_bp
+    app.register_blueprint(docs_bp)
+
     return app

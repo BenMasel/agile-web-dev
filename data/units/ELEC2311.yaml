@@ -1,0 +1,30 @@
+code: ELEC2311
+title: Digital System Design
+level: 2
+credit_points: 6
+availability: [2]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S2
+offered_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC2311"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities:
+  - code: ELEC4406
+    title: Digital System Design (old)
+
+prerequisites:
+  all_of:
+    - ELEC1303
+
+learning_outcomes:
+  - Apply hardware description languages (VHDL) to model digital systems
+  - Use automated synthesis tools and FPGA implementation technologies
+  - Design and validate digital systems against functional specifications
+  - Describe interfacing and communication protocols used in digital systems

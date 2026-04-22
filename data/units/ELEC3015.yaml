@@ -1,0 +1,33 @@
+code: ELEC3015
+title: Signals and Systems
+level: 3
+credit_points: 6
+availability: [2]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S2
+offered_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC3015"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities:
+  - code: ENSC3015
+    title: Signals and Systems
+
+prerequisites:
+  all_of:
+    - MATH1012
+    - ENSC2003
+  any_of:
+    - [CITS2401, CITS1401]
+
+learning_outcomes:
+  - Analyse continuous and discrete-time signals in the time and frequency domains
+  - Apply Laplace, Fourier and Z transforms to system analysis
+  - Design analog and digital filters for signal processing applications
+  - Understand sampling, reconstruction and aliasing in digital systems

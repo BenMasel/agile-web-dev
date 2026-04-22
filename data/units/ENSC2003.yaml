@@ -1,0 +1,33 @@
+code: ENSC2003
+title: Engineering Electrical Fundamentals
+level: 2
+credit_points: 6
+availability: [1, 2]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S1, S2
+offered_detail: Feb – Jun / Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ENSC2003"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities: []
+
+prerequisites:
+  all_of:
+    - MATH1011
+  external:
+    - "Physics ATAR or PHYS1030 Physics Bridging Unit"
+
+corequisites:
+  - MATH1012
+
+learning_outcomes:
+  - Analyse DC, AC and transient circuit behaviour using fundamental circuit laws
+  - Apply device models for diodes and operational amplifiers
+  - Use Boolean algebra and logic gates to design digital circuits
+  - Explain electrical safety practices and environmental impacts of electronics

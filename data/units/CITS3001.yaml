@@ -1,0 +1,26 @@
+code: CITS3001
+title: Advanced Algorithms
+level: 3
+credit_points: 6
+availability: [2]
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+offered: 2026 S2
+offered_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS3001"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - CITS2200
+
+learning_outcomes:
+  - Design and analyse algorithms using dynamic programming, greedy and divide-and-conquer strategies
+  - Implement graph algorithms for pathfinding, spanning trees and network flow
+  - Classify problems by computational complexity including P, NP and NP-complete
+  - Prove algorithm correctness and derive tight time and space complexity bounds

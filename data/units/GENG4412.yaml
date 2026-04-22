@@ -1,0 +1,26 @@
+code: GENG4412
+title: Engineering Research Project Part 2
+level: 4
+credit_points: 6
+availability: [1, 2]
+faculty: Engineering
+school: Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Engineering
+offered: 2026 S1, S2
+offered_detail: Feb – Jun / Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=GENG4412"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - GENG4411
+
+learning_outcomes:
+  - Complete and defend a substantial engineering research or design project
+  - Analyse and critically interpret experimental results and findings
+  - Produce a publication-quality technical report documenting the project
+  - Present research outcomes to a panel of academic and industry assessors

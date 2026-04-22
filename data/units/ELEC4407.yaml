@@ -1,0 +1,29 @@
+code: ELEC4407
+title: Engineering Electromagnetics
+level: 4
+credit_points: 6
+availability: [1]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S1
+offered_detail: Feb – Jun
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC4407"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - ELEC3021
+    - PHYS2003
+  external:
+    - "WAM ≥ 50"
+
+learning_outcomes:
+  - Apply Maxwell's equations to static and time-varying electromagnetic fields
+  - Analyse electromagnetic wave propagation, reflection and transmission
+  - Understand transmission line theory and impedance matching
+  - Design basic antenna systems and evaluate radiation patterns

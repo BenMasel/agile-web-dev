@@ -1,0 +1,5 @@
+name: Microsoft Azure for Students
+description: $100 USD in Azure credits per year, plus free access to popular services like VMs, databases, and AI APIs — no credit card required.
+value: "$100 credit"
+url: "https://azure.microsoft.com/en-au/free/students/"
+tags: [cloud, dev]

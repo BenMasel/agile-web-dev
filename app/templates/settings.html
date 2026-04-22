@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Settings — stUwa{% endblock %}
+
+{% block content %}
+
+{# ── Page header ── #}
+<div class="flex items-center gap-3 pt-4 pb-1">
+  <div class="w-8 h-8 rounded-[8px] bg-rc-fill border border-rc-border flex items-center justify-center shrink-0">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+      <circle cx="7.5" cy="7.5" r="2" stroke="rgba(255,255,255,0.4)" stroke-width="1.2"/>
+      <path d="M7.5 1.5v1.3M7.5 12.2v1.3M1.5 7.5h1.3M12.2 7.5h1.3M3.4 3.4l.9.9M10.7 10.7l.9.9M10.7 4.3l-.9.9M4.3 10.7l-.9.9"
+            stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div>
+    <h1 class="text-[17px] font-semibold text-rc-text tracking-tight">Settings</h1>
+    <p class="text-[12px] text-rc-text-tertiary">Account, notifications, and preferences</p>
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════ #}
+{# ACCOUNT SECTION                                        #}
+{# ══════════════════════════════════════════════════════ #}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">Account</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+  </div>
+
+  {# Not signed in state — replace with account info card when auth is implemented #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex items-center gap-4">
+    <div class="w-12 h-12 rounded-full bg-rc-fill border border-rc-border flex items-center justify-center shrink-0">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <circle cx="11" cy="8" r="4" stroke="rgba(255,255,255,0.2)" stroke-width="1.3"/>
+        <path d="M3 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="rgba(255,255,255,0.2)" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="text-[13px] font-medium text-white/60 mb-0.5">Not signed in</div>
+      <div class="text-[12px] text-rc-text-faint">Sign in with your UWA student email to sync your planner and access account features.</div>
+    </div>
+    <a href="{{ url_for('main.auth') }}"
+       class="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-rc-red/90 hover:bg-rc-red text-white text-[12px] font-medium transition">
+      Sign in
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+        <path d="M2 5.5h7M6 3l2.5 2.5L6 8" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+
+  {# Account details (disabled — shown when signed in) #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden opacity-35 pointer-events-none select-none">
+    <div class="px-4 py-3 border-b border-rc-border-light flex items-center justify-between">
+      <span class="text-[12px] font-medium text-white/70">Account information</span>
+      <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-fill text-white/30">Sign in to edit</span>
+    </div>
+    <div class="divide-y divide-rc-border-light">
+      {% for row in [('Email', '—'), ('Display name', '—'), ('Student ID', '—'), ('Faculty', '—')] %}
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">{{ row[0] }}</span>
+        <span class="text-[12px] text-white/35">{{ row[1] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════ #}
+{# NOTIFICATIONS SECTION                                  #}
+{# ══════════════════════════════════════════════════════ #}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">Notifications</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+    <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber">Coming soon</span>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden">
+
+    <div class="px-4 py-3 border-b border-rc-border-light">
+      <div class="text-[12px] font-medium text-white/70">Email notifications</div>
+      <div class="text-[11px] text-rc-text-faint mt-0.5">Sent to your UWA student email when enabled</div>
+    </div>
+
+    <div class="divide-y divide-rc-border-light">
+
+      {% set notif_items = [
+        ('notif-planner',  'Planner reminders',    'Reminders before semester enrolment deadlines',     True),
+        ('notif-updates',  'Unit catalogue updates','When unit info, prerequisites, or availability changes', False),
+        ('notif-replies',  'Community replies',     'When someone replies to your unit comments',         False),
+        ('notif-digest',   'Weekly digest',         'A summary of new resources added for your units',   False),
+      ] %}
+
+      {% for id, label, desc, default in notif_items %}
+      <div class="flex items-center gap-4 px-4 py-3.5">
+        <div class="flex-1 min-w-0">
+          <div class="text-[12px] font-medium text-white/60">{{ label }}</div>
+          <div class="text-[11px] text-rc-text-faint mt-0.5">{{ desc }}</div>
+        </div>
+        <button id="{{ id }}-toggle"
+                role="switch"
+                aria-checked="{{ 'true' if default else 'false' }}"
+                data-notif="{{ id }}"
+                onclick="toggleNotif(this)"
+                class="notif-toggle shrink-0 w-9 h-5 rounded-full border transition cursor-pointer relative
+                  {{ 'bg-rc-green border-rc-green/40' if default else 'bg-rc-fill border-rc-border' }}">
+          <span class="absolute top-[3px] w-3.5 h-3.5 rounded-full transition-all
+            {{ 'left-[18px] bg-white' if default else 'left-[3px] bg-white/30' }}"></span>
+        </button>
+      </div>
+      {% endfor %}
+
+    </div>
+
+    <div class="px-4 py-2.5 bg-rc-fill-subtle border-t border-rc-border-light flex items-center gap-1.5">
+      <svg width="11" height="11" viewBox="0 0 11 11" fill="none" class="shrink-0 text-rc-text-faint">
+        <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.1"/>
+        <path d="M5.5 4v2.5M5.5 7.5h.01" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      <span class="text-[11px] text-rc-text-faint">Preferences saved locally — linked to your account once you sign in</span>
+    </div>
+
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════ #}
+{# PLANNER DATA SECTION                                   #}
+{# ══════════════════════════════════════════════════════ #}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">Planner data</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden">
+    <div class="divide-y divide-rc-border-light">
+
+      <div class="flex items-center justify-between px-4 py-3.5">
+        <div>
+          <div class="text-[12px] font-medium text-white/60">Local planner data</div>
+          <div class="text-[11px] text-rc-text-faint mt-0.5">Your plan is saved in this browser's storage</div>
+        </div>
+        <span id="planner-size" class="text-[11px] text-white/30 tabular-nums">—</span>
+      </div>
+
+      <div class="flex items-center justify-between px-4 py-3.5">
+        <div>
+          <div class="text-[12px] font-medium text-white/60">Export plan</div>
+          <div class="text-[11px] text-rc-text-faint mt-0.5">Download your planner state as JSON</div>
+        </div>
+        <button onclick="exportPlan()"
+                class="text-[11px] px-2.5 py-1 rounded-[6px] bg-rc-fill border border-rc-border text-white/45 hover:text-white/70 hover:border-white/15 transition cursor-pointer">
+          Export
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between px-4 py-3.5">
+        <div>
+          <div class="text-[12px] font-medium text-rc-red/70">Clear all local data</div>
+          <div class="text-[11px] text-rc-text-faint mt-0.5">Removes your planner, pins, and local preferences</div>
+        </div>
+        <button onclick="clearAllData()"
+                class="text-[11px] px-2.5 py-1 rounded-[6px] bg-rc-red-muted border border-rc-red/20 text-rc-red/70 hover:text-rc-red hover:border-rc-red/35 transition cursor-pointer">
+          Clear
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{# ══════════════════════════════════════════════════════ #}
+{# ABOUT SECTION                                          #}
+{# ══════════════════════════════════════════════════════ #}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">About</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden">
+    <div class="divide-y divide-rc-border-light">
+
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">Version</span>
+        <span class="text-[12px] text-white/35">0.1 <span class="text-[10px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue ml-1">BETA</span></span>
+      </div>
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">Built by</span>
+        <span class="text-[12px] text-white/35">UWA students, for UWA students</span>
+      </div>
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">Source</span>
+        <a href="https://github.com/BenMasel/agile-web-dev"
+           target="_blank" rel="noopener"
+           class="text-[12px] text-rc-blue/70 hover:text-rc-blue transition">
+          GitHub ↗
+        </a>
+      </div>
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">Feedback / bugs</span>
+        <a href="https://github.com/BenMasel/agile-web-dev/issues"
+           target="_blank" rel="noopener"
+           class="text-[12px] text-rc-blue/70 hover:text-rc-blue transition">
+          Open an issue ↗
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+const NOTIF_KEY    = 'stUwa_notif_prefs';
+const PLANNER_KEY  = 'stUwa_planner_v3';
+
+// ── Notification toggles ─────────────────────────────────
+function loadNotifPrefs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(NOTIF_KEY)) || {};
+    document.querySelectorAll('.notif-toggle').forEach(btn => {
+      const id = btn.dataset.notif;
+      if (id in saved) applyToggle(btn, saved[id]);
+    });
+  } catch {}
+}
+
+function applyToggle(btn, on) {
+  const knob = btn.querySelector('span');
+  btn.setAttribute('aria-checked', on ? 'true' : 'false');
+  if (on) {
+    btn.classList.add('bg-rc-green', 'border-rc-green/40');
+    btn.classList.remove('bg-rc-fill', 'border-rc-border');
+    knob.classList.add('left-[18px]', 'bg-white');
+    knob.classList.remove('left-[3px]', 'bg-white/30');
+  } else {
+    btn.classList.remove('bg-rc-green', 'border-rc-green/40');
+    btn.classList.add('bg-rc-fill', 'border-rc-border');
+    knob.classList.remove('left-[18px]', 'bg-white');
+    knob.classList.add('left-[3px]', 'bg-white/30');
+  }
+}
+
+function toggleNotif(btn) {
+  const isOn = btn.getAttribute('aria-checked') === 'true';
+  applyToggle(btn, !isOn);
+  try {
+    const saved = JSON.parse(localStorage.getItem(NOTIF_KEY)) || {};
+    saved[btn.dataset.notif] = !isOn;
+    localStorage.setItem(NOTIF_KEY, JSON.stringify(saved));
+  } catch {}
+}
+
+// ── Planner data size ────────────────────────────────────
+function showPlannerSize() {
+  try {
+    const raw = localStorage.getItem(PLANNER_KEY);
+    if (!raw) { document.getElementById('planner-size').textContent = 'Empty'; return; }
+    const kb = (new TextEncoder().encode(raw).length / 1024).toFixed(1);
+    document.getElementById('planner-size').textContent = kb + ' KB';
+  } catch {}
+}
+
+// ── Export ───────────────────────────────────────────────
+function exportPlan() {
+  try {
+    const raw = localStorage.getItem(PLANNER_KEY);
+    if (!raw) { alert('No planner data to export.'); return; }
+    const blob = new Blob([raw], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'stuwa-plan.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {}
+}
+
+// ── Clear all ────────────────────────────────────────────
+function clearAllData() {
+  if (!confirm('Clear all local stUwa data? This cannot be undone.')) return;
+  const keys = ['stUwa_planner_v3', NOTIF_KEY];
+  keys.forEach(k => localStorage.removeItem(k));
+  showPlannerSize();
+  // Reset toggles to off
+  document.querySelectorAll('.notif-toggle').forEach(btn => applyToggle(btn, false));
+}
+
+// ── Init ─────────────────────────────────────────────────
+loadNotifPrefs();
+showPlannerSize();
+</script>
+{% endblock %}

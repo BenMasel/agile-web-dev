@@ -1,0 +1,226 @@
+slug: BE-EEE
+title: Bachelor of Engineering (Electrical and Electronic)
+faculty: Faculty of Engineering & Mathematical Sciences
+duration_years: 4
+credit_points: 192
+accredited: true
+school: Electrical Engineering
+school_faculty: Faculty of EMS
+delivery: On-campus
+location: Crawley, Perth
+atar_cutoff: 80.00
+atar_intake_year: 2026
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+intake: Semester 1
+intake_detail: Feb 2026
+source_url: "https://www.handbooks.uwa.edu.au/majordetails?code=MJD-EELEC"
+handbook_year: 2026
+last_verified: "2026-04-18"
+accreditation_body: Engineers Australia
+accreditation_note: Washington Accord
+
+overview: >
+  Develop expertise spanning the nanometre-scale of advanced electronic devices
+  to the kilometre-scale of power transmission networks. Graduates are equipped
+  to identify and solve engineering problems related to power generation,
+  communications, embedded systems and signal processing, with consideration
+  of economic, environmental and sustainability factors.
+
+career_outcomes:
+  grad_salary: 94000
+  employment_rate: 93
+  grad_satisfaction: 4.2
+  postgrad_rate: 22
+  roles:
+    - Electrical Engineer
+    - Electronics Engineer
+    - Signal Processing Engineer
+    - Power Systems Engineer
+    - Embedded Systems Engineer
+    - RF & Communications Eng.
+    - Control Systems Engineer
+    - Consulting Engineer
+
+# Each year contains semesters; each semester contains units.
+# type: core | elective | honours  (drives dot colour and semester badge)
+years:
+  - year: 1
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: MATH1011
+            title: Multivariable Calculus
+            credit_points: 6
+            type: core
+          - code: PHYS1001
+            title: Physics for Scientists and Engineers
+            credit_points: 6
+            type: core
+          - code: GENG1010
+            title: Introduction to Engineering
+            credit_points: 6
+            type: core
+          - code: GENG1000
+            title: Engineering Practice 1
+            credit_points: 0
+            type: core
+      - number: 2
+        label: Semester 2
+        units:
+          - code: MATH1012
+            title: Mathematical Theory and Methods
+            credit_points: 6
+            type: core
+          - code: ELEC1303
+            title: Digital Systems
+            credit_points: 6
+            type: core
+          - code: Broadening A
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+          - code: Broadening B
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+
+  - year: 2
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: ENSC2003
+            title: Engineering Electrical Fundamentals
+            credit_points: 6
+            type: core
+          - code: PHYS2003
+            title: Physics for Electrical Engineers
+            credit_points: 6
+            type: core
+          - code: STAT2063
+            title: Probabilistic Methods and their Applications
+            credit_points: 6
+            type: core
+          - code: CITS2401
+            title: Computer Analysis and Visualisation
+            credit_points: 6
+            type: core
+      - number: 2
+        label: Semester 2
+        units:
+          - code: ENSC2004
+            title: Engineering Mechanics
+            credit_points: 6
+            type: core
+          - code: ELEC2311
+            title: Digital System Design
+            credit_points: 6
+            type: core
+          - code: GENG2000
+            title: Engineering Practice 2
+            credit_points: 0
+            type: core
+          - code: Broadening C
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+
+  - year: 3
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: ELEC3014
+            title: Electronic Materials and Devices
+            credit_points: 6
+            type: core
+          - code: ELEC3021
+            title: Circuits and Electronics
+            credit_points: 6
+            type: core
+          - code: GENG3000
+            title: Engineering Practice 3
+            credit_points: 0
+            type: core
+          - code: Broadening D
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+      - number: 2
+        label: Semester 2
+        units:
+          - code: ELEC3015
+            title: Signals and Systems
+            credit_points: 6
+            type: core
+          - code: ELEC3016
+            title: Power and Machines
+            credit_points: 6
+            type: core
+          - code: ELEC3020
+            title: Embedded Systems
+            credit_points: 6
+            type: core
+          - code: GENG3402
+            title: Control Engineering
+            credit_points: 6
+            type: core
+          - code: MATH3023
+            title: Advanced Mathematics Applications
+            credit_points: 6
+            type: core
+
+  - year: 4
+    semesters:
+      - number: 1
+        label: Semester 1 — Final Year
+        units:
+          - code: ELEC4404
+            title: Signal Processing
+            credit_points: 6
+            type: core
+          - code: ELEC4407
+            title: Engineering Electromagnetics
+            credit_points: 6
+            type: core
+          - code: ELEC4505
+            title: Power System Analysis
+            credit_points: 6
+            type: core
+          - code: ELEC5506
+            title: Process Instrumentation and Control
+            credit_points: 6
+            type: core
+          - code: GENG4411
+            title: Engineering Research Project Part 1
+            credit_points: 6
+            type: core
+          - code: GENG5010
+            title: Professional Engineering Portfolio
+            credit_points: 0
+            type: core
+      - number: 2
+        label: Semester 2 — Final Year
+        units:
+          - code: ELEC4402
+            title: Communications Systems
+            credit_points: 6
+            type: core
+          - code: ELEC4408
+            title: High Frequency Circuits and Systems
+            credit_points: 6
+            type: core
+          - code: ELEC5552
+            title: EEE Design Project
+            credit_points: 6
+            type: core
+          - code: GENG4412
+            title: Engineering Research Project Part 2
+            credit_points: 6
+            type: core
+          - code: GENG5505
+            title: Project Management and Engineering Practice
+            credit_points: 6
+            type: core

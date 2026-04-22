@@ -1,0 +1,28 @@
+code: ELEC4408
+title: High Frequency Circuits and Systems
+level: 4
+credit_points: 6
+availability: [1]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S1
+offered_detail: Feb – Jun
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC4408"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - ELEC4407
+  external:
+    - "WAM ≥ 50"
+
+learning_outcomes:
+  - Design passive and active microwave circuits using transmission line theory
+  - Analyse S-parameters and use Smith chart tools for impedance matching
+  - Characterise and design RF amplifiers, oscillators and mixers
+  - Measure high-frequency circuit performance using vector network analysers

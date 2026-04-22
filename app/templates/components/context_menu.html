@@ -1,0 +1,165 @@
+{# ── Generalised right-click context menu ─────────────────────────────────
+   Usage:  ContextMenu.open(clientX, clientY, items)
+           ContextMenu.close()
+
+   Item shapes:
+     { separator: true }
+     { header: true, label: 'Section name' }
+     { label: 'Do thing', action: fn }
+     { label: 'Sub-menu ›', submenu: [ ...items ] }
+     { label: 'Active',     checked: true,  action: fn }
+     { label: 'Disabled',   disabled: true }
+#}
+
+<div id="ctx-menu"
+     class="hidden fixed z-[400] py-1 bg-[#1a1a1a] border border-rc-border rounded-[8px] shadow-[0_8px_32px_rgba(0,0,0,0.65)]"
+     style="min-width:160px;max-width:220px"></div>
+
+<div id="ctx-submenu"
+     class="hidden fixed z-[401] py-1 bg-[#1a1a1a] border border-rc-border rounded-[8px] shadow-[0_8px_32px_rgba(0,0,0,0.65)]"
+     style="min-width:140px;max-width:200px"></div>
+
+<script>
+const ContextMenu = (() => {
+  const menu    = document.getElementById('ctx-menu');
+  const submenu = document.getElementById('ctx-submenu');
+  let subTimer  = null;
+
+  // ── item builder ─────────────────────────────────────────
+  // inSubmenu=true: items are inside the submenu panel; don't close submenu on hover
+  function buildItem(item, inSubmenu = false) {
+    if (item.separator) {
+      const el = document.createElement('div');
+      el.className = 'my-1 border-t border-rc-border-light mx-2';
+      return el;
+    }
+
+    if (item.header) {
+      const el = document.createElement('div');
+      el.className = 'px-3 pt-1.5 pb-0.5 text-[9px] uppercase tracking-wider text-white/25 font-semibold select-none';
+      el.textContent = item.label;
+      return el;
+    }
+
+    const el = document.createElement('div');
+    const base = 'flex items-center gap-2 px-3 py-[5px] text-[12px] select-none transition';
+    el.className = `${base} ${
+      item.disabled ? 'text-white/20 cursor-default' :
+      item.checked  ? 'text-white/90 cursor-pointer hover:bg-rc-fill' :
+                      'text-white/65 cursor-pointer hover:bg-rc-fill hover:text-white/90'
+    }`;
+
+    if (item.checked) {
+      el.innerHTML = `
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="shrink-0 text-rc-green">
+          <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="flex-1">${item.label}</span>`;
+    } else if (item.submenu) {
+      el.innerHTML = `
+        <span class="w-2.5 shrink-0"></span>
+        <span class="flex-1">${item.label}</span>
+        <svg width="9" height="9" viewBox="0 0 9 9" fill="none" class="shrink-0 text-white/30">
+          <path d="M3 1.5L6 4.5L3 7.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+    } else {
+      el.innerHTML = `<span class="w-2.5 shrink-0"></span><span class="flex-1">${item.label}</span>`;
+    }
+
+    if (item.disabled) return el;
+
+    if (item.submenu) {
+      // Hovering a submenu-trigger opens the submenu
+      el.addEventListener('mouseenter', () => {
+        clearTimeout(subTimer);
+        openSubmenu(el, item.submenu);
+      });
+    } else {
+      // Hovering a plain item: only dismiss the submenu when we're in the MAIN menu
+      // (so hovering items inside the submenu doesn't close the submenu itself)
+      el.addEventListener('mouseenter', () => {
+        clearTimeout(subTimer);
+        if (!inSubmenu) closeSubmenu();
+      });
+      if (item.action) {
+        el.addEventListener('click', () => { item.action(); close(); });
+      }
+    }
+
+    return el;
+  }
+
+  // ── submenu ──────────────────────────────────────────────
+  function openSubmenu(anchor, items) {
+    submenu.innerHTML = '';
+    // Pass inSubmenu=true so these items don't call closeSubmenu() on hover
+    for (const it of items) submenu.appendChild(buildItem(it, true));
+
+    submenu.classList.remove('hidden');
+
+    const ar = anchor.getBoundingClientRect();
+    const mr = menu.getBoundingClientRect();
+    const sw = submenu.offsetWidth;
+    const sh = submenu.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    // Open to the right; flip left if it would overflow
+    let left = mr.right + 4;
+    if (left + sw > vw - 6) left = mr.left - sw - 4;
+
+    let top = ar.top - 4;
+    if (top + sh > vh - 6) top = vh - sh - 6;
+
+    submenu.style.left = Math.max(6, left) + 'px';
+    submenu.style.top  = Math.max(6, top)  + 'px';
+  }
+
+  function closeSubmenu() {
+    clearTimeout(subTimer);
+    submenu.classList.add('hidden');
+    submenu.innerHTML = '';
+  }
+
+  // Keep submenu alive while mouse is inside it; close after leaving both panels
+  menu.addEventListener('mouseleave', e => {
+    if (!submenu.classList.contains('hidden') && !submenu.contains(e.relatedTarget)) {
+      subTimer = setTimeout(closeSubmenu, 300);
+    }
+  });
+  submenu.addEventListener('mouseenter', () => clearTimeout(subTimer));
+  submenu.addEventListener('mouseleave', e => {
+    if (!menu.contains(e.relatedTarget)) subTimer = setTimeout(closeSubmenu, 300);
+  });
+
+  // ── public API ───────────────────────────────────────────
+  function open(x, y, items) {
+    close();
+    for (const it of items) menu.appendChild(buildItem(it, false));
+
+    menu.classList.remove('hidden');
+
+    const mw = menu.offsetWidth;
+    const mh = menu.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    menu.style.left = Math.max(6, Math.min(x, vw - mw - 6)) + 'px';
+    menu.style.top  = Math.max(6, Math.min(y, vh - mh - 6)) + 'px';
+  }
+
+  function close() {
+    closeSubmenu();
+    menu.classList.add('hidden');
+    menu.innerHTML = '';
+  }
+
+  // ── global dismiss ────────────────────────────────────────
+  document.addEventListener('click',   e => { if (!menu.contains(e.target) && !submenu.contains(e.target)) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  document.addEventListener('scroll',  close, true);
+  window.addEventListener('resize',    close);
+
+  return { open, close };
+})();
+</script>

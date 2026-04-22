@@ -1,0 +1,24 @@
+code: GENG5010
+title: Professional Engineering Portfolio
+level: 5
+credit_points: 0
+availability: [1, 2]
+faculty: Engineering
+school: Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Engineering
+offered: 2026 S1, S2
+offered_detail: Year-round
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=GENG5010"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites: {}
+
+learning_outcomes:
+  - Compile a comprehensive portfolio of engineering competencies and achievements
+  - Reflect on professional development and identify areas for continued growth
+  - Demonstrate alignment of skills with Engineers Australia Stage 1 competencies
+  - Articulate a professional identity and career development plan

@@ -1,0 +1,32 @@
+code: CITS1401
+title: Computational Thinking with Python
+level: 1
+credit_points: 6
+availability: [1, 2]
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+offered: 2026 S1, S2
+offered_detail: Feb – Jun / Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS1401"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities:
+  - code: CITS2401
+    title: Computer Analysis and Visualisation
+
+prerequisites:
+  any_of:
+    - [MATH1011, MATH1721]
+  external:
+    - "Mathematics Methods ATAR"
+
+learning_outcomes:
+  - Write Python programs to solve computational problems using variables, loops and functions
+  - Apply algorithmic thinking and problem decomposition to design solutions
+  - Understand how computers execute programs at a conceptual level
+  - Test and debug programs systematically

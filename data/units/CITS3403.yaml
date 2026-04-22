@@ -1,0 +1,30 @@
+code: CITS3403
+title: Agile Web Development
+level: 3
+credit_points: 6
+availability: [1]
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+offered: 2026 S1
+offered_detail: Feb – Jun
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS3403"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities:
+  - code: CITS5505
+    title: Agile Web Development (postgrad)
+
+prerequisites:
+  any_of:
+    - [CITS1401, CITS2401]
+
+learning_outcomes:
+  - Build full-stack web applications using client-side and server-side technologies
+  - Apply agile development practices including iterative delivery and user stories
+  - Integrate databases with web applications through appropriate APIs
+  - Describe internet protocols, document standards and n-tier architecture patterns

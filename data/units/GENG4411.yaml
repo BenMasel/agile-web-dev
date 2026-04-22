@@ -1,0 +1,26 @@
+code: GENG4411
+title: Engineering Research Project Part 1
+level: 4
+credit_points: 6
+availability: [1, 2]
+faculty: Engineering
+school: Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Engineering
+offered: 2026 S1, S2
+offered_detail: Feb – Jun / Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=GENG4411"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  external:
+    - "Completion of 96 credit points"
+
+learning_outcomes:
+  - Define a research problem, scope and methodology with supervisor guidance
+  - Conduct a comprehensive literature review in the chosen engineering domain
+  - Apply research methods including experimental design and data collection
+  - Present a project proposal and preliminary findings to academic staff

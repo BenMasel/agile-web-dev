@@ -1,0 +1,29 @@
+code: ELEC5506
+title: Process Instrumentation and Control
+level: 5
+credit_points: 6
+availability: [1]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S1
+offered_detail: Feb – Jun
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC5506"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - GENG3402
+    - ELEC3015
+  external:
+    - "WAM ≥ 50"
+
+learning_outcomes:
+  - Characterise process control systems using mathematical models
+  - Design PID controllers and tune them for industrial processes
+  - Implement instrumentation systems for measurement and control
+  - Analyse digital control systems and discrete-time controller design

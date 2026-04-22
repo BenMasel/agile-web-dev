@@ -1,0 +1,30 @@
+code: CITS2002
+title: Systems Programming
+level: 2
+credit_points: 6
+availability: [2]
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+offered: 2026 S2
+offered_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS2002"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+incompatibilities:
+  - code: CITS1002
+    title: Programming and Systems
+
+prerequisites:
+  any_of:
+    - [CITS1401, CITS2401]
+
+learning_outcomes:
+  - Write C programs using pointers, dynamic memory allocation and system calls
+  - Explain process scheduling, memory management and interprocess communication
+  - Compare key OS services across contemporary operating systems
+  - Build programs that interact directly with operating system interfaces

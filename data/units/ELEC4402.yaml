@@ -1,0 +1,29 @@
+code: ELEC4402
+title: Communications Systems
+level: 4
+credit_points: 6
+availability: [2]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S2
+offered_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC4402"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - STAT2063
+    - ELEC3015
+  external:
+    - "WAM ≥ 50"
+
+learning_outcomes:
+  - Analyse analogue and digital communication systems from first principles
+  - Apply modulation and demodulation techniques for signal transmission
+  - Implement source and channel coding strategies to improve reliability
+  - Evaluate information capacity using Shannon's information theory framework

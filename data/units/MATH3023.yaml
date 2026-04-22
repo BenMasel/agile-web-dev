@@ -1,0 +1,26 @@
+code: MATH3023
+title: Advanced Mathematics Applications
+level: 3
+credit_points: 6
+availability: [2]
+faculty: Engineering
+school: Mathematics and Statistics
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Mathematics & Statistics
+offered: 2026 S2
+offered_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=MATH3023"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - MATH1012
+
+learning_outcomes:
+  - Apply advanced analytical techniques to solve partial differential equations
+  - Use Fourier series and transforms in signal and system analysis
+  - Understand complex variable theory and contour integration methods
+  - Apply mathematical methods to model physical and engineering systems

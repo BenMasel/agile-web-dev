@@ -1,47 +1,109 @@
-<!DOCTYPE html>
-<html lang="en" class="h-full bg-[#070A0B]">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Video Search — stUwa</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="h-full text-white">
+{% extends "base.html" %}
 
-  <nav class="px-6 py-4 border-b border-gray-800">
-    <h1 class="text-lg font-semibold tracking-tight">Video Search</h1>
-  </nav>
+{% block title %}Video Search — stUwa{% endblock %}
 
-  <main class="max-w-6xl mx-auto px-6 py-10">
+{% block content_width %}w-full max-w-4xl{% endblock %}
 
-    <form id="search-form" class="flex gap-3 mb-10">
+{% block content %}
+
+  {# ========== PAGE HEADER ========== #}
+  <div class="flex flex-col gap-1 pt-6 pb-1">
+    <h1 class="text-[18px] font-semibold text-rc-text tracking-tight">Video Search</h1>
+    <p class="text-[13px] text-rc-text-tertiary">Search lecture and tutorial videos from curated channels</p>
+  </div>
+
+  {# ========== SEARCH BAR ========== #}
+  <div class="relative">
+    <div class="flex items-center gap-2.5 bg-rc-surface border border-rc-border rounded-[10px] px-4 py-3 focus-within:border-[rgba(255,255,255,0.16)] transition"
+         id="search-bar">
+      {# Search icon #}
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="shrink-0">
+        <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.3)" stroke-width="1.3"/>
+        <line x1="11.2" y1="11.2" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+
       <input
         id="search-input"
-        type="search"
-        placeholder="Search videos…"
-        class="flex-1 rounded-lg bg-gray-800 border border-gray-700 px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        type="text"
+        placeholder="Search videos… (press ↩ to search)"
         autocomplete="off"
+        spellcheck="false"
+        class="flex-1 bg-transparent text-sm text-rc-text placeholder-rc-text-tertiary outline-none"
       />
-      <button
-        id="search-btn"
-        type="submit"
-        class="rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 px-5 py-2.5 text-sm font-medium transition-colors"
-      >Search</button>
-    </form>
 
-    <p id="empty-state" class="hidden text-center text-gray-500 text-sm mt-16">
-      No results found.
-    </p>
+      {# Loading spinner — shown while fetching #}
+      <svg id="loading-spinner"
+           class="hidden w-4 h-4 animate-spin text-rc-text-faint shrink-0"
+           viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="31.4" stroke-dashoffset="10"/>
+      </svg>
 
-    <div
-      id="results-grid"
-      class="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-    ></div>
+      {# Clear button — shown when input has content #}
+      <button id="clear-btn"
+              class="hidden w-5 h-5 rounded-md bg-rc-fill flex items-center justify-center text-rc-text-faint hover:text-white/60 transition shrink-0 cursor-pointer">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 
-  </main>
+  {# ========== CHANNEL SOURCE PILLS ========== #}
+  <div id="channel-pills" class="flex items-center gap-2 flex-wrap">
+    <span class="text-[11px] text-rc-text-tertiary shrink-0">Sources:</span>
+    {# Pills populated by JS from CHANNELS array #}
+  </div>
 
-  <script src="{{ url_for('static', filename='data/channels.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/config.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/videos.js') }}"></script>
-</body>
-</html>
+  {# ========== RESULTS / STATES ========== #}
+
+  {# Hint — shown before any search #}
+  <div id="hint-state" class="bg-rc-surface border border-rc-border rounded-[10px] p-8 flex flex-col items-center gap-2">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" class="text-rc-text-faint mb-1">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.3"/>
+      <line x1="18.5" y1="18.5" x2="24" y2="24" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+    </svg>
+    <p class="text-[13px] text-rc-text-secondary">Type a topic and press <kbd class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35 font-sans not-italic">↩</kbd> to search</p>
+    <p class="text-[11px] text-rc-text-tertiary">Searches across all curated educational channels</p>
+  </div>
+
+  {# Error state #}
+  <div id="error-state" class="hidden bg-rc-surface border border-[rgba(255,99,99,0.2)] rounded-[10px] p-5 flex items-center gap-3">
+    <div class="w-8 h-8 rounded-lg bg-rc-red-muted flex items-center justify-center shrink-0">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M7 2v5M7 10v1" stroke="#FF6363" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="7" cy="7" r="6" stroke="#FF6363" stroke-width="1.1"/>
+      </svg>
+    </div>
+    <div>
+      <p class="text-[13px] text-rc-text" id="error-title">Search failed</p>
+      <p class="text-[11px] text-rc-text-secondary mt-0.5" id="error-message">Check your API key and try again.</p>
+    </div>
+  </div>
+
+  {# Empty state — no results #}
+  <div id="empty-state" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-8 flex flex-col items-center gap-2">
+    <p class="text-[13px] text-rc-text-secondary">No videos found for that query.</p>
+    <p class="text-[11px] text-rc-text-tertiary">Try different keywords or a broader term.</p>
+  </div>
+
+  {# Results grid #}
+  <div id="results-grid" class="hidden grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"></div>
+
+{% endblock %}
+
+
+{% block footer_nav %}
+<div class="flex items-center gap-[3px]">
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">↩</span>
+  <span class="text-[11px] text-rc-text-faint mx-0.5">search</span>
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">esc</span>
+  <span class="text-[11px] text-rc-text-faint">clear</span>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='data/channels.js') }}"></script>
+<script src="{{ url_for('static', filename='js/config.js') }}"></script>
+<script src="{{ url_for('static', filename='js/videos.js') }}"></script>
+{% endblock %}

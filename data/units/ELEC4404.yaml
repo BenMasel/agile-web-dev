@@ -1,0 +1,31 @@
+code: ELEC4404
+title: Signal Processing
+level: 4
+credit_points: 6
+availability: [1]
+faculty: Engineering
+school: Electrical Engineering, Computing and Mathematical Sciences
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Electrical Engineering
+offered: 2026 S1
+offered_detail: Feb – Jun
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=ELEC4404"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - STAT2063
+    - ELEC3015
+  any_of:
+    - [CITS2401, CITS1401]
+  external:
+    - "WAM ≥ 50"
+
+learning_outcomes:
+  - Apply stochastic signal processing concepts including random signals and PSD
+  - Design Wiener, LMS and Kalman filters for optimal signal estimation
+  - Fit AR, MA and ARMA models to signal data
+  - Apply parametric and non-parametric spectrum estimation techniques

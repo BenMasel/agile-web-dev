@@ -1,0 +1,26 @@
+code: MATH1012
+title: Mathematical Theory and Methods
+level: 1
+credit_points: 6
+availability: [1, 2]
+faculty: Engineering
+school: Mathematics and Statistics
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Mathematics & Statistics
+offered: 2026 S1, S2
+offered_detail: Feb – Jun / Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=MATH1012"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - MATH1011
+
+learning_outcomes:
+  - Understand and apply concepts from linear algebra including matrices and vector spaces
+  - Solve ordinary differential equations using a variety of techniques
+  - Apply complex number theory to engineering problems
+  - Use Laplace transforms to solve initial value problems

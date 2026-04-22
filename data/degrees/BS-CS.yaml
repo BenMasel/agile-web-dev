@@ -1,0 +1,169 @@
+slug: BS-CS
+title: Bachelor of Science (Computer Science)
+faculty: Faculty of Science
+duration_years: 3
+credit_points: 144
+accredited: true
+school: Computer Science
+school_faculty: Faculty of Science
+delivery: On-campus
+location: Crawley, Perth
+atar_cutoff: 80.00
+atar_intake_year: 2026
+coordinator: TBA
+coordinator_dept: School of Computing
+intake: Semester 1
+intake_detail: Feb 2026
+source_url: "https://www.handbooks.uwa.edu.au/majordetails?code=MJD-CMPSC"
+handbook_year: 2026
+last_verified: "2026-04-18"
+accreditation_body: Australian Computer Society
+accreditation_note: ACS Accreditation
+
+overview: >
+  Develop competency in the theoretical, algorithmic and systems principles
+  that underlie all aspects of computing. Graduates can identify suitable
+  data structures and algorithms, design robust programs, apply core system
+  knowledge, and communicate technical requirements clearly. The degree is
+  accredited by the Australian Computer Society (ACS).
+
+career_outcomes:
+  grad_salary: 88000
+  employment_rate: 95
+  grad_satisfaction: 4.3
+  postgrad_rate: 18
+  roles:
+    - Software Engineer
+    - Systems Programmer
+    - Security Engineer
+    - Data Engineer
+    - Network Engineer
+    - Full-Stack Developer
+    - DevOps Engineer
+    - Technical Consultant
+
+# incompatible_majors: Cannot combine with Software Engineering (MJD-ESOFT)
+
+years:
+  - year: 1
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: CITS1003
+            title: Introduction to Cybersecurity
+            credit_points: 6
+            type: core
+          - code: CITS1401
+            title: Computational Thinking with Python
+            credit_points: 6
+            type: core
+          - code: CITS1402
+            title: Relational Database Management Systems
+            credit_points: 6
+            type: core
+          - code: Broadening A
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+      - number: 2
+        label: Semester 2
+        units:
+          - code: CITS2002
+            title: Systems Programming
+            credit_points: 6
+            type: core
+          - code: CITS2211
+            title: Discrete Structures
+            credit_points: 6
+            type: core
+          - code: Broadening B
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+          - code: Broadening C
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+
+  - year: 2
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: CITS2005
+            title: Object Oriented Programming
+            credit_points: 6
+            type: core
+          - code: CITS2200
+            title: Data Structures and Algorithms
+            credit_points: 6
+            type: core
+          - code: Broadening D
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+          - code: Broadening E
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+      - number: 2
+        label: Semester 2
+        units:
+          - code: CITS3001
+            title: Advanced Algorithms
+            credit_points: 6
+            type: core
+          - code: CS Elective A
+            title: CS elective (student choice)
+            credit_points: 6
+            type: elective
+          - code: Broadening F
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+          - code: Broadening G
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+
+  - year: 3
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: CITS3002
+            title: Computer Networks
+            credit_points: 6
+            type: core
+          - code: CITS3403
+            title: Agile Web Development
+            credit_points: 6
+            type: core
+          - code: CS Elective B
+            title: CS elective (student choice)
+            credit_points: 6
+            type: elective
+          - code: Broadening H
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+      - number: 2
+        label: Semester 2
+        units:
+          - code: CITS3200
+            title: Professional Computing
+            credit_points: 6
+            type: core
+          - code: Broadening I
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+          - code: Broadening J
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective
+          - code: Broadening K
+            title: Breadth unit (student choice)
+            credit_points: 6
+            type: elective

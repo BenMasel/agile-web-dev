@@ -1,0 +1,26 @@
+code: CITS3011
+title: Intelligent Agents
+level: 3
+credit_points: 6
+availability: [2]
+faculty: Science
+school: Computer Science and Software Engineering
+delivery: On-campus
+location: Crawley, Perth
+coordinator: TBA
+coordinator_dept: School of Computing
+offered: 2026 S2
+offered_detail: Jul – Nov
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS3011"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+prerequisites:
+  all_of:
+    - CITS2200
+
+learning_outcomes:
+  - Design rational agents using search, planning and decision-making techniques
+  - Implement game-playing agents using adversarial search and minimax
+  - Apply probabilistic reasoning and Bayesian networks to uncertain environments
+  - Evaluate agent architectures for different problem domains
