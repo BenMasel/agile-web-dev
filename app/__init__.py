@@ -21,6 +21,11 @@ def create_app(config_object=None):
     from app.db import close_db
     app.teardown_appcontext(close_db)
 
+    from app.extensions import db, login_manager, migrate
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+
     # Register all routes via the main blueprint.
     from app import routes
     app.register_blueprint(routes.bp)
