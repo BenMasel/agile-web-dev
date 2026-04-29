@@ -1,17 +1,21 @@
 from flask import Flask
+from dotenv import load_dotenv
 
 
-def create_app():
+def create_app(config_object=None):
     """
     Application factory — creates and configures the Flask app.
     Using a factory means we can create multiple instances (e.g. for testing)
     without side effects from a module-level app object.
     """
+    load_dotenv()
+
     app = Flask(__name__)
+    app.config.from_object(config_object or 'config.Config')
 
     # Path to the SQLite database file, stored outside the app package
     # so it isn't accidentally committed to git.
-    app.config['DATABASE'] = 'instance/app.db'
+    app.config.setdefault('DATABASE', 'instance/app.db')
 
     # Tear down the DB connection at the end of every request.
     from app.db import close_db
