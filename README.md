@@ -9,7 +9,9 @@ stUwa is a web app that aggregates UWA unit information, degrees, student clubs,
 ## Table of Contents
 
 - [Overview](#overview)
+- [Group Members](#group-members)
 - [Getting Started](#getting-started)
+- [Running Tests](#running-tests)
 - [Project Structure](#project-structure)
 - [Tooling](#tooling)
 
@@ -24,8 +26,22 @@ stUwa provides:
 - **Club pages** — descriptions, icons, and accent theming per club
 - **Student benefits** — categorised discounts and perks available to UWA students
 - **Global search** — client-side fuzzy search powered by [Fuse.js](https://fusejs.io/) across all units, degrees, and clubs with no round-trips to the server
+- **Study planner** — an interactive planner for mapping units across semesters and tracking degree progress
 
 All content is stored as YAML files under `data/`, making it easy to add or update entries without touching application code.
+
+The intended project direction is to turn this catalogue into a full student account system where UWA students can save study plans, mark completed units, share public plans, and leave unit reviews that help other students choose units with better context.
+
+---
+
+## Group Members
+
+| UWA ID | Name | GitHub username |
+|--------|------|-----------------|
+| TODO | TODO | TODO |
+| TODO | TODO | TODO |
+| TODO | TODO | TODO |
+| TODO | TODO | TODO |
 
 ---
 
