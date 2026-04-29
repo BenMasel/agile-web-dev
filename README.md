@@ -62,13 +62,28 @@ cd agile-web-dev
 # 2. Install dependencies
 uv sync
 
-# 3. Start the development server
+# 3. Create local environment config when .env.example exists
+cp .env.example .env
+
+# 4. Start the development server
 uv run python run.py
 ```
 
 The app will be available at [http://localhost:5000](http://localhost:5000).
 
 > The development server runs with `debug=True`, which enables auto-reload on file changes and detailed error pages. Do not use this mode in production.
+
+### Environment Variables
+
+The project should be configured through environment variables rather than hard-coded secrets. The expected local setup is:
+
+| Variable | Purpose |
+|----------|---------|
+| `SECRET_KEY` | Flask session and CSRF signing key |
+| `DATABASE_URL` | SQLite database path for SQLAlchemy |
+| `YOUTUBE_API_KEY` | Optional YouTube Data API key for resource search |
+
+When `.env.example` is added, copy it to `.env` and replace the placeholder values for local development.
 
 ---
 
