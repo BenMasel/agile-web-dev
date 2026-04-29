@@ -26,6 +26,9 @@ def create_app(config_object=None):
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
+    # Import models so Flask-Migrate can discover SQLAlchemy metadata.
+    from app import models  # noqa: F401
+
     # Register all routes via the main blueprint.
     from app import routes
     app.register_blueprint(routes.bp)
