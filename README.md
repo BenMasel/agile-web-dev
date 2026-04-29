@@ -87,6 +87,32 @@ When `.env.example` is added, copy it to `.env` and replace the placeholder valu
 
 ---
 
+## Running Tests
+
+The project brief requires at least 5 unit tests and 5 Selenium tests. The test suite is planned around `pytest`.
+
+```bash
+# Install dependencies
+uv sync
+
+# Run unit tests
+uv run pytest
+```
+
+Selenium tests should run against a live development server:
+
+```bash
+# Terminal 1
+uv run python run.py
+
+# Terminal 2
+uv run pytest tests/selenium
+```
+
+If Selenium browser drivers are required, document the setup steps here when the Selenium suite is added.
+
+---
+
 ## Project Structure
 
 ```
