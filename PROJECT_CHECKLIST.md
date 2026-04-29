@@ -330,11 +330,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Unit tests, minimum 5:
   - [ ] Home route returns 200 and contains search data.
   - [ ] Unit detail route returns correct unit page and 404 for missing unit.
-  - [ ] Registration creates a user with a hashed password.
+  - [x] Registration model support creates a user with a hashed password.
   - [ ] Login/logout changes session state correctly.
   - [ ] Planner API saves and reloads a user plan.
   - [ ] Unit review aggregation calculates average rating/difficulty.
-  - [ ] YAML search index includes units, degrees, and clubs.
+  - [x] Onboarding/catalogue API includes units and degrees.
 - [ ] Selenium tests, minimum 5, running against a live server:
   - [ ] User can register, log in, and log out.
   - [ ] User can search for a unit and open its detail page.
