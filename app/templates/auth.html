@@ -1,157 +1,149 @@
 {% extends "base.html" %}
 
-{% block title %}Sign in — stUwa{% endblock %}
+{% block title %}Login - stUwa{% endblock %}
+{% block content_width %}w-full max-w-4xl{% endblock %}
 
 {% block content %}
+<section class="grid gap-5 md:grid-cols-[1fr_380px] md:items-stretch py-8">
+  <div class="flex flex-col justify-between gap-8 rounded-[8px] border border-rc-border bg-rc-fill-subtle p-6 md:p-7">
+    <div class="space-y-5">
+      <div class="inline-flex h-10 w-10 items-center justify-center rounded-[8px] bg-rc-red-muted text-rc-red">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M6 10.5 4.5 12v3.5H8l1.5-1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8.5 11.5 14 6a2.5 2.5 0 1 1 3.5 3.5L12 15H8.5v-3.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </div>
 
-<div class="flex flex-col items-center gap-6 pt-12 pb-4">
+      <div class="space-y-2">
+        <h1 class="text-[28px] font-semibold tracking-tight text-rc-text">Welcome back to stUwa</h1>
+        <p class="max-w-lg text-[14px] leading-6 text-rc-text-secondary">
+          Sign in with your UWA student email to keep your planner, saved units, and benefit picks synced across devices.
+        </p>
+      </div>
+    </div>
 
-  {# ── Icon ── #}
-  <div class="w-11 h-11 rounded-[12px] bg-rc-red-muted flex items-center justify-center">
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <circle cx="10" cy="7.5" r="3.5" stroke="#FF6363" stroke-width="1.3"/>
-      <path d="M3 18c0-3.5 3.1-5.5 7-5.5s7 2 7 5.5" stroke="#FF6363" stroke-width="1.3" stroke-linecap="round"/>
-    </svg>
+    <div class="grid gap-3 sm:grid-cols-2">
+      <div class="rounded-[8px] border border-rc-border-light bg-rc-fill-light p-4">
+        <div class="mb-2 flex h-7 w-7 items-center justify-center rounded-[7px] bg-rc-blue-muted text-rc-blue">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="M3 3.5h9M3 7.5h9M3 11.5h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="text-[13px] font-medium text-white/75">Planner sync</div>
+        <div class="mt-1 text-[12px] leading-5 text-rc-text-tertiary">Carry saved degrees and pinned units between sessions.</div>
+      </div>
+
+      <div class="rounded-[8px] border border-rc-border-light bg-rc-fill-light p-4">
+        <div class="mb-2 flex h-7 w-7 items-center justify-center rounded-[7px] bg-rc-green-muted text-rc-green">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+            <path d="m3 8 2.5 2.5L12 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="text-[13px] font-medium text-white/75">Student access</div>
+        <div class="mt-1 text-[12px] leading-5 text-rc-text-tertiary">Only UWA student email addresses can request a sign-in link.</div>
+      </div>
+    </div>
   </div>
 
-  {# ── Heading ── #}
-  <div class="text-center">
-    <h1 class="text-[20px] font-semibold text-rc-text tracking-tight mb-1">stUwa account</h1>
-    <p class="text-[13px] text-rc-text-tertiary">UWA students only — access your planner across devices</p>
-  </div>
-
-  {# ── Card ── #}
-  <div class="w-full max-w-sm bg-rc-surface border border-rc-border rounded-[12px] p-6 flex flex-col gap-5">
-
-    {# ── Mode tabs ── #}
-    <div class="flex items-center p-1 bg-rc-fill rounded-[8px] gap-1">
+  <div class="rounded-[8px] border border-rc-border bg-rc-surface p-5 shadow-[0_16px_60px_rgba(0,0,0,0.28)]">
+    <div class="mb-5 flex rounded-[8px] bg-rc-fill p-1" role="tablist" aria-label="Authentication mode">
       <button id="tab-signin"
+              type="button"
               onclick="setMode('signin')"
-              class="auth-tab flex-1 py-1.5 rounded-[6px] text-[12px] font-medium transition cursor-pointer bg-rc-surface text-white/80 shadow-sm">
+              class="auth-tab flex-1 rounded-[6px] bg-rc-surface px-3 py-2 text-[12px] font-medium text-white/80 shadow-sm transition">
         Sign in
       </button>
       <button id="tab-signup"
+              type="button"
               onclick="setMode('signup')"
-              class="auth-tab flex-1 py-1.5 rounded-[6px] text-[12px] font-medium transition cursor-pointer text-white/35 hover:text-white/55">
+              class="auth-tab flex-1 rounded-[6px] px-3 py-2 text-[12px] font-medium text-white/35 transition hover:text-white/55">
         Create account
       </button>
     </div>
 
-    {# ── Form (pre-submit) ── #}
-    <div id="form-wrap" class="flex flex-col gap-4">
-
+    <form id="auth-form" class="flex flex-col gap-4" novalidate>
       <div class="flex flex-col gap-1.5">
-        <label class="text-[11px] text-rc-text-tertiary uppercase tracking-wider">UWA student email</label>
+        <label for="email-input" class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">UWA student email</label>
         <div id="email-field"
-             class="flex items-center gap-2 bg-rc-fill border border-rc-border rounded-[8px] px-3 py-2.5 focus-within:border-[rgba(255,255,255,0.16)] transition">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="shrink-0 text-white/25">
-            <rect x="1.5" y="3" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
-            <path d="M1.5 4.5l5 3.5 5-3.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+             class="flex items-center gap-2 rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 transition focus-within:border-white/20">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="shrink-0 text-white/25" aria-hidden="true">
+            <rect x="2" y="3.5" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+            <path d="m2.5 4.8 4.5 3.4 4.5-3.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <input id="email-input"
+                 name="email"
                  type="email"
                  autocomplete="email"
                  spellcheck="false"
                  placeholder="12345678@student.uwa.edu.au"
-                 class="flex-1 bg-transparent text-[13px] text-rc-text placeholder-rc-text-faint outline-none" />
+                 class="min-w-0 flex-1 bg-transparent text-[13px] text-rc-text outline-none placeholder:text-rc-text-faint" />
         </div>
-        <div id="email-error" class="hidden text-[11px] text-rc-red/80 flex items-center gap-1.5 mt-0.5">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" class="shrink-0">
-            <circle cx="5" cy="5" r="4" stroke="currentColor" stroke-width="1.1"/>
-            <path d="M5 3v2.5M5 7h.01" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-          </svg>
-          <span id="email-error-text"></span>
-        </div>
+        <p id="email-error" class="hidden text-[11px] text-rc-red/85"></p>
       </div>
 
-      {# Sign-up-only: name field #}
       <div id="name-field-wrap" class="hidden flex-col gap-1.5">
-        <label class="text-[11px] text-rc-text-tertiary uppercase tracking-wider">Display name <span class="normal-case tracking-normal text-white/20">(optional)</span></label>
+        <label for="name-input" class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Display name</label>
         <input id="name-input"
+               name="name"
                type="text"
-               placeholder="e.g. Ben"
-               class="bg-rc-fill border border-rc-border rounded-[8px] px-3 py-2.5 text-[13px] text-rc-text placeholder-rc-text-faint outline-none focus:border-[rgba(255,255,255,0.16)] transition" />
+               autocomplete="name"
+               placeholder="e.g. Alex"
+               class="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20" />
       </div>
 
       <button id="submit-btn"
-              onclick="handleSubmit()"
-              class="w-full flex items-center justify-center gap-2 bg-rc-red/90 hover:bg-rc-red text-white text-[13px] font-medium py-2.5 rounded-[8px] transition cursor-pointer">
+              type="submit"
+              class="mt-1 flex w-full items-center justify-center gap-2 rounded-[8px] bg-rc-red/90 px-3 py-2.5 text-[13px] font-medium text-white transition hover:bg-rc-red focus:outline-none focus:ring-2 focus:ring-rc-red/40">
         <span id="submit-label">Send magic link</span>
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <path d="M2.5 6.5h8M7 3.5l3.5 3-3.5 3" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
 
-      <p id="mode-hint" class="text-[11px] text-rc-text-faint text-center leading-relaxed">
-        We'll send a link to your student email — no password needed.
+      <p id="mode-hint" class="text-center text-[11px] leading-5 text-rc-text-faint">
+        We will send a secure link to your student email. No password needed.
       </p>
+    </form>
 
-    </div>
-
-    {# ── Sent state ── #}
-    <div id="sent-wrap" class="hidden flex-col items-center gap-4 py-2">
-      <div class="w-10 h-10 rounded-full bg-rc-green-muted flex items-center justify-center">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M4 9l3.5 3.5L14 5" stroke="#2ECC71" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <div id="sent-wrap" class="hidden flex-col items-center gap-4 py-5 text-center">
+      <div class="flex h-11 w-11 items-center justify-center rounded-full bg-rc-green-muted text-rc-green">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M5 10.5 8.5 14 15 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div class="text-center">
-        <div class="text-[14px] font-medium text-white/85 mb-1">Check your inbox</div>
-        <div class="text-[12px] text-rc-text-tertiary leading-relaxed">
-          We sent a link to <span id="sent-email" class="text-white/60 font-medium"></span>.<br>
-          Click it to sign in — expires in 15 minutes.
-        </div>
+      <div>
+        <div class="text-[15px] font-medium text-white/85">Check your inbox</div>
+        <p class="mt-1 text-[12px] leading-5 text-rc-text-tertiary">
+          We sent a sign-in link to <span id="sent-email" class="font-medium text-white/60"></span>.
+        </p>
       </div>
-      <button onclick="resetForm()"
-              class="text-[12px] text-white/30 hover:text-white/55 transition cursor-pointer underline underline-offset-2">
+      <button type="button"
+              onclick="resetForm()"
+              class="text-[12px] text-white/35 underline underline-offset-2 transition hover:text-white/60">
         Use a different email
       </button>
     </div>
-
   </div>
-
-  {# ── What you get ── #}
-  <div class="w-full max-w-sm bg-rc-fill-subtle border border-rc-border-light rounded-[10px] px-5 py-4 flex flex-col gap-3">
-    <span class="text-[10px] uppercase tracking-wider text-rc-text-faint">With an account</span>
-    <div class="flex flex-col gap-2.5">
-      {% for item in [
-        ('bg-rc-blue',   'Sync your planner across devices'),
-        ('bg-rc-green',  'Save and track completed units'),
-        ('bg-rc-purple', 'Get notified about timetable changes'),
-        ('bg-rc-amber',  'Personalised unit recommendations'),
-      ] %}
-      <div class="flex items-center gap-2.5">
-        <div class="w-1.5 h-1.5 rounded-full {{ item[0] }} shrink-0"></div>
-        <span class="text-[12px] text-white/45">{{ item[1] }}</span>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-
-</div>
-
+</section>
 {% endblock %}
-
 
 {% block footer_nav %}
 <div class="text-[11px] text-rc-text-faint">UWA student emails only</div>
 {% endblock %}
 
-
 {% block scripts %}
 <script>
 let currentMode = 'signin';
 
-const emailInput    = document.getElementById('email-input');
-const emailError    = document.getElementById('email-error');
-const emailErrorTxt = document.getElementById('email-error-text');
-const emailField    = document.getElementById('email-field');
-const nameWrap      = document.getElementById('name-field-wrap');
-const submitLabel   = document.getElementById('submit-label');
-const modeHint      = document.getElementById('mode-hint');
-const formWrap      = document.getElementById('form-wrap');
-const sentWrap      = document.getElementById('sent-wrap');
-const sentEmail     = document.getElementById('sent-email');
+const authForm = document.getElementById('auth-form');
+const emailInput = document.getElementById('email-input');
+const emailError = document.getElementById('email-error');
+const emailField = document.getElementById('email-field');
+const nameWrap = document.getElementById('name-field-wrap');
+const submitLabel = document.getElementById('submit-label');
+const modeHint = document.getElementById('mode-hint');
+const sentWrap = document.getElementById('sent-wrap');
+const sentEmail = document.getElementById('sent-email');
 
 function setMode(mode) {
   currentMode = mode;
@@ -159,42 +151,34 @@ function setMode(mode) {
 
   const tabSignin = document.getElementById('tab-signin');
   const tabSignup = document.getElementById('tab-signup');
+  const active = 'auth-tab flex-1 rounded-[6px] bg-rc-surface px-3 py-2 text-[12px] font-medium text-white/80 shadow-sm transition';
+  const inactive = 'auth-tab flex-1 rounded-[6px] px-3 py-2 text-[12px] font-medium text-white/35 transition hover:text-white/55';
 
-  const active   = 'bg-rc-surface text-white/80 shadow-sm';
-  const inactive = 'text-white/35 hover:text-white/55';
-
-  if (mode === 'signin') {
-    tabSignin.className = `auth-tab flex-1 py-1.5 rounded-[6px] text-[12px] font-medium transition cursor-pointer ${active}`;
-    tabSignup.className = `auth-tab flex-1 py-1.5 rounded-[6px] text-[12px] font-medium transition cursor-pointer ${inactive}`;
-    nameWrap.classList.add('hidden');
-    nameWrap.classList.remove('flex');
-    submitLabel.textContent = 'Send magic link';
-    modeHint.textContent    = 'We\'ll send a link to your student email — no password needed.';
-  } else {
-    tabSignup.className = `auth-tab flex-1 py-1.5 rounded-[6px] text-[12px] font-medium transition cursor-pointer ${active}`;
-    tabSignin.className = `auth-tab flex-1 py-1.5 rounded-[6px] text-[12px] font-medium transition cursor-pointer ${inactive}`;
-    nameWrap.classList.remove('hidden');
-    nameWrap.classList.add('flex');
-    submitLabel.textContent = 'Create account';
-    modeHint.textContent    = 'A confirmation link will be sent to verify you\'re a UWA student.';
-  }
+  tabSignin.className = mode === 'signin' ? active : inactive;
+  tabSignup.className = mode === 'signup' ? active : inactive;
+  nameWrap.classList.toggle('hidden', mode !== 'signup');
+  nameWrap.classList.toggle('flex', mode === 'signup');
+  submitLabel.textContent = mode === 'signin' ? 'Send magic link' : 'Create account';
+  modeHint.textContent = mode === 'signin'
+    ? 'We will send a secure link to your student email. No password needed.'
+    : 'Create your stUwa account with a verified UWA student email.';
 }
 
 function clearError() {
+  emailError.textContent = '';
   emailError.classList.add('hidden');
-  emailField.classList.remove('border-rc-red/40');
+  emailField.classList.remove('border-rc-red/50');
   emailField.classList.add('border-rc-border');
 }
 
-function showError(msg) {
-  emailErrorTxt.textContent = msg;
+function showError(message) {
+  emailError.textContent = message;
   emailError.classList.remove('hidden');
-  emailError.classList.add('flex');
   emailField.classList.remove('border-rc-border');
-  emailField.classList.add('border-rc-red/40');
+  emailField.classList.add('border-rc-red/50');
 }
 
-function handleSubmit() {
+function submitAuth() {
   clearError();
   const email = emailInput.value.trim().toLowerCase();
 
@@ -205,28 +189,29 @@ function handleSubmit() {
   }
 
   if (!email.endsWith('@student.uwa.edu.au')) {
-    showError('Only @student.uwa.edu.au addresses are accepted.');
+    showError('Use your @student.uwa.edu.au email address.');
     emailInput.focus();
     return;
   }
 
-  // Frontend stub — in production this would POST to /auth/send-link
   sentEmail.textContent = email;
-  formWrap.classList.add('hidden');
+  authForm.classList.add('hidden');
   sentWrap.classList.remove('hidden');
   sentWrap.classList.add('flex');
 }
 
 function resetForm() {
   emailInput.value = '';
+  authForm.classList.remove('hidden');
   sentWrap.classList.add('hidden');
   sentWrap.classList.remove('flex');
-  formWrap.classList.remove('hidden');
+  clearError();
   emailInput.focus();
 }
 
-emailInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter') handleSubmit();
+authForm.addEventListener('submit', event => {
+  event.preventDefault();
+  submitAuth();
 });
 
 emailInput.addEventListener('input', () => {

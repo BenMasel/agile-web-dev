@@ -274,6 +274,7 @@ def onboarding_data():
 
 
 @bp.route('/auth')
+@bp.route('/login')
 def auth():
     return render_template('auth.html')
 
