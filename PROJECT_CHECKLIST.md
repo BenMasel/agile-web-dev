@@ -32,7 +32,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Benefits page with category filters.
 - [x] Docs section rendered from Markdown.
 - [ ] Real authentication. Current `/auth` page is a frontend-only stub.
-- [ ] SQLAlchemy models. Current `app/db.py` uses raw `sqlite3` and no schema.
+- [x] SQLAlchemy model skeleton added. Current legacy `app/db.py` still exists during transition.
 - [ ] Server-side persistence for planner/settings/reviews.
 - [ ] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
 - [ ] Tests.
@@ -60,73 +60,73 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 2: Project Structure And Configuration
 
-- [ ] Add a real configuration layer:
-  - [ ] `config.py` with development, testing, and production config classes.
-  - [ ] `SECRET_KEY` loaded from environment variables.
-  - [ ] `DATABASE_URL` or SQLite path loaded from environment variables.
-  - [ ] YouTube API key loaded from environment variables instead of committed JS config.
-- [ ] Add `.env.example` documenting required environment variables.
-- [ ] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
-- [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
-- [ ] Decide whether to use:
-  - [ ] Flask-SQLAlchemy for models and sessions.
-  - [ ] Flask-Migrate/Alembic for migrations.
-  - [ ] Flask-Login for session management.
-  - [ ] Flask-WTF for CSRF-protected forms.
+- [x] Add a real configuration layer:
+  - [x] `config.py` with base and testing config classes.
+  - [x] `SECRET_KEY` loaded from environment variables.
+  - [x] `DATABASE_URL` or SQLite path loaded from environment variables.
+  - [x] YouTube API key loaded from environment variables.
+- [x] Add `.env.example` documenting required environment variables.
+- [x] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
+- [x] Add SQLAlchemy extension setup while keeping legacy `app/db.py` during transition.
+- [x] Decide whether to use:
+  - [x] Flask-SQLAlchemy for models and sessions.
+  - [x] Flask-Migrate/Alembic for migrations.
+  - [x] Flask-Login for session management.
+  - [x] Flask-WTF for CSRF-protected forms.
 - [ ] Keep Tailwind as the CSS framework because it is allowed by the brief and already used.
 - [ ] Remove unused placeholder entry points if they cause confusion:
   - [ ] Either make `main.py` launch the app or document that `run.py` is the app entry point.
 
 ## Phase 3: Database Models
 
-- [ ] Design the SQLite schema using SQLAlchemy models.
-- [ ] Add `User` model:
-  - [ ] `id`
-  - [ ] `email`
-  - [ ] `student_id`
-  - [ ] `display_name`
-  - [ ] `password_hash`
-  - [ ] `faculty`
-  - [ ] `created_at`
-  - [ ] `updated_at`
-- [ ] Add `StudyPlan` model:
-  - [ ] `id`
-  - [ ] `user_id`
-  - [ ] `name`
-  - [ ] `primary_degree_slug`
-  - [ ] `secondary_degree_slug`
-  - [ ] `start_year`
-  - [ ] `start_semester`
-  - [ ] `is_public`
-  - [ ] `created_at`
-  - [ ] `updated_at`
-- [ ] Add `StudyPlanUnit` model:
-  - [ ] `id`
-  - [ ] `study_plan_id`
-  - [ ] `unit_code`
-  - [ ] `year`
-  - [ ] `semester`
-  - [ ] `status` such as planned, completed, removed.
-  - [ ] `position`
-- [ ] Add `UnitReview` model:
-  - [ ] `id`
-  - [ ] `user_id`
-  - [ ] `unit_code`
-  - [ ] `rating`
-  - [ ] `difficulty`
-  - [ ] `workload_hours`
-  - [ ] `semester_taken`
-  - [ ] `body`
-  - [ ] `created_at`
-  - [ ] `updated_at`
+- [x] Design the SQLite schema using SQLAlchemy models.
+- [x] Add `User` model:
+  - [x] `id`
+  - [x] `email`
+  - [x] `student_id`
+  - [x] `display_name`
+  - [x] `password_hash`
+  - [x] `faculty`
+  - [x] `created_at`
+  - [x] `updated_at`
+- [x] Add `StudyPlan` model:
+  - [x] `id`
+  - [x] `user_id`
+  - [x] `name`
+  - [x] `primary_degree_slug`
+  - [x] `secondary_degree_slug`
+  - [x] `start_year`
+  - [x] `start_semester`
+  - [x] `is_public`
+  - [x] `created_at`
+  - [x] `updated_at`
+- [x] Add `StudyPlanUnit` model:
+  - [x] `id`
+  - [x] `study_plan_id`
+  - [x] `unit_code`
+  - [x] `year`
+  - [x] `semester`
+  - [x] `status` such as planned, completed, removed.
+  - [x] `position`
+- [x] Add `UnitReview` model:
+  - [x] `id`
+  - [x] `user_id`
+  - [x] `unit_code`
+  - [x] `rating`
+  - [x] `difficulty`
+  - [x] `workload_hours`
+  - [x] `semester_taken`
+  - [x] `body`
+  - [x] `created_at`
+  - [x] `updated_at`
 - [ ] Add `SavedBenefit` or `SavedResource` model if time allows:
   - [ ] Let users bookmark student benefits/resources.
   - [ ] Persist these bookmarks between sessions.
-- [ ] Add `NotificationPreference` model or JSON column:
-  - [ ] Planner reminders.
-  - [ ] Unit catalogue updates.
-  - [ ] Review replies or community replies.
-  - [ ] Weekly digest preference.
+- [x] Add `NotificationPreference` model or JSON column:
+  - [x] Planner reminders.
+  - [x] Unit catalogue updates.
+  - [x] Review replies or community replies.
+  - [x] Weekly digest preference.
 - [ ] Create initial migration.
 - [ ] Add seed/demo data for development and testing.
 - [ ] Document migration commands in the README.
@@ -324,17 +324,17 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 12: Testing
 
-- [ ] Set up pytest.
-- [ ] Add test configuration using an isolated temporary SQLite database.
-- [ ] Add fixtures for app, client, database, and sample users.
+- [x] Set up pytest dependency.
+- [x] Add test configuration using an isolated in-memory SQLite database.
+- [x] Add fixtures for app, client, and database.
 - [ ] Unit tests, minimum 5:
   - [ ] Home route returns 200 and contains search data.
   - [ ] Unit detail route returns correct unit page and 404 for missing unit.
-  - [ ] Registration creates a user with a hashed password.
+  - [x] Registration model support creates a user with a hashed password.
   - [ ] Login/logout changes session state correctly.
   - [ ] Planner API saves and reloads a user plan.
   - [ ] Unit review aggregation calculates average rating/difficulty.
-  - [ ] YAML search index includes units, degrees, and clubs.
+  - [x] Onboarding/catalogue API includes units and degrees.
 - [ ] Selenium tests, minimum 5, running against a live server:
   - [ ] User can register, log in, and log out.
   - [ ] User can search for a unit and open its detail page.
