@@ -4,7 +4,12 @@ import subprocess
 from datetime import datetime, timezone
 from functools import lru_cache
 import yaml
-from flask import Blueprint, render_template, redirect, url_for, jsonify
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask_login import current_user, login_user, logout_user
+
+from app.extensions import db
+from app.forms import LoginForm, RegisterForm
+from app.models import User
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
@@ -273,10 +278,73 @@ def onboarding_data():
     return jsonify({'units': units, 'degrees': degrees})
 
 
-@bp.route('/auth')
-@bp.route('/login')
+@bp.route('/auth', methods=['GET', 'POST'])
+@bp.route('/login', methods=['GET', 'POST'])
 def auth():
-    return render_template('auth.html')
+    if current_user.is_authenticated:
+        return redirect(url_for('main.settings'))
+
+    login_form = LoginForm(prefix='login')
+    register_form = RegisterForm(prefix='register')
+    mode = request.args.get('mode', 'signin')
+
+    if request.method == 'POST':
+        action = request.form.get('action')
+        if action == 'register':
+            mode = 'signup'
+            if register_form.validate_on_submit():
+                email = register_form.email.data.strip().lower()
+                student_id = register_form.student_id.data.strip()
+                existing = User.query.filter(
+                    (User.email == email) | (User.student_id == student_id)
+                ).first()
+                if existing:
+                    flash('An account already exists for that email or student ID.', 'error')
+                else:
+                    user = User(
+                        email=email,
+                        student_id=student_id,
+                        display_name=register_form.display_name.data.strip(),
+                        faculty=(register_form.faculty.data or '').strip() or None,
+                    )
+                    user.set_password(register_form.password.data)
+                    db.session.add(user)
+                    db.session.commit()
+                    login_user(user)
+                    flash('Account created. You are signed in.', 'success')
+                    return redirect(url_for('main.settings'))
+            else:
+                flash('Please fix the highlighted registration fields.', 'error')
+
+        elif action == 'login':
+            mode = 'signin'
+            if login_form.validate_on_submit():
+                email = login_form.email.data.strip().lower()
+                user = User.query.filter_by(email=email).first()
+                if user and user.check_password(login_form.password.data):
+                    login_user(user)
+                    flash('Signed in successfully.', 'success')
+                    next_url = request.args.get('next')
+                    if next_url and next_url.startswith('/'):
+                        return redirect(next_url)
+                    return redirect(url_for('main.settings'))
+                flash('Email or password is incorrect.', 'error')
+            else:
+                flash('Please enter your email and password.', 'error')
+
+    return render_template(
+        'auth.html',
+        login_form=login_form,
+        register_form=register_form,
+        mode=mode,
+    )
+
+
+@bp.route('/logout', methods=['POST'])
+def logout():
+    logout_user()
+    flash('Signed out successfully.', 'success')
+    return redirect(url_for('main.home'))
 
 
 @bp.route('/settings')

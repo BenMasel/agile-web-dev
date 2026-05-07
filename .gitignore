@@ -2,6 +2,7 @@
 app/static/js/config.js
 .env
 .env.*
+!.env.example
 
 # Flask instance folder (contains the SQLite DB)
 instance/

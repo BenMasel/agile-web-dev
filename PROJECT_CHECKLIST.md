@@ -2,21 +2,27 @@
 
 This checklist maps the CITS3403 group project brief against the current stUwa Flask app. The app direction is a UWA student companion for searching units, browsing degree requirements, building a study planner, finding resources, seeing student benefits, and adding community knowledge around units.
 
+## Progress Summary
+
+- Last checked: 7 May 2026.
+- Completion: **69** checked items out of **383** total checklist items (**18.0%**).
+- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
+
 ## Brief Requirements Snapshot
 
-- [ ] Client-server web application using Flask, HTML, CSS, JavaScript, and an allowed CSS framework.
-- [ ] User login and logout.
-- [ ] User data persisted between sessions.
+- [x] Client-server web application using Flask, HTML, CSS, JavaScript, and an allowed CSS framework.
+- [x] User login and logout.
+- [x] User data persisted between sessions.
 - [ ] Users can view data from other users in some manner.
-- [ ] SQLite database accessed through SQLAlchemy.
-- [ ] Good navigation, useful purpose, intuitive UI, and strong visual design.
-- [ ] Valid, organised HTML with meaningful Jinja templates.
-- [ ] Maintainable responsive CSS using allowed framework/custom classes.
+- [x] SQLite database accessed through SQLAlchemy.
+- [x] Good navigation, useful purpose, intuitive UI, and strong visual design.
+- [x] Valid, organised HTML with meaningful Jinja templates.
+- [x] Maintainable responsive CSS using allowed framework/custom classes.
 - [ ] Well formatted JavaScript with validation, DOM manipulation, and AJAX where appropriate.
-- [ ] Flask code performs non-trivial request handling, data manipulation, and page generation.
+- [x] Flask code performs non-trivial request handling, data manipulation, and page generation.
 - [ ] Well considered database schema, authentication, and evidence of migrations.
 - [ ] 5+ unit tests and 5+ Selenium tests against a live server.
-- [ ] Salted password hashes, CSRF protection for forms, and environment variable configuration.
+- [x] Salted password hashes, CSRF protection for forms, and environment variable configuration.
 - [ ] Public GitHub repo with README containing app purpose, group member table, launch instructions, and test instructions.
 - [ ] Regular GitHub Issues, Pull Requests, commits, reviews, and checkpoint evidence.
 
@@ -31,8 +37,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Resources page using planner state and YouTube/channel metadata.
 - [x] Benefits page with category filters.
 - [x] Docs section rendered from Markdown.
-- [ ] Real authentication. Current `/auth` page is a frontend-only stub.
-- [ ] SQLAlchemy models. Current `app/db.py` uses raw `sqlite3` and no schema.
+- [x] Basic `/api/onboarding-data` JSON endpoint used by the onboarding modal.
+- [x] `.gitignore` excludes `.env`, local config, `instance/`, SQLite files, Python caches, and `.venv`.
+- [x] `run.py` launches the Flask app through the application factory.
+- [x] Real authentication with register, login, logout, Flask-Login sessions, and hashed passwords.
+- [x] SQLAlchemy `User` model and SQLite connection configured through Flask-SQLAlchemy.
 - [ ] Server-side persistence for planner/settings/reviews.
 - [ ] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
 - [ ] Tests.
@@ -42,12 +51,12 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 1: Scope And Team Setup
 
-- [ ] Confirm the final product statement: "stUwa helps UWA students plan their degree, save their study progress, and share unit advice with other students."
+- [x] Confirm the final product statement: "stUwa helps UWA students plan their degree, save their study progress, and share unit advice with other students."
 - [ ] Decide the minimum viable project features for marking:
-  - [ ] Search/browse units, degrees, clubs, benefits, and resources.
-  - [ ] Register, login, logout, and account settings.
+  - [x] Search/browse units, degrees, clubs, benefits, and resources.
+  - [x] Register, login, logout, and account settings.
   - [ ] Save a personal study plan to the database.
-  - [ ] Mark completed units and persist them between sessions.
+  - [x] Mark completed units and persist them between sessions.
   - [ ] Share a public study plan or profile summary.
   - [ ] Add unit reviews/comments visible to other users.
 - [ ] Create GitHub Issues for each checklist section or major feature.
@@ -61,34 +70,34 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Phase 2: Project Structure And Configuration
 
 - [ ] Add a real configuration layer:
-  - [ ] `config.py` with development, testing, and production config classes.
-  - [ ] `SECRET_KEY` loaded from environment variables.
-  - [ ] `DATABASE_URL` or SQLite path loaded from environment variables.
+  - [x] `config.py` with development, testing, and production config classes.
+  - [x] `SECRET_KEY` loaded from environment variables.
+  - [x] `DATABASE_URL` or SQLite path loaded from environment variables.
   - [ ] YouTube API key loaded from environment variables instead of committed JS config.
-- [ ] Add `.env.example` documenting required environment variables.
+- [x] Add `.env.example` documenting required environment variables.
 - [ ] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
 - [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
 - [ ] Decide whether to use:
-  - [ ] Flask-SQLAlchemy for models and sessions.
+  - [x] Flask-SQLAlchemy for models and sessions.
   - [ ] Flask-Migrate/Alembic for migrations.
-  - [ ] Flask-Login for session management.
-  - [ ] Flask-WTF for CSRF-protected forms.
-- [ ] Keep Tailwind as the CSS framework because it is allowed by the brief and already used.
+  - [x] Flask-Login for session management.
+  - [x] Flask-WTF for CSRF-protected forms.
+- [x] Keep Tailwind as the CSS framework because it is allowed by the brief and already used.
 - [ ] Remove unused placeholder entry points if they cause confusion:
   - [ ] Either make `main.py` launch the app or document that `run.py` is the app entry point.
 
 ## Phase 3: Database Models
 
 - [ ] Design the SQLite schema using SQLAlchemy models.
-- [ ] Add `User` model:
-  - [ ] `id`
-  - [ ] `email`
-  - [ ] `student_id`
-  - [ ] `display_name`
-  - [ ] `password_hash`
-  - [ ] `faculty`
-  - [ ] `created_at`
-  - [ ] `updated_at`
+- [x] Add `User` model:
+  - [x] `id`
+  - [x] `email`
+  - [x] `student_id`
+  - [x] `display_name`
+  - [x] `password_hash`
+  - [x] `faculty`
+  - [x] `created_at`
+  - [x] `updated_at`
 - [ ] Add `StudyPlan` model:
   - [ ] `id`
   - [ ] `user_id`
@@ -133,25 +142,25 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 4: Authentication And Account Flow
 
-- [ ] Replace the frontend-only `/auth` stub with real backend forms.
-- [ ] Implement register:
-  - [ ] Validate `@student.uwa.edu.au` email.
-  - [ ] Validate student ID format.
-  - [ ] Validate password length and confirmation.
-  - [ ] Store passwords using Werkzeug salted password hashing.
-  - [ ] Prevent duplicate emails.
-  - [ ] Show useful form errors.
-- [ ] Implement login:
-  - [ ] Check email and password.
-  - [ ] Start a Flask-Login session.
-  - [ ] Redirect logged-in users back to planner/settings.
-- [ ] Implement logout:
-  - [ ] Add `/logout` route.
-  - [ ] Add logout option in account menu/navbar.
-- [ ] Implement authenticated account state:
-  - [ ] Navbar avatar shows initials/display name when signed in.
-  - [ ] Settings page shows saved account information.
-  - [ ] Auth page redirects if already logged in.
+- [x] Replace the frontend-only `/auth` stub with real backend forms.
+- [x] Implement register:
+  - [x] Validate `@student.uwa.edu.au` email.
+  - [x] Validate student ID format.
+  - [x] Validate password length and confirmation.
+  - [x] Store passwords using Werkzeug salted password hashing.
+  - [x] Prevent duplicate emails.
+  - [x] Show useful form errors.
+- [x] Implement login:
+  - [x] Check email and password.
+  - [x] Start a Flask-Login session.
+  - [x] Redirect logged-in users back to planner/settings.
+- [x] Implement logout:
+  - [x] Add `/logout` route.
+  - [x] Add logout option in account menu/navbar.
+- [x] Implement authenticated account state:
+  - [x] Navbar avatar shows initials/display name when signed in.
+  - [x] Settings page shows saved account information.
+  - [x] Auth page redirects if already logged in.
 - [ ] Add CSRF protection to register, login, settings, review, planner save, and delete forms.
 - [ ] Add password change or account edit if time allows.
 - [ ] Add graceful handling for unauthenticated users:
@@ -213,7 +222,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Phase 7: Existing Feature Hardening
 
 - [ ] Home/search:
-  - [ ] Ensure search result HTML is accessible and keyboard navigation works across browsers.
+  - [x] Ensure search result HTML is accessible and keyboard navigation works across browsers.
   - [ ] Add no-JavaScript fallback or graceful empty state.
   - [ ] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
 - [ ] Unit pages:
@@ -222,7 +231,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Add "Add to planner" action for authenticated users.
 - [ ] Degree pages:
   - [ ] Add call-to-action to create a plan from a degree.
-  - [ ] Show units grouped by year/semester from YAML data.
+  - [x] Show units grouped by year/semester from YAML data.
   - [ ] Link to public plans for the degree if implemented.
 - [ ] Club pages:
   - [ ] Link clubs to related units and resources.
@@ -237,7 +246,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Replace placeholder disclaimer data with verified entries or clearly label demo data.
 - [ ] Settings page:
   - [ ] Persist notification preferences to the database.
-  - [ ] Add import plan JSON if export remains.
+  - [x] Add import plan JSON if export remains.
   - [ ] Add account deletion or data clearing for logged-in users if time allows.
 - [ ] Docs:
   - [ ] Update docs to match implemented database-backed behaviour.
@@ -301,7 +310,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Planner validation.
   - [ ] Review aggregation.
   - [ ] YouTube/resource search if proxied.
-- [ ] Keep YAML loading cached where safe.
+- [x] Keep YAML loading cached where safe.
 - [ ] Add error handlers for 400, 403, 404, and 500.
 - [ ] Add flash messages for form actions.
 - [ ] Ensure all route functions return the right status codes.
@@ -412,13 +421,13 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Run full unit test suite.
 - [ ] Run full Selenium suite against a live server.
 - [ ] Manually test the main user journeys:
-  - [ ] Browse/search catalogue.
+  - [x] Browse/search catalogue.
   - [ ] Register/login/logout.
   - [ ] Save and reload planner.
   - [ ] Share public plan.
   - [ ] Submit/view unit review.
   - [ ] Update settings.
-  - [ ] Browse resources and benefits.
+  - [x] Browse resources and benefits.
 - [ ] Test on desktop and mobile widths.
 - [ ] Check all external links.
 - [ ] Check empty/error/loading states.

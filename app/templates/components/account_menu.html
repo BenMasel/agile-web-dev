@@ -9,6 +9,15 @@
      class="hidden fixed z-[200] w-44 rounded-[10px] bg-rc-surface border border-rc-border shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col py-1"
      role="menu">
 
+  {% if current_user.is_authenticated %}
+  <div class="px-3 py-2">
+    <div class="text-[12px] font-medium text-white/75 truncate">{{ current_user.display_name }}</div>
+    <div class="text-[11px] text-white/30 truncate">{{ current_user.email }}</div>
+  </div>
+
+  <div class="h-px bg-rc-border-light mx-2 my-1"></div>
+  {% endif %}
+
   {# ---- Settings ---- #}
   <a href="{{ url_for('main.settings') }}"
      role="menuitem"
@@ -35,6 +44,21 @@
 
   <div class="h-px bg-rc-border-light mx-2 my-1"></div>
 
+  {% if current_user.is_authenticated %}
+  {# ---- Sign out ---- #}
+  <form method="post" action="{{ url_for('main.logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <button type="submit"
+            role="menuitem"
+            class="flex w-full items-center gap-2.5 px-3 py-2 text-[13px] text-rc-red/70 hover:bg-rc-red-muted hover:text-rc-red transition">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none" class="shrink-0">
+        <path d="M5 2.5H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        <path d="M8.5 9L11 6.5 8.5 4M11 6.5H5.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Sign out
+    </button>
+  </form>
+  {% else %}
   {# ---- Sign in ---- #}
   <a href="{{ url_for('main.auth') }}"
      role="menuitem"
@@ -45,6 +69,7 @@
     </svg>
     Sign in
   </a>
+  {% endif %}
 
 </div>
 
