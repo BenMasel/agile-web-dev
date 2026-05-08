@@ -51,19 +51,37 @@
       <span class="text-[12px] font-medium text-white/70">Account information</span>
       <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Signed in</span>
     </div>
-    <div class="divide-y divide-rc-border-light">
-      {% for row in [
-        ('Email', current_user.email),
-        ('Display name', current_user.display_name),
-        ('Student ID', current_user.student_id),
-        ('Faculty', current_user.faculty or 'Not set')
-      ] %}
+    <form method="post" action="{{ url_for('main.settings') }}" class="divide-y divide-rc-border-light">
+      {{ account_form.hidden_tag() }}
       <div class="flex items-center justify-between px-4 py-3">
-        <span class="text-[12px] text-rc-text-tertiary">{{ row[0] }}</span>
-        <span class="text-[12px] text-white/55">{{ row[1] }}</span>
+        <span class="text-[12px] text-rc-text-tertiary">Email</span>
+        <span class="text-[12px] text-white/55">{{ current_user.email }}</span>
       </div>
-      {% endfor %}
-    </div>
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">Student ID</span>
+        <span class="text-[12px] text-white/55">{{ current_user.student_id }}</span>
+      </div>
+      <label class="flex flex-col gap-1 px-4 py-3">
+        {{ account_form.display_name.label(class_="text-[12px] text-rc-text-tertiary") }}
+        {{ account_form.display_name(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20") }}
+        {% for error in account_form.display_name.errors %}
+        <span class="text-[11px] text-rc-red">{{ error }}</span>
+        {% endfor %}
+      </label>
+      <label class="flex flex-col gap-1 px-4 py-3">
+        {{ account_form.faculty.label(class_="text-[12px] text-rc-text-tertiary") }}
+        {{ account_form.faculty(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Faculty") }}
+        {% for error in account_form.faculty.errors %}
+        <span class="text-[11px] text-rc-red">{{ error }}</span>
+        {% endfor %}
+      </label>
+      <div class="flex justify-end px-4 py-3">
+        <button type="submit"
+                class="text-[11px] px-3 py-1.5 rounded-[6px] bg-rc-fill border border-rc-border text-white/55 hover:text-white/80 hover:border-white/15 transition cursor-pointer">
+          Save account
+        </button>
+      </div>
+    </form>
   </div>
   {% else %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex items-center gap-4">
