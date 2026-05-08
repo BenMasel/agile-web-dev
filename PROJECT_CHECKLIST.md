@@ -4,8 +4,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Progress Summary
 
-- Last checked: 7 May 2026.
-- Completion: **69** checked items out of **383** total checklist items (**18.0%**).
+- Last checked: 8 May 2026.
+- Completion: **130** checked items out of **383** total checklist items (**33.9%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -44,8 +44,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] SQLAlchemy `User` model and SQLite connection configured through Flask-SQLAlchemy.
 - [ ] Server-side persistence for planner/settings/reviews.
 - [ ] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
-- [ ] Tests.
-- [ ] CSRF protection.
+- [x] Tests.
+- [x] CSRF protection.
 - [ ] README group member table and test instructions.
 - [ ] Data schemas referenced by docs but not present in the repo.
 
@@ -79,7 +79,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
 - [ ] Decide whether to use:
   - [x] Flask-SQLAlchemy for models and sessions.
-  - [ ] Flask-Migrate/Alembic for migrations.
+  - [x] Flask-Migrate/Alembic for migrations.
   - [x] Flask-Login for session management.
   - [x] Flask-WTF for CSRF-protected forms.
 - [x] Keep Tailwind as the CSS framework because it is allowed by the brief and already used.
@@ -303,8 +303,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] `planner` for planner pages and APIs.
   - [ ] `reviews` for unit review APIs.
   - [ ] `docs` already exists.
-- [ ] Add `app/models.py` for SQLAlchemy models.
-- [ ] Add `app/forms.py` for Flask-WTF forms.
+- [x] Add `app/models.py` for SQLAlchemy models.
+- [x] Add `app/forms.py` for Flask-WTF forms.
 - [ ] Add `app/services/` helpers for:
   - [ ] Loading YAML catalogue data.
   - [ ] Planner validation.
@@ -336,8 +336,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Set up pytest dependency.
 - [x] Add test configuration using an isolated in-memory SQLite database.
 - [x] Add fixtures for app, client, and database.
-- [ ] Unit tests, minimum 5:
-  - [ ] Home route returns 200 and contains search data.
+- [x] Unit tests, minimum 5:
+  - [x] Home route returns 200 and contains search data.
   - [ ] Unit detail route returns correct unit page and 404 for missing unit.
   - [x] Registration model support creates a user with a hashed password.
   - [ ] Login/logout changes session state correctly.
@@ -351,7 +351,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] User can submit a unit review and another browser/session can view it.
   - [ ] User can make a plan public and open the share link.
   - [ ] Resources/benefits navigation works on mobile viewport.
-- [ ] Add test command to README.
+- [x] Add test command to README.
 - [ ] Add coverage command if time allows.
 - [ ] Add CI workflow if time allows:
   - [ ] Install with `uv sync`.
@@ -360,10 +360,10 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 13: Security
 
-- [ ] Store passwords only as salted hashes.
+- [x] Store passwords only as salted hashes.
 - [ ] Add CSRF protection to all state-changing forms and AJAX requests.
-- [ ] Store secret keys and API keys in environment variables.
-- [ ] Never commit `.env`, SQLite production data, or API keys.
+- [x] Store secret keys and API keys in environment variables.
+- [x] Never commit `.env`, SQLite production data, or API keys.
 - [ ] Use `login_required` on private routes.
 - [ ] Enforce ownership checks:
   - [ ] Users can only edit/delete their own plans.
@@ -376,20 +376,20 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 14: README And Documentation
 
-- [ ] Update README purpose section to match final app.
-- [ ] Add required group member table:
+- [x] Update README purpose section to match final app.
+- [x] Add required group member table:
   - [ ] UWA ID.
   - [ ] Name.
   - [ ] GitHub username.
 - [ ] Keep launch instructions current:
-  - [ ] Install `uv`.
-  - [ ] Copy `.env.example` to `.env`.
+  - [x] Install `uv`.
+  - [x] Copy `.env.example` to `.env`.
   - [ ] Run migrations.
   - [ ] Seed database if needed.
-  - [ ] Start with `uv run python run.py`.
+  - [x] Start with `uv run python run.py`.
 - [ ] Add test instructions:
-  - [ ] Unit tests.
-  - [ ] Selenium tests.
+  - [x] Unit tests.
+  - [x] Selenium tests.
   - [ ] Any required browser driver setup.
 - [ ] Add migration instructions.
 - [ ] Add screenshots or short usage walkthrough if time allows.
@@ -397,7 +397,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Update `docs/roadmap.md` so completed features are not described as future work.
 - [ ] Add architecture notes:
   - [ ] Flask blueprints.
-  - [ ] SQLAlchemy models.
+  - [x] SQLAlchemy models.
   - [ ] YAML catalogue content.
   - [ ] Client-side planner/search behaviour.
 
@@ -418,11 +418,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 16: Final Polish And Submission Readiness
 
-- [ ] Run full unit test suite.
+- [x] Run full unit test suite.
 - [ ] Run full Selenium suite against a live server.
 - [ ] Manually test the main user journeys:
   - [x] Browse/search catalogue.
-  - [ ] Register/login/logout.
+  - [x] Register/login/logout.
   - [ ] Save and reload planner.
   - [ ] Share public plan.
   - [ ] Submit/view unit review.
