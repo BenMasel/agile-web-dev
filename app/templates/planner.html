@@ -132,6 +132,45 @@
   </div>
 
   {# ── Unit tray ── #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2">
+    <div class="flex items-center justify-between gap-2">
+      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Account sync</span>
+      {% if current_user.is_authenticated %}
+      <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Signed in</span>
+      {% else %}
+      <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber">Local only</span>
+      {% endif %}
+    </div>
+    <div id="sync-message" class="text-[11px] text-rc-text-faint leading-4">
+      {% if current_user.is_authenticated %}
+      Save this browser plan to your account, or load your saved plan.
+      {% else %}
+      Planner works locally in this browser. Sign in to sync and save server-side.
+      {% endif %}
+    </div>
+    <div class="flex gap-2">
+      {% if current_user.is_authenticated %}
+      <button id="save-account-btn"
+              class="flex-1 text-[11px] text-white/55 hover:text-white/80 bg-rc-fill border border-rc-border transition px-2.5 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer">
+        Save to account
+      </button>
+      <button id="load-account-btn"
+              class="text-[11px] text-white/45 hover:text-white/75 bg-rc-fill border border-rc-border transition px-2.5 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer">
+        Load
+      </button>
+      <button id="delete-account-btn"
+              class="text-[11px] text-rc-red/70 hover:text-rc-red bg-rc-red-muted border border-rc-red/15 hover:border-rc-red/30 transition px-2.5 py-1.5 rounded-[7px] cursor-pointer">
+        Delete
+      </button>
+      {% else %}
+      <a href="{{ url_for('main.auth', next=url_for('main.planner')) }}"
+         class="flex-1 text-center text-[11px] text-white bg-rc-red/90 hover:bg-rc-red transition px-2.5 py-1.5 rounded-[7px]">
+        Sign in to sync
+      </a>
+      {% endif %}
+    </div>
+  </div>
+
   <div id="tray-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2">
     <div class="flex items-center gap-2 px-1">
       <svg width="12" height="12" viewBox="0 0 13 13" fill="none" class="text-rc-text-tertiary shrink-0">
@@ -247,6 +286,8 @@
 const DEGREES_DATA = {{ degrees | tojson }};
 const UNITS_DATA   = {{ units   | tojson }};
 const STORAGE_KEY  = 'stUwa_planner_v3';
+const IS_AUTHENTICATED = {{ current_user.is_authenticated | tojson }};
+const CSRF_TOKEN = {{ csrf_token() | tojson }};
 
 // ─────────────────────────────────────────────────────────
 // TOOLTIP
@@ -306,6 +347,68 @@ let dragState = null; // { code, fromKey: 'tray'|semKey, fromSlot: null|number }
 function save()  { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function load()  {
   try { const r = localStorage.getItem(STORAGE_KEY); if (r) Object.assign(state, JSON.parse(r)); } catch {}
+}
+
+function setSyncMessage(message, isError=false) {
+  const el = document.getElementById('sync-message');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.toggle('text-rc-red', isError);
+  el.classList.toggle('text-rc-text-faint', !isError);
+}
+
+async function syncRequest(url, options={}) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-CSRFToken': CSRF_TOKEN,
+    ...(options.headers || {}),
+  };
+  const response = await fetch(url, { ...options, headers });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error || 'Sync failed. Please try again.');
+  return payload;
+}
+
+async function savePlanToAccount() {
+  if (!IS_AUTHENTICATED) {
+    setSyncMessage('Sign in to sync and save server-side.', true);
+    return;
+  }
+  try {
+    const payload = await syncRequest('/api/planner', {
+      method: 'POST',
+      body: JSON.stringify({ state }),
+    });
+    setSyncMessage(payload.message || 'Planner saved to your account.');
+  } catch (error) {
+    setSyncMessage(error.message, true);
+  }
+}
+
+async function loadPlanFromAccount() {
+  try {
+    const payload = await syncRequest('/api/planner');
+    if (!payload.plan) {
+      setSyncMessage('No saved account plan yet.');
+      return;
+    }
+    state = { ...state, ...payload.plan };
+    save();
+    render();
+    setSyncMessage('Saved account plan loaded into this browser.');
+  } catch (error) {
+    setSyncMessage(error.message, true);
+  }
+}
+
+async function deletePlanFromAccount() {
+  if (!confirm('Delete your saved account plan? Your local browser plan will stay here.')) return;
+  try {
+    const payload = await syncRequest('/api/planner', { method: 'DELETE' });
+    setSyncMessage(payload.message || 'Saved planner deleted.');
+  } catch (error) {
+    setSyncMessage(error.message, true);
+  }
 }
 
 // ─────────────────────────────────────────────────────────
@@ -1357,6 +1460,10 @@ document.addEventListener('DOMContentLoaded', () => {
     state.substitutions = {};
     save(); render();
   });
+
+  document.getElementById('save-account-btn')?.addEventListener('click', savePlanToAccount);
+  document.getElementById('load-account-btn')?.addEventListener('click', loadPlanFromAccount);
+  document.getElementById('delete-account-btn')?.addEventListener('click', deletePlanFromAccount);
 
   // Live search in picker
   document.getElementById('picker-search').addEventListener('input', e => {
