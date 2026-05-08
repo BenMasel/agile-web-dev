@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **143** checked items out of **383** total checklist items (**37.3%**).
+- Completion: **162** checked items out of **383** total checklist items (**42.3%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -42,8 +42,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] `run.py` launches the Flask app through the application factory.
 - [x] Real authentication with register, login, logout, Flask-Login sessions, and hashed passwords.
 - [x] SQLAlchemy `User` model and SQLite connection configured through Flask-SQLAlchemy.
-- [ ] Server-side persistence for planner/settings/reviews.
-- [ ] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
+- [x] Server-side persistence for planner/settings/reviews.
+- [x] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
 - [x] Tests.
 - [x] CSRF protection.
 - [ ] README group member table and test instructions.
@@ -55,7 +55,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Decide the minimum viable project features for marking:
   - [x] Search/browse units, degrees, clubs, benefits, and resources.
   - [x] Register, login, logout, and account settings.
-  - [ ] Save a personal study plan to the database.
+  - [x] Save a personal study plan to the database.
   - [x] Mark completed units and persist them between sessions.
   - [ ] Share a public study plan or profile summary.
   - [x] Add unit reviews/comments visible to other users.
@@ -179,10 +179,10 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] `POST /api/plans/<id>/units`
   - [ ] `PATCH /api/plans/<id>/units/<unit_id>`
   - [ ] `DELETE /api/plans/<id>/units/<unit_id>`
-- [ ] Require login for server-side plan save/update/delete.
-- [ ] Keep localStorage as offline/guest draft storage.
-- [ ] Add "Save to account" button on planner.
-- [ ] Add "Load saved plan" control on planner.
+- [x] Require login for server-side plan save/update/delete.
+- [x] Keep localStorage as offline/guest draft storage.
+- [x] Add "Save to account" button on planner.
+- [x] Add "Load saved plan" control on planner.
 - [ ] Add "Make public" toggle on planner.
 - [ ] Add "Copy share link" for public plans.
 - [ ] Add public plan page:
@@ -361,14 +361,14 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Phase 13: Security
 
 - [x] Store passwords only as salted hashes.
-- [ ] Add CSRF protection to all state-changing forms and AJAX requests.
+- [x] Add CSRF protection to all state-changing forms and AJAX requests.
 - [ ] Store secret keys and API keys in environment variables.
 - [x] Never commit `.env`, SQLite production data, or API keys.
-- [ ] Use `login_required` on private routes.
+- [x] Use `login_required` on private routes.
 - [ ] Enforce ownership checks:
-  - [ ] Users can only edit/delete their own plans.
-  - [ ] Users can only edit/delete their own reviews.
-  - [ ] Private plans are not visible to other users.
+  - [x] Users can only edit/delete their own plans.
+  - [x] Users can only edit/delete their own reviews.
+  - [x] Private plans are not visible to other users.
 - [ ] Escape user-generated content in templates.
 - [ ] Validate all form and JSON input server-side.
 - [ ] Rate-limit or add basic protection to login if time allows.
@@ -423,10 +423,10 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Manually test the main user journeys:
   - [x] Browse/search catalogue.
   - [x] Register/login/logout.
-  - [ ] Save and reload planner.
+  - [x] Save and reload planner.
   - [ ] Share public plan.
-  - [ ] Submit/view unit review.
-  - [ ] Update settings.
+  - [x] Submit/view unit review.
+  - [x] Update settings.
   - [x] Browse resources and benefits.
 - [ ] Test on desktop and mobile widths.
 - [ ] Check all external links.
@@ -449,7 +449,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 1. [ ] SQLAlchemy setup, migrations, config, and test database.
 2. [ ] Real registration/login/logout with CSRF and password hashing.
-3. [ ] Persist planner to the database for logged-in users.
+3. [x] Persist planner to the database for logged-in users.
 4. [ ] Public plan sharing.
 5. [x] Unit reviews visible to other users.
 6. [ ] Tests: at least 5 unit tests and 5 Selenium tests.
