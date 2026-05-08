@@ -5,11 +5,11 @@ from datetime import datetime, timezone
 from functools import lru_cache
 import yaml
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
-from flask_login import current_user, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 
 from app.extensions import db
-from app.forms import LoginForm, RegisterForm, ReviewForm
-from app.models import UnitReview, User
+from app.forms import AccountForm, LoginForm, RegisterForm, UnitReviewForm
+from app.models import StudyPlan, StudyPlanUnit, UnitReview, User
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
@@ -222,7 +222,16 @@ def unit_detail(code):
 
     filepath = os.path.join('data', 'units', f'{code}.yaml')
     git_meta = git_last_modified(filepath)
-    return render_template('unit/detail.html', unit=unit, clubs=clubs, git_meta=git_meta)
+    reviews = UnitReview.query.filter_by(unit_code=code.upper()).order_by(UnitReview.created_at.desc()).all()
+    review_form = UnitReviewForm()
+    return render_template(
+        'unit/detail.html',
+        unit=unit,
+        clubs=clubs,
+        git_meta=git_meta,
+        reviews=reviews,
+        review_form=review_form,
+    )
 
 
 @bp.route('/degree/<slug>')
@@ -250,6 +259,91 @@ def planner():
     degrees = load_all_yaml('degrees')
     units = {u['code']: u for u in load_all_yaml('units')}
     return render_template('planner.html', degrees=degrees, units=units)
+
+
+def serialize_plan(plan):
+    state = {
+        'degrees': [slug for slug in [plan.primary_degree_slug, plan.secondary_degree_slug] if slug],
+        'startYear': plan.start_year,
+        'startSem': plan.start_semester,
+        'plan': {},
+        'done': [],
+        'substitutions': {},
+    }
+    for unit in plan.units:
+        key = f'{unit.year}-{unit.semester}'
+        state['plan'].setdefault(key, []).append(unit.unit_code)
+        if unit.status == 'completed' and unit.unit_code not in state['done']:
+            state['done'].append(unit.unit_code)
+    return state
+
+
+@bp.route('/api/planner', methods=['GET'])
+@login_required
+def planner_saved():
+    plan = StudyPlan.query.filter_by(user_id=current_user.id).order_by(StudyPlan.updated_at.desc()).first()
+    return jsonify({'plan': serialize_plan(plan) if plan else None})
+
+
+@bp.route('/api/planner', methods=['POST'])
+@login_required
+def planner_save():
+    payload = request.get_json(silent=True) or {}
+    state = payload.get('state') or {}
+    degrees = state.get('degrees') or []
+    plan_data = state.get('plan') or {}
+    done = set(state.get('done') or [])
+
+    try:
+        start_year = int(state.get('startYear') or datetime.now().year)
+        start_semester = int(state.get('startSem') or 1)
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Planner start year or semester is invalid.'}), 400
+
+    plan = StudyPlan.query.filter_by(user_id=current_user.id).order_by(StudyPlan.updated_at.desc()).first()
+    if not plan:
+        plan = StudyPlan(user_id=current_user.id, start_year=start_year, start_semester=start_semester)
+        db.session.add(plan)
+
+    plan.name = payload.get('name') or 'My study plan'
+    plan.primary_degree_slug = degrees[0] if len(degrees) >= 1 else None
+    plan.secondary_degree_slug = degrees[1] if len(degrees) >= 2 else None
+    plan.start_year = start_year
+    plan.start_semester = start_semester
+    plan.is_public = bool(payload.get('is_public', False))
+    plan.units.clear()
+
+    position = 0
+    for key, codes in plan_data.items():
+        try:
+            year_text, semester_text = key.split('-', 1)
+            year = int(year_text)
+            semester = int(semester_text)
+        except (AttributeError, ValueError):
+            continue
+        for code in codes or []:
+            if not code:
+                continue
+            plan.units.append(StudyPlanUnit(
+                unit_code=str(code).upper(),
+                year=year,
+                semester=semester,
+                status='completed' if code in done else 'planned',
+                position=position,
+            ))
+            position += 1
+
+    db.session.commit()
+    return jsonify({'message': 'Planner saved to your account.', 'plan': serialize_plan(plan)})
+
+
+@bp.route('/api/planner', methods=['DELETE'])
+@login_required
+def planner_delete():
+    for plan in StudyPlan.query.filter_by(user_id=current_user.id).all():
+        db.session.delete(plan)
+    db.session.commit()
+    return jsonify({'message': 'Saved planner deleted.'})
 
 
 @bp.route('/api/onboarding-data')
@@ -347,9 +441,64 @@ def logout():
     return redirect(url_for('main.home'))
 
 
-@bp.route('/settings')
+@bp.route('/settings', methods=['GET', 'POST'])
 def settings():
-    return render_template('settings.html')
+    account_form = AccountForm(obj=current_user if current_user.is_authenticated else None)
+    if request.method == 'POST':
+        if not current_user.is_authenticated:
+            flash('Please sign in before updating account settings.', 'error')
+            return redirect(url_for('main.auth', next=url_for('main.settings')))
+        if account_form.validate_on_submit():
+            current_user.display_name = account_form.display_name.data.strip()
+            current_user.faculty = (account_form.faculty.data or '').strip() or None
+            db.session.commit()
+            flash('Account settings updated.', 'success')
+            return redirect(url_for('main.settings'))
+        flash('Please fix the highlighted account fields.', 'error')
+    return render_template('settings.html', account_form=account_form)
+
+
+@bp.route('/unit/<code>/reviews', methods=['POST'])
+@login_required
+def create_review(code):
+    unit = load_yaml('units', f'{code}.yaml')
+    if unit is None:
+        return render_template('404.html', category='unit'), 404
+
+    form = UnitReviewForm()
+    if form.validate_on_submit():
+        review = UnitReview(
+            user_id=current_user.id,
+            unit_code=code.upper(),
+            rating=form.rating.data,
+            difficulty=form.difficulty.data,
+            workload_hours=form.workload_hours.data,
+            semester_taken=(form.semester_taken.data or '').strip() or None,
+            body=form.body.data.strip(),
+        )
+        db.session.add(review)
+        db.session.commit()
+        flash('Review posted. Other students can view it now.', 'success')
+    else:
+        flash('Please fix the highlighted review fields.', 'error')
+    return redirect(url_for('main.unit_detail', code=code.upper()))
+
+
+@bp.route('/reviews/<int:review_id>/delete', methods=['POST'])
+@login_required
+def delete_review(review_id):
+    review = db.session.get(UnitReview, review_id)
+    if review is None:
+        return render_template('404.html', category='review'), 404
+    if review.user_id != current_user.id:
+        flash('You can only delete your own reviews.', 'error')
+        return redirect(url_for('main.unit_detail', code=review.unit_code))
+
+    code = review.unit_code
+    db.session.delete(review)
+    db.session.commit()
+    flash('Review deleted.', 'success')
+    return redirect(url_for('main.unit_detail', code=code))
 
 
 @bp.route('/club/<slug>')
@@ -404,7 +553,7 @@ def post_unit_review(code):
     if not current_user.is_authenticated:
         return jsonify({'error': 'You must be logged in to submit a review.'}), 401
 
-    form = ReviewForm()
+    form = UnitReviewForm()
     if not form.validate_on_submit():
         # Flatten WTForms errors into a simple dict for the frontend
         errors = {field: msgs[0] for field, msgs in form.errors.items() if msgs}
