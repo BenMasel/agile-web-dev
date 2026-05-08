@@ -1,3 +1,5 @@
+from importlib import import_module
+
 from flask import Flask
 from dotenv import load_dotenv
 
@@ -13,8 +15,14 @@ def create_app(config_object=None):
     """
     app = Flask(__name__, instance_relative_config=True)
     import os
-    config_name = os.environ.get('FLASK_CONFIG', 'default')
-    app.config.from_object(CONFIG_BY_NAME.get(config_name, CONFIG_BY_NAME['default']))
+    if config_object:
+        if isinstance(config_object, str):
+            module_name, class_name = config_object.rsplit('.', 1)
+            config_object = getattr(import_module(module_name), class_name)
+        app.config.from_object(config_object)
+    else:
+        config_name = os.environ.get('FLASK_CONFIG', 'default')
+        app.config.from_object(CONFIG_BY_NAME.get(config_name, CONFIG_BY_NAME['default']))
     app.config['DATABASE'] = os.path.join(app.instance_path, 'app.db')
 
     try:

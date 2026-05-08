@@ -8,6 +8,7 @@ class Config:
         f"sqlite:///{os.path.abspath(os.path.join(os.path.dirname(__file__), 'instance', 'app.db'))}",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    WTF_CSRF_ENABLED = True
 
 
 class DevelopmentConfig(Config):
@@ -17,6 +18,10 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     WTF_CSRF_ENABLED = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+
+
+TestConfig = TestingConfig
 
 
 class ProductionConfig(Config):

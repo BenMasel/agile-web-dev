@@ -6,7 +6,19 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.extensions import db, login_manager
 
 
+class TimestampMixin:
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
     student_id = db.Column(db.String(8), unique=True, nullable=False, index=True)
@@ -19,6 +31,23 @@ class User(UserMixin, db.Model):
         nullable=False,
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+    study_plans = db.relationship(
+        'StudyPlan',
+        back_populates='user',
+        cascade='all, delete-orphan',
+    )
+    reviews = db.relationship(
+        'UnitReview',
+        back_populates='user',
+        cascade='all, delete-orphan',
+    )
+    notification_preferences = db.relationship(
+        'NotificationPreference',
+        back_populates='user',
+        uselist=False,
+        cascade='all, delete-orphan',
     )
 
     @property
