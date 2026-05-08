@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "stUwa unit",
+  "type": "object",
+  "required": [
+    "code",
+    "title",
+    "level",
+    "credit_points",
+    "availability",
+    "faculty",
+    "school",
+    "source_url",
+    "handbook_year",
+    "last_verified"
+  ],
+  "properties": {
+    "code": { "type": "string", "pattern": "^[A-Z]{4}[0-9]{4}$" },
+    "title": { "type": "string", "minLength": 1 },
+    "level": { "type": "integer", "minimum": 1, "maximum": 9 },
+    "credit_points": { "type": "integer", "minimum": 0 },
+    "availability": {
+      "oneOf": [
+        { "type": "string", "enum": ["year_long"] },
+        {
+          "type": "array",
+          "items": { "type": "integer", "enum": [1, 2] },
+          "minItems": 1
+        }
+      ]
+    },
+    "faculty": { "type": "string", "minLength": 1 },
+    "school": { "type": "string", "minLength": 1 },
+    "delivery": { "type": "string" },
+    "location": { "type": "string" },
+    "coordinator": { "type": "string" },
+    "coordinator_dept": { "type": "string" },
+    "offered": { "type": "string" },
+    "offered_detail": { "type": "string" },
+    "source_url": { "type": "string", "format": "uri" },
+    "handbook_year": { "type": "integer", "minimum": 2000 },
+    "last_verified": { "type": "string", "format": "date" },
+    "associated_clubs": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "learning_outcomes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "incompatibilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "title"],
+        "properties": {
+          "code": { "type": "string" },
+          "title": { "type": "string" }
+        }
+      }
+    },
+    "prerequisites": { "type": "object" },
+    "resources": { "type": "object" },
+    "community": { "type": "object" },
+    "assessments": { "type": "array" }
+  }
+}
