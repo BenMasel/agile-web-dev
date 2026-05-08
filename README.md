@@ -9,7 +9,9 @@ stUwa is a web app that aggregates UWA unit information, degrees, student clubs,
 ## Table of Contents
 
 - [Overview](#overview)
+- [Group Members](#group-members)
 - [Getting Started](#getting-started)
+- [Running Tests](#running-tests)
 - [Project Structure](#project-structure)
 - [Tooling](#tooling)
 
@@ -24,8 +26,22 @@ stUwa provides:
 - **Club pages** — descriptions, icons, and accent theming per club
 - **Student benefits** — categorised discounts and perks available to UWA students
 - **Global search** — client-side fuzzy search powered by [Fuse.js](https://fusejs.io/) across all units, degrees, and clubs with no round-trips to the server
+- **Study planner** — an interactive planner for mapping units across semesters and tracking degree progress
 
 All content is stored as YAML files under `data/`, making it easy to add or update entries without touching application code.
+
+The intended project direction is to turn this catalogue into a full student account system where UWA students can save study plans, mark completed units, share public plans, and leave unit reviews that help other students choose units with better context.
+
+---
+
+## Group Members
+
+| UWA ID | Name | GitHub username |
+|--------|------|-----------------|
+| TODO | TODO | TODO |
+| TODO | TODO | TODO |
+| TODO | TODO | TODO |
+| TODO | TODO | TODO |
 
 ---
 
@@ -46,13 +62,54 @@ cd agile-web-dev
 # 2. Install dependencies
 uv sync
 
-# 3. Start the development server
+# 3. Create local environment config when .env.example exists
+cp .env.example .env
+
+# 4. Start the development server
 uv run python run.py
 ```
 
 The app will be available at [http://localhost:5000](http://localhost:5000).
 
 > The development server runs with `debug=True`, which enables auto-reload on file changes and detailed error pages. Do not use this mode in production.
+
+### Environment Variables
+
+The project should be configured through environment variables rather than hard-coded secrets. The expected local setup is:
+
+| Variable | Purpose |
+|----------|---------|
+| `SECRET_KEY` | Flask session and CSRF signing key |
+| `DATABASE_URL` | SQLite database path for SQLAlchemy |
+| `YOUTUBE_API_KEY` | Optional YouTube Data API key for resource search |
+
+When `.env.example` is added, copy it to `.env` and replace the placeholder values for local development.
+
+---
+
+## Running Tests
+
+The project brief requires at least 5 unit tests and 5 Selenium tests. The test suite is planned around `pytest`.
+
+```bash
+# Install dependencies
+uv sync
+
+# Run unit tests
+uv run pytest
+```
+
+Selenium tests should run against a live development server:
+
+```bash
+# Terminal 1
+uv run python run.py
+
+# Terminal 2
+uv run pytest tests/selenium
+```
+
+If Selenium browser drivers are required, document the setup steps here when the Selenium suite is added.
 
 ---
 

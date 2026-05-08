@@ -98,44 +98,44 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] `faculty`
   - [x] `created_at`
   - [x] `updated_at`
-- [ ] Add `StudyPlan` model:
-  - [ ] `id`
-  - [ ] `user_id`
-  - [ ] `name`
-  - [ ] `primary_degree_slug`
-  - [ ] `secondary_degree_slug`
-  - [ ] `start_year`
-  - [ ] `start_semester`
-  - [ ] `is_public`
-  - [ ] `created_at`
-  - [ ] `updated_at`
-- [ ] Add `StudyPlanUnit` model:
-  - [ ] `id`
-  - [ ] `study_plan_id`
-  - [ ] `unit_code`
-  - [ ] `year`
-  - [ ] `semester`
-  - [ ] `status` such as planned, completed, removed.
-  - [ ] `position`
-- [ ] Add `UnitReview` model:
-  - [ ] `id`
-  - [ ] `user_id`
-  - [ ] `unit_code`
-  - [ ] `rating`
-  - [ ] `difficulty`
-  - [ ] `workload_hours`
-  - [ ] `semester_taken`
-  - [ ] `body`
-  - [ ] `created_at`
-  - [ ] `updated_at`
+- [x] Add `StudyPlan` model:
+  - [x] `id`
+  - [x] `user_id`
+  - [x] `name`
+  - [x] `primary_degree_slug`
+  - [x] `secondary_degree_slug`
+  - [x] `start_year`
+  - [x] `start_semester`
+  - [x] `is_public`
+  - [x] `created_at`
+  - [x] `updated_at`
+- [x] Add `StudyPlanUnit` model:
+  - [x] `id`
+  - [x] `study_plan_id`
+  - [x] `unit_code`
+  - [x] `year`
+  - [x] `semester`
+  - [x] `status` such as planned, completed, removed.
+  - [x] `position`
+- [x] Add `UnitReview` model:
+  - [x] `id`
+  - [x] `user_id`
+  - [x] `unit_code`
+  - [x] `rating`
+  - [x] `difficulty`
+  - [x] `workload_hours`
+  - [x] `semester_taken`
+  - [x] `body`
+  - [x] `created_at`
+  - [x] `updated_at`
 - [ ] Add `SavedBenefit` or `SavedResource` model if time allows:
   - [ ] Let users bookmark student benefits/resources.
   - [ ] Persist these bookmarks between sessions.
-- [ ] Add `NotificationPreference` model or JSON column:
-  - [ ] Planner reminders.
-  - [ ] Unit catalogue updates.
-  - [ ] Review replies or community replies.
-  - [ ] Weekly digest preference.
+- [x] Add `NotificationPreference` model or JSON column:
+  - [x] Planner reminders.
+  - [x] Unit catalogue updates.
+  - [x] Review replies or community replies.
+  - [x] Weekly digest preference.
 - [ ] Create initial migration.
 - [ ] Add seed/demo data for development and testing.
 - [ ] Document migration commands in the README.
@@ -333,17 +333,17 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 12: Testing
 
-- [ ] Set up pytest.
-- [ ] Add test configuration using an isolated temporary SQLite database.
-- [ ] Add fixtures for app, client, database, and sample users.
+- [x] Set up pytest dependency.
+- [x] Add test configuration using an isolated in-memory SQLite database.
+- [x] Add fixtures for app, client, and database.
 - [ ] Unit tests, minimum 5:
   - [ ] Home route returns 200 and contains search data.
   - [ ] Unit detail route returns correct unit page and 404 for missing unit.
-  - [ ] Registration creates a user with a hashed password.
+  - [x] Registration model support creates a user with a hashed password.
   - [ ] Login/logout changes session state correctly.
   - [ ] Planner API saves and reloads a user plan.
   - [ ] Unit review aggregation calculates average rating/difficulty.
-  - [ ] YAML search index includes units, degrees, and clubs.
+  - [x] Onboarding/catalogue API includes units and degrees.
 - [ ] Selenium tests, minimum 5, running against a live server:
   - [ ] User can register, log in, and log out.
   - [ ] User can search for a unit and open its detail page.

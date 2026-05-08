@@ -1,10 +1,11 @@
 from flask import Flask
+from dotenv import load_dotenv
 
 from config import CONFIG_BY_NAME
 from app.extensions import csrf, db as sqla_db, login_manager
 
 
-def create_app():
+def create_app(config_object=None):
     """
     Application factory — creates and configures the Flask app.
     Using a factory means we can create multiple instances (e.g. for testing)
@@ -30,6 +31,14 @@ def create_app():
     # Tear down the DB connection at the end of every request.
     from app.db import close_db
     app.teardown_appcontext(close_db)
+
+    from app.extensions import db, login_manager, migrate
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+
+    # Import models so Flask-Migrate can discover SQLAlchemy metadata.
+    from app import models  # noqa: F401
 
     # Register all routes via the main blueprint.
     from app import routes
