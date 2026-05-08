@@ -1,10 +1,10 @@
 from importlib import import_module
+import os
 
 from flask import Flask
-from dotenv import load_dotenv
 
 from config import CONFIG_BY_NAME
-from app.extensions import csrf, db as sqla_db, login_manager, migrate
+from app.extensions import csrf, db as sqlalchemy_db, login_manager, migrate
 
 
 def create_app(config_object=None):
@@ -14,7 +14,6 @@ def create_app(config_object=None):
     without side effects from a module-level app object.
     """
     app = Flask(__name__, instance_relative_config=True)
-    import os
     if config_object:
         if isinstance(config_object, str):
             module_name, class_name = config_object.rsplit('.', 1)
@@ -30,14 +29,14 @@ def create_app(config_object=None):
     except OSError:
         pass
 
-    sqla_db.init_app(app)
+    sqlalchemy_db.init_app(app)
+    migrate.init_app(app, sqlalchemy_db)
     csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'main.auth'
     login_manager.login_message = 'Please sign in to continue.'
-    migrate.init_app(app, sqla_db)
 
-    # Tear down the DB connection at the end of every request.
+    # Tear down the legacy sqlite connection at the end of every request.
     from app.db import close_db
     app.teardown_appcontext(close_db)
 
@@ -54,6 +53,6 @@ def create_app(config_object=None):
 
     with app.app_context():
         from app import models  # noqa: F401
-        sqla_db.create_all()
+        sqlalchemy_db.create_all()
 
     return app

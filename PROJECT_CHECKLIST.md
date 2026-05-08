@@ -4,8 +4,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Progress Summary
 
-- Last checked: 7 May 2026.
-- Completion: **69** checked items out of **383** total checklist items (**18.0%**).
+- Last checked: 8 May 2026.
+- Completion: **143** checked items out of **383** total checklist items (**37.3%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -13,7 +13,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Client-server web application using Flask, HTML, CSS, JavaScript, and an allowed CSS framework.
 - [x] User login and logout.
 - [x] User data persisted between sessions.
-- [ ] Users can view data from other users in some manner.
+- [x] Users can view data from other users in some manner.
 - [x] SQLite database accessed through SQLAlchemy.
 - [x] Good navigation, useful purpose, intuitive UI, and strong visual design.
 - [x] Valid, organised HTML with meaningful Jinja templates.
@@ -44,8 +44,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] SQLAlchemy `User` model and SQLite connection configured through Flask-SQLAlchemy.
 - [ ] Server-side persistence for planner/settings/reviews.
 - [ ] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
-- [ ] Tests.
-- [ ] CSRF protection.
+- [x] Tests.
+- [x] CSRF protection.
 - [ ] README group member table and test instructions.
 - [ ] Data schemas referenced by docs but not present in the repo.
 
@@ -58,7 +58,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Save a personal study plan to the database.
   - [x] Mark completed units and persist them between sessions.
   - [ ] Share a public study plan or profile summary.
-  - [ ] Add unit reviews/comments visible to other users.
+  - [x] Add unit reviews/comments visible to other users.
 - [ ] Create GitHub Issues for each checklist section or major feature.
 - [ ] Assign each issue to a group member.
 - [ ] Agree on branch naming, PR review rules, and commit message style.
@@ -79,7 +79,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
 - [ ] Decide whether to use:
   - [x] Flask-SQLAlchemy for models and sessions.
-  - [ ] Flask-Migrate/Alembic for migrations.
+  - [x] Flask-Migrate/Alembic for migrations.
   - [x] Flask-Login for session management.
   - [x] Flask-WTF for CSRF-protected forms.
 - [x] Keep Tailwind as the CSS framework because it is allowed by the brief and already used.
@@ -194,15 +194,15 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 6: Shared User Data And Community Features
 
-- [ ] Add unit reviews to satisfy "users can view data from other users".
-- [ ] Add review form on `app/templates/unit/detail.html`:
-  - [ ] Rating.
-  - [ ] Difficulty.
-  - [ ] Workload estimate.
-  - [ ] Semester taken.
-  - [ ] Short written advice.
+- [x] Add unit reviews to satisfy "users can view data from other users".
+- [x] Add review form on `app/templates/unit/detail.html`:
+  - [x] Rating.
+  - [x] Difficulty.
+  - [x] Workload estimate.
+  - [x] Semester taken.
+  - [x] Short written advice.
 - [ ] Require login to create/edit/delete a review.
-- [ ] Allow anyone to view approved/public reviews on unit pages.
+- [x] Allow anyone to view approved/public reviews on unit pages.
 - [ ] Show aggregate review data on unit pages:
   - [ ] Average rating.
   - [ ] Average difficulty.
@@ -211,9 +211,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Add "My reviews" section in settings.
 - [ ] Add edit/delete review controls for the review owner.
 - [ ] Add basic moderation guardrails:
-  - [ ] Character limits.
+  - [x] Character limits.
   - [ ] Empty/abusive placeholder validation.
-  - [ ] Hide emails from public review display.
+  - [x] Hide emails from public review display.
 - [ ] Add public/shared study plan browsing if time allows:
   - [ ] "Shared Plans" page.
   - [ ] Filter by degree.
@@ -226,7 +226,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Add no-JavaScript fallback or graceful empty state.
   - [ ] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
 - [ ] Unit pages:
-  - [ ] Add review/community section.
+  - [x] Add review/community section.
   - [ ] Show whether current user has planned/completed the unit.
   - [ ] Add "Add to planner" action for authenticated users.
 - [ ] Degree pages:
@@ -291,7 +291,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Settings updates.
 - [ ] Add AJAX helper for JSON requests with CSRF token support.
 - [ ] Handle API errors consistently with visible page feedback.
-- [ ] Keep server-side validation authoritative for all submitted data.
+- [x] Keep server-side validation authoritative for all submitted data.
 - [ ] Avoid exposing secrets in static JavaScript.
 - [ ] Add debounce/throttle where user input triggers network calls.
 
@@ -303,8 +303,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] `planner` for planner pages and APIs.
   - [ ] `reviews` for unit review APIs.
   - [ ] `docs` already exists.
-- [ ] Add `app/models.py` for SQLAlchemy models.
-- [ ] Add `app/forms.py` for Flask-WTF forms.
+- [x] Add `app/models.py` for SQLAlchemy models.
+- [x] Add `app/forms.py` for Flask-WTF forms.
 - [ ] Add `app/services/` helpers for:
   - [ ] Loading YAML catalogue data.
   - [ ] Planner validation.
@@ -336,8 +336,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Set up pytest dependency.
 - [x] Add test configuration using an isolated in-memory SQLite database.
 - [x] Add fixtures for app, client, and database.
-- [ ] Unit tests, minimum 5:
-  - [ ] Home route returns 200 and contains search data.
+- [x] Unit tests, minimum 5:
+  - [x] Home route returns 200 and contains search data.
   - [ ] Unit detail route returns correct unit page and 404 for missing unit.
   - [x] Registration model support creates a user with a hashed password.
   - [ ] Login/logout changes session state correctly.
@@ -351,7 +351,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] User can submit a unit review and another browser/session can view it.
   - [ ] User can make a plan public and open the share link.
   - [ ] Resources/benefits navigation works on mobile viewport.
-- [ ] Add test command to README.
+- [x] Add test command to README.
 - [ ] Add coverage command if time allows.
 - [ ] Add CI workflow if time allows:
   - [ ] Install with `uv sync`.
@@ -360,10 +360,10 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 13: Security
 
-- [ ] Store passwords only as salted hashes.
+- [x] Store passwords only as salted hashes.
 - [ ] Add CSRF protection to all state-changing forms and AJAX requests.
 - [ ] Store secret keys and API keys in environment variables.
-- [ ] Never commit `.env`, SQLite production data, or API keys.
+- [x] Never commit `.env`, SQLite production data, or API keys.
 - [ ] Use `login_required` on private routes.
 - [ ] Enforce ownership checks:
   - [ ] Users can only edit/delete their own plans.
@@ -376,20 +376,20 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 14: README And Documentation
 
-- [ ] Update README purpose section to match final app.
+- [x] Update README purpose section to match final app.
 - [ ] Add required group member table:
   - [ ] UWA ID.
   - [ ] Name.
   - [ ] GitHub username.
 - [ ] Keep launch instructions current:
-  - [ ] Install `uv`.
-  - [ ] Copy `.env.example` to `.env`.
+  - [x] Install `uv`.
+  - [x] Copy `.env.example` to `.env`.
   - [ ] Run migrations.
   - [ ] Seed database if needed.
-  - [ ] Start with `uv run python run.py`.
+  - [x] Start with `uv run python run.py`.
 - [ ] Add test instructions:
-  - [ ] Unit tests.
-  - [ ] Selenium tests.
+  - [x] Unit tests.
+  - [x] Selenium tests.
   - [ ] Any required browser driver setup.
 - [ ] Add migration instructions.
 - [ ] Add screenshots or short usage walkthrough if time allows.
@@ -397,7 +397,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Update `docs/roadmap.md` so completed features are not described as future work.
 - [ ] Add architecture notes:
   - [ ] Flask blueprints.
-  - [ ] SQLAlchemy models.
+  - [x] SQLAlchemy models.
   - [ ] YAML catalogue content.
   - [ ] Client-side planner/search behaviour.
 
@@ -418,11 +418,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 16: Final Polish And Submission Readiness
 
-- [ ] Run full unit test suite.
+- [x] Run full unit test suite.
 - [ ] Run full Selenium suite against a live server.
 - [ ] Manually test the main user journeys:
   - [x] Browse/search catalogue.
-  - [ ] Register/login/logout.
+  - [x] Register/login/logout.
   - [ ] Save and reload planner.
   - [ ] Share public plan.
   - [ ] Submit/view unit review.
@@ -451,7 +451,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 2. [ ] Real registration/login/logout with CSRF and password hashing.
 3. [ ] Persist planner to the database for logged-in users.
 4. [ ] Public plan sharing.
-5. [ ] Unit reviews visible to other users.
+5. [x] Unit reviews visible to other users.
 6. [ ] Tests: at least 5 unit tests and 5 Selenium tests.
 7. [ ] README and GitHub process cleanup.
 8. [ ] UI polish, accessibility, and final presentation flow.

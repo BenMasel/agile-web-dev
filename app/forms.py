@@ -58,4 +58,3 @@ class UnitReviewForm(FlaskForm):
     semester_taken = StringField('Semester taken', validators=[Optional(), Length(max=32)])
     body = TextAreaField('Review', validators=[DataRequired(), Length(min=10, max=1200)])
     submit = SubmitField('Post review')
-

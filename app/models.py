@@ -16,7 +16,7 @@ class TimestampMixin:
     )
 
 
-class User(UserMixin, db.Model):
+class User(TimestampMixin, UserMixin, db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -25,29 +25,14 @@ class User(UserMixin, db.Model):
     display_name = db.Column(db.String(80), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     faculty = db.Column(db.String(120), nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    updated_at = db.Column(
-        db.DateTime,
-        nullable=False,
-        default=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
-    )
 
-    study_plans = db.relationship(
-        'StudyPlan',
-        back_populates='user',
-        cascade='all, delete-orphan',
-    )
-    reviews = db.relationship(
-        'UnitReview',
-        back_populates='user',
-        cascade='all, delete-orphan',
-    )
+    study_plans = db.relationship('StudyPlan', back_populates='user', cascade='all, delete-orphan')
+    reviews = db.relationship('UnitReview', back_populates='user', cascade='all, delete-orphan')
     notification_preferences = db.relationship(
         'NotificationPreference',
         back_populates='user',
-        uselist=False,
         cascade='all, delete-orphan',
+        uselist=False,
     )
 
     @property
