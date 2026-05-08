@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **154** checked items out of **383** total checklist items (**40.2%**).
+- Completion: **143** checked items out of **383** total checklist items (**37.3%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
