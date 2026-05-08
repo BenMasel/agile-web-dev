@@ -4,7 +4,7 @@ from flask import Flask
 from dotenv import load_dotenv
 
 from config import CONFIG_BY_NAME
-from app.extensions import csrf, db as sqla_db, login_manager
+from app.extensions import csrf, db as sqla_db, login_manager, migrate
 
 
 def create_app(config_object=None):
@@ -35,15 +35,11 @@ def create_app(config_object=None):
     login_manager.init_app(app)
     login_manager.login_view = 'main.auth'
     login_manager.login_message = 'Please sign in to continue.'
+    migrate.init_app(app, sqla_db)
 
     # Tear down the DB connection at the end of every request.
     from app.db import close_db
     app.teardown_appcontext(close_db)
-
-    from app.extensions import db, login_manager, migrate
-    db.init_app(app)
-    migrate.init_app(app, db)
-    login_manager.init_app(app)
 
     # Import models so Flask-Migrate can discover SQLAlchemy metadata.
     from app import models  # noqa: F401
