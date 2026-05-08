@@ -75,7 +75,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] `DATABASE_URL` or SQLite path loaded from environment variables.
   - [ ] YouTube API key loaded from environment variables instead of committed JS config.
 - [x] Add `.env.example` documenting required environment variables.
-- [ ] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
+- [x] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
 - [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
 - [ ] Decide whether to use:
   - [x] Flask-SQLAlchemy for models and sessions.
@@ -83,8 +83,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Flask-Login for session management.
   - [x] Flask-WTF for CSRF-protected forms.
 - [x] Keep Tailwind as the CSS framework because it is allowed by the brief and already used.
-- [ ] Remove unused placeholder entry points if they cause confusion:
-  - [ ] Either make `main.py` launch the app or document that `run.py` is the app entry point.
+- [x] Remove unused placeholder entry points if they cause confusion:
+  - [x] Either make `main.py` launch the app or document that `run.py` is the app entry point.
 
 ## Phase 3: Database Models
 
