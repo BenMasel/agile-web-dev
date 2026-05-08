@@ -16,6 +16,15 @@ __pycache__/
 *.pyc
 *.pyo
 
+# Test and coverage output
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+test-results/
+playwright-report/
+selenium-screenshots/
+
 # Virtual environment
 .venv
 
