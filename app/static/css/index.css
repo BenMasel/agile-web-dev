@@ -6,3 +6,24 @@
 nav {
     background-color: red;
 }
+
+/* Difficulty slider thumb styling */
+#difficulty-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--thumb-color, #D4A340);
+    cursor: pointer;
+    border: 2px solid rgba(0,0,0,0.4);
+    transition: background 0.2s;
+}
+#difficulty-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--thumb-color, #D4A340);
+    cursor: pointer;
+    border: 2px solid rgba(0,0,0,0.4);
+    transition: background 0.2s;
+}

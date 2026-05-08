@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, Length, Regexp
+from wtforms import IntegerField, PasswordField, StringField, SubmitField, TextAreaField
+from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional, Regexp
 
 
 UWA_EMAIL_RE = r'^[^@\s]+@student\.uwa\.edu\.au$'
@@ -43,4 +43,28 @@ class LoginForm(FlaskForm):
     )
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Sign in')
+
+
+class ReviewForm(FlaskForm):
+    rating = IntegerField(
+        'Overall rating (1–10)',
+        validators=[DataRequired(), NumberRange(min=1, max=10, message='Rating must be between 1 and 10.')],
+    )
+    difficulty = IntegerField(
+        'Difficulty (1–10)',
+        validators=[DataRequired(), NumberRange(min=1, max=10, message='Difficulty must be between 1 and 10.')],
+    )
+    workload_hours = IntegerField(
+        'Hours per week',
+        validators=[Optional(), NumberRange(min=0, max=100)],
+    )
+    semester_taken = StringField(
+        'Semester taken (e.g. S1 2024)',
+        validators=[Optional(), Length(max=32)],
+    )
+    body = TextAreaField(
+        'Your review',
+        validators=[DataRequired(), Length(min=10, max=2000, message='Review must be between 10 and 2000 characters.')],
+    )
+    submit = SubmitField('Submit review')
 
