@@ -161,11 +161,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Navbar avatar shows initials/display name when signed in.
   - [x] Settings page shows saved account information.
   - [x] Auth page redirects if already logged in.
-- [ ] Add CSRF protection to register, login, settings, review, planner save, and delete forms.
-- [ ] Add password change or account edit if time allows.
-- [ ] Add graceful handling for unauthenticated users:
-  - [ ] Planner can still work locally.
-  - [ ] Prompt users to sign in to sync/save server-side.
+- [x] Add CSRF protection to register, login, settings, review, planner save, and delete forms.
+- [x] Add password change or account edit if time allows.
+- [x] Add graceful handling for unauthenticated users:
+  - [x] Planner can still work locally.
+  - [x] Prompt users to sign in to sync/save server-side.
 
 ## Phase 5: Persist The Planner Server-Side
 
