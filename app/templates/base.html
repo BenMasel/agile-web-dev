@@ -52,6 +52,19 @@
   <div class="flex justify-center px-6 pt-5 pb-8">
     <div class="{% block content_width %}w-full max-w-2xl{% endblock %} flex flex-col gap-4">
 
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flex flex-col gap-2">
+        {% for category, message in messages %}
+        <div class="rounded-[8px] border px-3 py-2 text-[12px]
+          {{ 'border-rc-green/25 bg-rc-green-muted text-rc-green' if category == 'success' else 'border-rc-red/25 bg-rc-red-muted text-rc-red' }}">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
       {% block content %}{% endblock %}
 
       {# Footer bar — child templates can override footer_nav to change the right-hand shortcuts #}

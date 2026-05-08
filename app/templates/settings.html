@@ -28,7 +28,44 @@
     <div class="flex-1 h-px bg-rc-border-light"></div>
   </div>
 
-  {# Not signed in state — replace with account info card when auth is implemented #}
+  {% if current_user.is_authenticated %}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex items-center gap-4">
+    <div class="w-12 h-12 rounded-full bg-rc-green-muted border border-rc-green/20 flex items-center justify-center shrink-0">
+      <span class="text-[15px] font-semibold text-rc-green">{{ current_user.initials }}</span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="text-[13px] font-medium text-white/70 mb-0.5">{{ current_user.display_name }}</div>
+      <div class="text-[12px] text-rc-text-faint truncate">{{ current_user.email }}</div>
+    </div>
+    <form method="post" action="{{ url_for('main.logout') }}" class="shrink-0">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+      <button type="submit"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-[7px] bg-rc-red-muted border border-rc-red/20 hover:border-rc-red/35 text-rc-red/80 hover:text-rc-red text-[12px] font-medium transition">
+        Sign out
+      </button>
+    </form>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden">
+    <div class="px-4 py-3 border-b border-rc-border-light flex items-center justify-between">
+      <span class="text-[12px] font-medium text-white/70">Account information</span>
+      <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Signed in</span>
+    </div>
+    <div class="divide-y divide-rc-border-light">
+      {% for row in [
+        ('Email', current_user.email),
+        ('Display name', current_user.display_name),
+        ('Student ID', current_user.student_id),
+        ('Faculty', current_user.faculty or 'Not set')
+      ] %}
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">{{ row[0] }}</span>
+        <span class="text-[12px] text-white/55">{{ row[1] }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex items-center gap-4">
     <div class="w-12 h-12 rounded-full bg-rc-fill border border-rc-border flex items-center justify-center shrink-0">
       <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
@@ -64,6 +101,7 @@
       {% endfor %}
     </div>
   </div>
+  {% endif %}
 </div>
 
 {# ══════════════════════════════════════════════════════ #}

@@ -17,7 +17,7 @@
       <div class="space-y-2">
         <h1 class="text-[28px] font-semibold tracking-tight text-rc-text">Welcome back to stUwa</h1>
         <p class="max-w-lg text-[14px] leading-6 text-rc-text-secondary">
-          Sign in with your UWA student email to keep your planner, saved units, and benefit picks synced across devices.
+          Sign in with your UWA student email to keep your planner, saved units, and benefit picks ready for account-backed features.
         </p>
       </div>
     </div>
@@ -30,7 +30,7 @@
           </svg>
         </div>
         <div class="text-[13px] font-medium text-white/75">Planner sync</div>
-        <div class="mt-1 text-[12px] leading-5 text-rc-text-tertiary">Carry saved degrees and pinned units between sessions.</div>
+        <div class="mt-1 text-[12px] leading-5 text-rc-text-tertiary">Account login is ready for server-side planner saving.</div>
       </div>
 
       <div class="rounded-[8px] border border-rc-border-light bg-rc-fill-light p-4">
@@ -40,7 +40,7 @@
           </svg>
         </div>
         <div class="text-[13px] font-medium text-white/75">Student access</div>
-        <div class="mt-1 text-[12px] leading-5 text-rc-text-tertiary">Only UWA student email addresses can request a sign-in link.</div>
+        <div class="mt-1 text-[12px] leading-5 text-rc-text-tertiary">Only UWA student email addresses can create an account.</div>
       </div>
     </div>
   </div>
@@ -50,79 +50,105 @@
       <button id="tab-signin"
               type="button"
               onclick="setMode('signin')"
-              class="auth-tab flex-1 rounded-[6px] bg-rc-surface px-3 py-2 text-[12px] font-medium text-white/80 shadow-sm transition">
+              class="auth-tab flex-1 rounded-[6px] px-3 py-2 text-[12px] font-medium transition">
         Sign in
       </button>
       <button id="tab-signup"
               type="button"
               onclick="setMode('signup')"
-              class="auth-tab flex-1 rounded-[6px] px-3 py-2 text-[12px] font-medium text-white/35 transition hover:text-white/55">
+              class="auth-tab flex-1 rounded-[6px] px-3 py-2 text-[12px] font-medium transition">
         Create account
       </button>
     </div>
 
-    <form id="auth-form" class="flex flex-col gap-4" novalidate>
+    <form id="signin-form" method="post" class="auth-panel flex flex-col gap-4" novalidate>
+      {{ login_form.hidden_tag() }}
+      <input type="hidden" name="action" value="login" />
+
       <div class="flex flex-col gap-1.5">
-        <label for="email-input" class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">UWA student email</label>
-        <div id="email-field"
-             class="flex items-center gap-2 rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 transition focus-within:border-white/20">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="shrink-0 text-white/25" aria-hidden="true">
-            <rect x="2" y="3.5" width="10" height="7.5" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
-            <path d="m2.5 4.8 4.5 3.4 4.5-3.4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <input id="email-input"
-                 name="email"
-                 type="email"
-                 autocomplete="email"
-                 spellcheck="false"
-                 placeholder="12345678@student.uwa.edu.au"
-                 class="min-w-0 flex-1 bg-transparent text-[13px] text-rc-text outline-none placeholder:text-rc-text-faint" />
-        </div>
-        <p id="email-error" class="hidden text-[11px] text-rc-red/85"></p>
+        {{ login_form.email.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ login_form.email(id="login-email", autocomplete="email", spellcheck="false", placeholder="12345678@student.uwa.edu.au", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+        {% for error in login_form.email.errors %}
+        <p class="text-[11px] text-rc-red/85">{{ error }}</p>
+        {% endfor %}
       </div>
 
-      <div id="name-field-wrap" class="hidden flex-col gap-1.5">
-        <label for="name-input" class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Display name</label>
-        <input id="name-input"
-               name="name"
-               type="text"
-               autocomplete="name"
-               placeholder="e.g. Alex"
-               class="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20" />
+      <div class="flex flex-col gap-1.5">
+        {{ login_form.password.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ login_form.password(id="login-password", autocomplete="current-password", placeholder="Password", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+        {% for error in login_form.password.errors %}
+        <p class="text-[11px] text-rc-red/85">{{ error }}</p>
+        {% endfor %}
       </div>
 
-      <button id="submit-btn"
-              type="submit"
+      <button type="submit"
               class="mt-1 flex w-full items-center justify-center gap-2 rounded-[8px] bg-rc-red/90 px-3 py-2.5 text-[13px] font-medium text-white transition hover:bg-rc-red focus:outline-none focus:ring-2 focus:ring-rc-red/40">
-        <span id="submit-label">Send magic link</span>
+        Sign in
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
-
-      <p id="mode-hint" class="text-center text-[11px] leading-5 text-rc-text-faint">
-        We will send a secure link to your student email. No password needed.
-      </p>
     </form>
 
-    <div id="sent-wrap" class="hidden flex-col items-center gap-4 py-5 text-center">
-      <div class="flex h-11 w-11 items-center justify-center rounded-full bg-rc-green-muted text-rc-green">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <path d="M5 10.5 8.5 14 15 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <form id="signup-form" method="post" class="auth-panel hidden flex-col gap-4" novalidate>
+      {{ register_form.hidden_tag() }}
+      <input type="hidden" name="action" value="register" />
+
+      <div class="flex flex-col gap-1.5">
+        {{ register_form.email.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ register_form.email(id="register-email", autocomplete="email", spellcheck="false", placeholder="12345678@student.uwa.edu.au", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+        {% for error in register_form.email.errors %}
+        <p class="text-[11px] text-rc-red/85">{{ error }}</p>
+        {% endfor %}
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          {{ register_form.student_id.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+          {{ register_form.student_id(id="register-student-id", autocomplete="off", placeholder="12345678", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+          {% for error in register_form.student_id.errors %}
+          <p class="text-[11px] text-rc-red/85">{{ error }}</p>
+          {% endfor %}
+        </div>
+        <div class="flex flex-col gap-1.5">
+          {{ register_form.display_name.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+          {{ register_form.display_name(id="register-display-name", autocomplete="name", placeholder="Alex Chen", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+          {% for error in register_form.display_name.errors %}
+          <p class="text-[11px] text-rc-red/85">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        {{ register_form.faculty.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ register_form.faculty(id="register-faculty", autocomplete="organization", placeholder="Engineering, Computer Science and Mathematics", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div class="flex flex-col gap-1.5">
+          {{ register_form.password.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+          {{ register_form.password(id="register-password", autocomplete="new-password", placeholder="8+ characters", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+          {% for error in register_form.password.errors %}
+          <p class="text-[11px] text-rc-red/85">{{ error }}</p>
+          {% endfor %}
+        </div>
+        <div class="flex flex-col gap-1.5">
+          {{ register_form.confirm_password.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+          {{ register_form.confirm_password(id="register-confirm-password", autocomplete="new-password", placeholder="Repeat password", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+          {% for error in register_form.confirm_password.errors %}
+          <p class="text-[11px] text-rc-red/85">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <button type="submit"
+              class="mt-1 flex w-full items-center justify-center gap-2 rounded-[8px] bg-rc-red/90 px-3 py-2.5 text-[13px] font-medium text-white transition hover:bg-rc-red focus:outline-none focus:ring-2 focus:ring-rc-red/40">
+        Create account
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-      </div>
-      <div>
-        <div class="text-[15px] font-medium text-white/85">Check your inbox</div>
-        <p class="mt-1 text-[12px] leading-5 text-rc-text-tertiary">
-          We sent a sign-in link to <span id="sent-email" class="font-medium text-white/60"></span>.
-        </p>
-      </div>
-      <button type="button"
-              onclick="resetForm()"
-              class="text-[12px] text-white/35 underline underline-offset-2 transition hover:text-white/60">
-        Use a different email
       </button>
-    </div>
+    </form>
   </div>
 </section>
 {% endblock %}
@@ -133,22 +159,11 @@
 
 {% block scripts %}
 <script>
-let currentMode = 'signin';
-
-const authForm = document.getElementById('auth-form');
-const emailInput = document.getElementById('email-input');
-const emailError = document.getElementById('email-error');
-const emailField = document.getElementById('email-field');
-const nameWrap = document.getElementById('name-field-wrap');
-const submitLabel = document.getElementById('submit-label');
-const modeHint = document.getElementById('mode-hint');
-const sentWrap = document.getElementById('sent-wrap');
-const sentEmail = document.getElementById('sent-email');
+const initialMode = "{{ mode }}";
 
 function setMode(mode) {
-  currentMode = mode;
-  clearError();
-
+  const signinForm = document.getElementById('signin-form');
+  const signupForm = document.getElementById('signup-form');
   const tabSignin = document.getElementById('tab-signin');
   const tabSignup = document.getElementById('tab-signup');
   const active = 'auth-tab flex-1 rounded-[6px] bg-rc-surface px-3 py-2 text-[12px] font-medium text-white/80 shadow-sm transition';
@@ -156,68 +171,17 @@ function setMode(mode) {
 
   tabSignin.className = mode === 'signin' ? active : inactive;
   tabSignup.className = mode === 'signup' ? active : inactive;
-  nameWrap.classList.toggle('hidden', mode !== 'signup');
-  nameWrap.classList.toggle('flex', mode === 'signup');
-  submitLabel.textContent = mode === 'signin' ? 'Send magic link' : 'Create account';
-  modeHint.textContent = mode === 'signin'
-    ? 'We will send a secure link to your student email. No password needed.'
-    : 'Create your stUwa account with a verified UWA student email.';
+  signinForm.classList.toggle('hidden', mode !== 'signin');
+  signinForm.classList.toggle('flex', mode === 'signin');
+  signupForm.classList.toggle('hidden', mode !== 'signup');
+  signupForm.classList.toggle('flex', mode === 'signup');
+
+  const focusTarget = mode === 'signin'
+    ? document.getElementById('login-email')
+    : document.getElementById('register-email');
+  if (focusTarget) focusTarget.focus();
 }
 
-function clearError() {
-  emailError.textContent = '';
-  emailError.classList.add('hidden');
-  emailField.classList.remove('border-rc-red/50');
-  emailField.classList.add('border-rc-border');
-}
-
-function showError(message) {
-  emailError.textContent = message;
-  emailError.classList.remove('hidden');
-  emailField.classList.remove('border-rc-border');
-  emailField.classList.add('border-rc-red/50');
-}
-
-function submitAuth() {
-  clearError();
-  const email = emailInput.value.trim().toLowerCase();
-
-  if (!email) {
-    showError('Please enter your UWA student email.');
-    emailInput.focus();
-    return;
-  }
-
-  if (!email.endsWith('@student.uwa.edu.au')) {
-    showError('Use your @student.uwa.edu.au email address.');
-    emailInput.focus();
-    return;
-  }
-
-  sentEmail.textContent = email;
-  authForm.classList.add('hidden');
-  sentWrap.classList.remove('hidden');
-  sentWrap.classList.add('flex');
-}
-
-function resetForm() {
-  emailInput.value = '';
-  authForm.classList.remove('hidden');
-  sentWrap.classList.add('hidden');
-  sentWrap.classList.remove('flex');
-  clearError();
-  emailInput.focus();
-}
-
-authForm.addEventListener('submit', event => {
-  event.preventDefault();
-  submitAuth();
-});
-
-emailInput.addEventListener('input', () => {
-  if (!emailError.classList.contains('hidden')) clearError();
-});
-
-emailInput.focus();
+setMode(initialMode === 'signup' ? 'signup' : 'signin');
 </script>
 {% endblock %}

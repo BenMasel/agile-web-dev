@@ -6,38 +6,27 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.extensions import db, login_manager
 
 
-def utc_now():
-    return datetime.now(timezone.utc)
-
-
-class TimestampMixin:
-    created_at = db.Column(db.DateTime(timezone=True), default=utc_now, nullable=False)
-    updated_at = db.Column(
-        db.DateTime(timezone=True),
-        default=utc_now,
-        onupdate=utc_now,
-        nullable=False,
-    )
-
-
-class User(UserMixin, TimestampMixin, db.Model):
-    __tablename__ = 'users'
-
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)
-    student_id = db.Column(db.String(16), unique=True, nullable=True, index=True)
-    display_name = db.Column(db.String(80), nullable=True)
-    faculty = db.Column(db.String(160), nullable=True)
+    student_id = db.Column(db.String(8), unique=True, nullable=False, index=True)
+    display_name = db.Column(db.String(80), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-
-    study_plans = db.relationship('StudyPlan', back_populates='user', cascade='all, delete-orphan')
-    reviews = db.relationship('UnitReview', back_populates='user', cascade='all, delete-orphan')
-    notification_preferences = db.relationship(
-        'NotificationPreference',
-        back_populates='user',
-        cascade='all, delete-orphan',
-        uselist=False,
+    faculty = db.Column(db.String(120), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
+
+    @property
+    def initials(self):
+        parts = [p for p in self.display_name.strip().split() if p]
+        if parts:
+            return ''.join(p[0] for p in parts[:2]).upper()
+        return self.email[:2].upper()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
