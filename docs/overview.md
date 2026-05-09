@@ -6,7 +6,7 @@ stUwa is a student-built web application that acts as a middleman between UWA st
 
 ## Goals
 
-- **Reduce friction** — surface unit details, degree requirements, clubs, and resources in one place with no login required
+- **Reduce friction** — surface unit details, degree requirements, clubs, resources, benefits, and peer reviews in one place
 - **Stay accurate** — all content lives in version-controlled YAML files that any contributor can update via a pull request
 - **Stay fast** — search is client-side (Fuse.js), so there are no round-trips to a server after the page loads
 - **Stay open** — the project is fully open-source; UWA students are both the users and the contributors
@@ -25,7 +25,7 @@ The frontend is plain HTML and CSS with [Tailwind CSS](https://tailwindcss.com/)
 
 ### Lightweight by default
 
-The backend is Flask with no ORM beyond a minimal SQLite helper. Dependencies are kept to the minimum needed — if something can be done with the standard library or a small addition to a YAML file, that is preferred over adding a package.
+The backend is Flask with SQLAlchemy for account and community data. Catalogue content stays in YAML so most content updates remain simple pull requests, while user-owned data can be stored safely in SQLite.
 
 ---
 
@@ -34,6 +34,8 @@ The backend is Flask with no ORM beyond a minimal SQLite helper. Dependencies ar
 | Layer | Technology |
 |-------|-----------|
 | Backend | Python 3.14 + Flask |
+| Database | SQLite + SQLAlchemy |
+| Authentication | Flask-Login + Flask-WTF |
 | Templating | Jinja2 |
 | Styling | Tailwind CSS (browser build v4) |
 | Search | Fuse.js (client-side) |
@@ -46,9 +48,9 @@ The backend is Flask with no ORM beyond a minimal SQLite helper. Dependencies ar
 
 ### Near-term
 
-- **Study Plan** — pin units to a personal plan stored in `localStorage`; export as a PDF or shareable link
-- **UWA SSO** — sign in with a UWA student account to persist the study plan server-side
-- **Unit reviews** — authenticated students can leave short reviews and difficulty ratings
+- **Server-side study plans** — save, reload, delete, and optionally share plans from authenticated accounts
+- **Review management** — let students manage their own reviews and show aggregate review data
+- **Migrations** — add a repeatable Flask-Migrate setup for clean database creation and upgrades
 
 ### Medium-term
 

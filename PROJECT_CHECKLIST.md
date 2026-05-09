@@ -393,8 +393,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Any required browser driver setup.
 - [ ] Add migration instructions.
 - [ ] Add screenshots or short usage walkthrough if time allows.
-- [ ] Update `docs/overview.md` with final implemented features.
-- [ ] Update `docs/roadmap.md` so completed features are not described as future work.
+- [x] Update `docs/overview.md` with final implemented features.
+- [x] Update `docs/roadmap.md` so completed features are not described as future work.
 - [ ] Add architecture notes:
   - [ ] Flask blueprints.
   - [x] SQLAlchemy models.

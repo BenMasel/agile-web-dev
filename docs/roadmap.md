@@ -6,9 +6,10 @@ This page tracks what's planned, in progress, and being considered for future de
 
 ## Near-term
 
-- **Study Plan** — pin units to a personal plan stored in `localStorage`; export as a PDF or shareable link
-- **UWA SSO** — sign in with a UWA student account to persist the study plan server-side
-- **Unit reviews** — authenticated students can leave short reviews and difficulty ratings
+- **Server-side study plans** — save, reload, delete, and optionally share plans from authenticated accounts
+- **Review management** — let students manage their own reviews and show aggregate review data
+- **Migrations** — add a repeatable Flask-Migrate setup for clean database creation and upgrades
+- **Selenium coverage** — add live-browser tests for the main assessed journeys
 
 ---
 
