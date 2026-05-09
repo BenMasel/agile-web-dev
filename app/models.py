@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+import pyotp
 from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -25,6 +26,8 @@ class User(TimestampMixin, UserMixin, db.Model):
     display_name = db.Column(db.String(80), nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     faculty = db.Column(db.String(120), nullable=True)
+    two_fa_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    totp_secret = db.Column(db.String(64), nullable=True)
 
     study_plans = db.relationship('StudyPlan', back_populates='user', cascade='all, delete-orphan')
     reviews = db.relationship('UnitReview', back_populates='user', cascade='all, delete-orphan')
@@ -47,6 +50,24 @@ class User(TimestampMixin, UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def generate_totp_secret(self):
+        """Generate and return a new TOTP secret without saving it yet."""
+        return pyotp.random_base32()
+
+    def verify_totp(self, code):
+        """Check a 6-digit TOTP code against the user's stored secret."""
+        if not self.totp_secret:
+            return False
+        totp = pyotp.TOTP(self.totp_secret)
+        return totp.verify(code, valid_window=1)
+
+    def get_totp_uri(self):
+        """Return the otpauth URI used to generate the QR code."""
+        return pyotp.TOTP(self.totp_secret).provisioning_uri(
+            name=self.email,
+            issuer_name='stUwa',
+        )
 
 
 @login_manager.user_loader
