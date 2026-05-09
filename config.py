@@ -23,9 +23,12 @@ def database_uri():
 
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-change-me')
+    YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
     SQLALCHEMY_DATABASE_URI = database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     WTF_CSRF_ENABLED = True
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
 
 
 class DevelopmentConfig(Config):
@@ -43,6 +46,7 @@ TestConfig = TestingConfig
 
 class ProductionConfig(Config):
     DEBUG = False
+    SESSION_COOKIE_SECURE = True
 
 
 CONFIG_BY_NAME = {

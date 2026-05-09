@@ -35,6 +35,13 @@ def test_onboarding_data_contains_catalogue(client):
     assert payload['degrees']
 
 
+def test_youtube_search_reports_missing_server_key(client):
+    response = client.get('/api/youtube/search?channelId=abc&q=flask')
+
+    assert response.status_code == 503
+    assert response.get_json()['error'] == 'YouTube search is not configured on this server.'
+
+
 def test_login_and_logout_change_session_state(client, db):
     from app.models import User
 

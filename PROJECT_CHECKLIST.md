@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **224** checked items out of **383** total checklist items (**58.5%**).
+- Completion: **234** checked items out of **383** total checklist items (**61.1%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -69,11 +69,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 2: Project Structure And Configuration
 
-- [ ] Add a real configuration layer:
+- [x] Add a real configuration layer:
   - [x] `config.py` with development, testing, and production config classes.
   - [x] `SECRET_KEY` loaded from environment variables.
   - [x] `DATABASE_URL` or SQLite path loaded from environment variables.
-  - [ ] YouTube API key loaded from environment variables instead of committed JS config.
+  - [x] YouTube API key loaded from environment variables instead of committed JS config.
 - [x] Add `.env.example` documenting required environment variables.
 - [x] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
 - [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
@@ -237,9 +237,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Link clubs to related units and resources.
   - [ ] Add richer event/contact fields if available.
 - [ ] Resources page:
-  - [ ] Move `CONFIG.YOUTUBE_API_KEY` handling out of client-side committed files.
-  - [ ] Add backend proxy endpoint for YouTube search if API keys must be hidden.
-  - [ ] Show helpful setup message when API key is missing in development.
+  - [x] Move `CONFIG.YOUTUBE_API_KEY` handling out of client-side committed files.
+  - [x] Add backend proxy endpoint for YouTube search if API keys must be hidden.
+  - [x] Show helpful setup message when API key is missing in development.
   - [ ] Persist saved/bookmarked resources for logged-in users if implemented.
 - [ ] Benefits page:
   - [ ] Add "save benefit" for logged-in users if implemented.
@@ -292,7 +292,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Add AJAX helper for JSON requests with CSRF token support.
 - [ ] Handle API errors consistently with visible page feedback.
 - [x] Keep server-side validation authoritative for all submitted data.
-- [ ] Avoid exposing secrets in static JavaScript.
+- [x] Avoid exposing secrets in static JavaScript.
 - [ ] Add debounce/throttle where user input triggers network calls.
 
 ## Phase 10: Flask Code Quality
@@ -311,10 +311,10 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Review aggregation.
   - [ ] YouTube/resource search if proxied.
 - [x] Keep YAML loading cached where safe.
-- [ ] Add error handlers for 400, 403, 404, and 500.
+- [x] Add error handlers for 400, 403, 404, and 500.
 - [ ] Add flash messages for form actions.
 - [ ] Ensure all route functions return the right status codes.
-- [ ] Add logging for important failures without leaking secrets.
+- [x] Add logging for important failures without leaking secrets.
 
 ## Phase 11: Data Integrity
 
@@ -362,7 +362,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 - [x] Store passwords only as salted hashes.
 - [x] Add CSRF protection to all state-changing forms and AJAX requests.
-- [ ] Store secret keys and API keys in environment variables.
+- [x] Store secret keys and API keys in environment variables.
 - [x] Never commit `.env`, SQLite production data, or API keys.
 - [x] Use `login_required` on private routes.
 - [x] Enforce ownership checks:
@@ -372,7 +372,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Escape user-generated content in templates.
 - [ ] Validate all form and JSON input server-side.
 - [ ] Rate-limit or add basic protection to login if time allows.
-- [ ] Use secure session config for non-debug deployment notes.
+- [x] Use secure session config for non-debug deployment notes.
 
 ## Phase 14: README And Documentation
 

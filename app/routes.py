@@ -3,8 +3,10 @@ import re
 import subprocess
 from datetime import datetime, timezone
 from functools import lru_cache
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 import yaml
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
 from app.extensions import db
@@ -438,6 +440,55 @@ def onboarding_data():
     return jsonify({'units': units, 'degrees': degrees})
 
 
+@bp.route('/api/youtube/search')
+def youtube_search():
+    api_key = current_app.config.get('YOUTUBE_API_KEY')
+    if not api_key:
+        return jsonify({'error': 'YouTube search is not configured on this server.'}), 503
+
+    channel_id = (request.args.get('channelId') or '').strip()
+    query = (request.args.get('q') or '').strip()
+    if not channel_id or not query:
+        return jsonify({'error': 'channelId and q are required.'}), 400
+    if len(query) > 120:
+        return jsonify({'error': 'Search query is too long.'}), 400
+
+    params = urlencode({
+        'part': 'snippet',
+        'type': 'video',
+        'maxResults': '12',
+        'channelId': channel_id,
+        'q': query,
+        'key': api_key,
+    })
+    youtube_url = f'https://www.googleapis.com/youtube/v3/search?{params}'
+    try:
+        req = Request(youtube_url, headers={'Accept': 'application/json'})
+        with urlopen(req, timeout=8) as response:
+            data = yaml.safe_load(response.read().decode('utf-8'))
+    except Exception:
+        current_app.logger.exception('YouTube search failed')
+        return jsonify({'error': 'YouTube search failed. Please try again later.'}), 502
+
+    items = data.get('items') or []
+    videos = []
+    for item in items:
+        snippet = item.get('snippet') or {}
+        thumbnails = snippet.get('thumbnails') or {}
+        medium = thumbnails.get('medium') or {}
+        video_id = (item.get('id') or {}).get('videoId')
+        if not video_id:
+            continue
+        videos.append({
+            'id': video_id,
+            'title': snippet.get('title', ''),
+            'thumbnail': medium.get('url', ''),
+            'channelTitle': snippet.get('channelTitle', ''),
+            'publishedAt': snippet.get('publishedAt', ''),
+        })
+    return jsonify({'videos': videos})
+
+
 @bp.route('/auth', methods=['GET', 'POST'])
 @bp.route('/login', methods=['GET', 'POST'])
 def auth():
@@ -594,3 +645,21 @@ def club_detail(slug):
 @bp.app_errorhandler(404)
 def not_found(e):
     return render_template('404.html'), 404
+
+
+@bp.app_errorhandler(400)
+def bad_request(e):
+    current_app.logger.warning('Bad request: %s', e)
+    return render_template('404.html', category='request'), 400
+
+
+@bp.app_errorhandler(403)
+def forbidden(e):
+    current_app.logger.warning('Forbidden request: %s', e)
+    return render_template('404.html', category='permission'), 403
+
+
+@bp.app_errorhandler(500)
+def server_error(e):
+    current_app.logger.exception('Unhandled server error')
+    return render_template('404.html', category='server'), 500
