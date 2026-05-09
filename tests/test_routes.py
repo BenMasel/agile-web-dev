@@ -316,3 +316,161 @@ def test_placeholder_unit_review_is_rejected(client, db):
     assert response.status_code == 200
     assert b'Please write a specific review that helps other students.' in response.data
     assert UnitReview.query.count() == 0
+
+
+def test_public_plan_is_visible_and_private_plan_is_hidden(client, db):
+    from app.models import StudyPlan, StudyPlanUnit, User
+
+    user = User(
+        email='12121212@student.uwa.edu.au',
+        student_id='12121212',
+        display_name='Plan Sharer',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.flush()
+    public_plan = StudyPlan(
+        user_id=user.id,
+        name='Public CITS plan',
+        primary_degree_slug='BS-CS',
+        start_year=2026,
+        start_semester=1,
+        is_public=True,
+    )
+    private_plan = StudyPlan(
+        user_id=user.id,
+        name='Private CITS plan',
+        primary_degree_slug='BS-CS',
+        start_year=2026,
+        start_semester=1,
+        is_public=False,
+    )
+    db.session.add_all([public_plan, private_plan])
+    db.session.flush()
+    db.session.add(StudyPlanUnit(
+        study_plan_id=public_plan.id,
+        unit_code='CITS3403',
+        year=2026,
+        semester=1,
+        status='planned',
+        position=0,
+    ))
+    db.session.commit()
+
+    public_response = client.get(f'/plans/{public_plan.id}')
+    private_response = client.get(f'/plans/{private_plan.id}')
+
+    assert public_response.status_code == 200
+    assert b'Public CITS plan' in public_response.data
+    assert b'CITS3403' in public_response.data
+    assert private_response.status_code == 404
+
+
+def test_planner_api_saves_public_state_and_share_url(client, db):
+    from app.models import StudyPlan, User
+
+    user = User(
+        email='13131313@student.uwa.edu.au',
+        student_id='13131313',
+        display_name='Public Saver',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.commit()
+
+    client.post('/login', data={
+        'action': 'login',
+        'login-email': '13131313@student.uwa.edu.au',
+        'login-password': 'password123',
+    })
+    response = client.post('/api/planner', json={
+        'state': {
+            'degrees': ['BS-CS'],
+            'startYear': 2026,
+            'startSem': 1,
+            'plan': {'2026-1': ['CITS3403']},
+            'done': [],
+        },
+        'is_public': True,
+    })
+
+    assert response.status_code == 200
+    payload = response.get_json()
+    plan = StudyPlan.query.filter_by(user_id=user.id).one()
+    assert plan.is_public is True
+    assert payload['plan']['is_public'] is True
+    assert payload['plan']['share_url'] == f'/plans/{plan.id}'
+
+
+def test_public_plans_can_filter_by_degree(client, db):
+    from app.models import StudyPlan, User
+
+    user = User(
+        email='14141414@student.uwa.edu.au',
+        student_id='14141414',
+        display_name='Plan Browser',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.flush()
+    db.session.add_all([
+        StudyPlan(
+            user_id=user.id,
+            name='Computer Science Plan',
+            primary_degree_slug='BS-CS',
+            start_year=2026,
+            start_semester=1,
+            is_public=True,
+        ),
+        StudyPlan(
+            user_id=user.id,
+            name='Other Public Plan',
+            primary_degree_slug='OTHER',
+            start_year=2026,
+            start_semester=1,
+            is_public=True,
+        ),
+    ])
+    db.session.commit()
+
+    response = client.get('/plans?degree=BS-CS')
+
+    assert response.status_code == 200
+    assert b'Computer Science Plan' in response.data
+    assert b'Other Public Plan' not in response.data
+
+
+def test_deleting_saved_plan_does_not_delete_another_users_plan(client, db):
+    from app.models import StudyPlan, User
+
+    owner = User(
+        email='15151515@student.uwa.edu.au',
+        student_id='15151515',
+        display_name='Owner Plan',
+    )
+    owner.set_password('password123')
+    other = User(
+        email='16161616@student.uwa.edu.au',
+        student_id='16161616',
+        display_name='Other Plan',
+    )
+    other.set_password('password123')
+    db.session.add_all([owner, other])
+    db.session.flush()
+    db.session.add_all([
+        StudyPlan(user_id=owner.id, name='Owner private plan', start_year=2026, start_semester=1),
+        StudyPlan(user_id=other.id, name='Other private plan', start_year=2026, start_semester=1),
+    ])
+    db.session.commit()
+
+    client.post('/login', data={
+        'action': 'login',
+        'login-email': '16161616@student.uwa.edu.au',
+        'login-password': 'password123',
+    })
+    response = client.delete('/api/planner')
+
+    assert response.status_code == 200
+    remaining = StudyPlan.query.all()
+    assert len(remaining) == 1
+    assert remaining[0].user_id == owner.id

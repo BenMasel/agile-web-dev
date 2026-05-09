@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **201** checked items out of **383** total checklist items (**52.5%**).
+- Completion: **214** checked items out of **383** total checklist items (**55.9%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -57,7 +57,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Register, login, logout, and account settings.
   - [x] Save a personal study plan to the database.
   - [x] Mark completed units and persist them between sessions.
-  - [ ] Share a public study plan or profile summary.
+  - [x] Share a public study plan or profile summary.
   - [x] Add unit reviews/comments visible to other users.
 - [ ] Create GitHub Issues for each checklist section or major feature.
 - [ ] Assign each issue to a group member.
@@ -183,12 +183,12 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Keep localStorage as offline/guest draft storage.
 - [x] Add "Save to account" button on planner.
 - [x] Add "Load saved plan" control on planner.
-- [ ] Add "Make public" toggle on planner.
-- [ ] Add "Copy share link" for public plans.
-- [ ] Add public plan page:
-  - [ ] `/plans/<id>` or `/u/<username>/plans/<id>`.
-  - [ ] Shows degree selections, planned units, completed units, and credits.
-  - [ ] Hides private plans.
+- [x] Add "Make public" toggle on planner.
+- [x] Add "Copy share link" for public plans.
+- [x] Add public plan page:
+  - [x] `/plans/<id>` or `/u/<username>/plans/<id>`.
+  - [x] Shows degree selections, planned units, completed units, and credits.
+  - [x] Hides private plans.
 - [ ] Add conflict/prerequisite validation server-side so important rules are not only client-side.
 - [ ] Add AJAX fetch calls with loading, success, and error states.
 
@@ -214,9 +214,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Character limits.
   - [x] Empty/abusive placeholder validation.
   - [x] Hide emails from public review display.
-- [ ] Add public/shared study plan browsing if time allows:
-  - [ ] "Shared Plans" page.
-  - [ ] Filter by degree.
+- [x] Add public/shared study plan browsing if time allows:
+  - [x] "Shared Plans" page.
+  - [x] Filter by degree.
   - [ ] Link from unit pages to public plans containing that unit.
 
 ## Phase 7: Existing Feature Hardening
@@ -230,9 +230,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Show whether current user has planned/completed the unit.
   - [ ] Add "Add to planner" action for authenticated users.
 - [ ] Degree pages:
-  - [ ] Add call-to-action to create a plan from a degree.
+  - [x] Add call-to-action to create a plan from a degree.
   - [x] Show units grouped by year/semester from YAML data.
-  - [ ] Link to public plans for the degree if implemented.
+  - [x] Link to public plans for the degree if implemented.
 - [ ] Club pages:
   - [ ] Link clubs to related units and resources.
   - [ ] Add richer event/contact fields if available.
@@ -365,7 +365,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Store secret keys and API keys in environment variables.
 - [x] Never commit `.env`, SQLite production data, or API keys.
 - [x] Use `login_required` on private routes.
-- [ ] Enforce ownership checks:
+- [x] Enforce ownership checks:
   - [x] Users can only edit/delete their own plans.
   - [x] Users can only edit/delete their own reviews.
   - [x] Private plans are not visible to other users.

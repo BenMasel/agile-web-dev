@@ -169,6 +169,17 @@
       </a>
       {% endif %}
     </div>
+    {% if current_user.is_authenticated %}
+    <label class="flex items-center gap-2 rounded-[7px] bg-rc-fill-subtle border border-rc-border-light px-2.5 py-2">
+      <input id="public-plan-toggle" type="checkbox"
+             class="h-3.5 w-3.5 rounded border-rc-border bg-rc-fill text-rc-blue focus:ring-rc-blue/40" />
+      <span class="text-[11px] text-white/55">Make saved plan public</span>
+    </label>
+    <button id="copy-share-link-btn"
+            class="hidden text-[11px] text-white/45 hover:text-white/75 bg-rc-fill border border-rc-border transition px-2.5 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer">
+      Copy share link
+    </button>
+    {% endif %}
   </div>
 
   <div id="tray-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2">
@@ -337,6 +348,8 @@ let state = {
   plan: {},           // { "2024-1": ["CODE", …] }
   done: [],           // unit codes marked completed — immovable, persist through degree changes
   substitutions: {},  // { "CITS1401": "CITS2401" } — treat key as if code is value
+  is_public: false,
+  share_url: null,
 };
 let pickerTargetSem = null;
 let dragState = null; // { code, fromKey: 'tray'|semKey, fromSlot: null|number }
@@ -355,6 +368,15 @@ function setSyncMessage(message, isError=false) {
   el.textContent = message;
   el.classList.toggle('text-rc-red', isError);
   el.classList.toggle('text-rc-text-faint', !isError);
+}
+
+function syncPublicControls() {
+  const toggle = document.getElementById('public-plan-toggle');
+  const copyBtn = document.getElementById('copy-share-link-btn');
+  if (toggle) toggle.checked = Boolean(state.is_public);
+  if (copyBtn) {
+    copyBtn.classList.toggle('hidden', !(state.is_public && state.share_url));
+  }
 }
 
 async function syncRequest(url, options={}) {
@@ -377,8 +399,13 @@ async function savePlanToAccount() {
   try {
     const payload = await syncRequest('/api/planner', {
       method: 'POST',
-      body: JSON.stringify({ state }),
+      body: JSON.stringify({ state, is_public: Boolean(state.is_public) }),
     });
+    if (payload.plan) {
+      state = { ...state, ...payload.plan };
+      save();
+      syncPublicControls();
+    }
     setSyncMessage(payload.message || 'Planner saved to your account.');
   } catch (error) {
     setSyncMessage(error.message, true);
@@ -395,6 +422,7 @@ async function loadPlanFromAccount() {
     state = { ...state, ...payload.plan };
     save();
     render();
+    syncPublicControls();
     setSyncMessage('Saved account plan loaded into this browser.');
   } catch (error) {
     setSyncMessage(error.message, true);
@@ -405,6 +433,9 @@ async function deletePlanFromAccount() {
   if (!confirm('Delete your saved account plan? Your local browser plan will stay here.')) return;
   try {
     const payload = await syncRequest('/api/planner', { method: 'DELETE' });
+    state.share_url = null;
+    save();
+    syncPublicControls();
     setSyncMessage(payload.message || 'Saved planner deleted.');
   } catch (error) {
     setSyncMessage(error.message, true);
@@ -1464,6 +1495,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('save-account-btn')?.addEventListener('click', savePlanToAccount);
   document.getElementById('load-account-btn')?.addEventListener('click', loadPlanFromAccount);
   document.getElementById('delete-account-btn')?.addEventListener('click', deletePlanFromAccount);
+  document.getElementById('public-plan-toggle')?.addEventListener('change', event => {
+    state.is_public = event.target.checked;
+    save();
+    syncPublicControls();
+  });
+  document.getElementById('copy-share-link-btn')?.addEventListener('click', async () => {
+    if (!state.share_url) return;
+    const shareUrl = new URL(state.share_url, window.location.origin).href;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setSyncMessage('Share link copied.');
+    } catch {
+      setSyncMessage(shareUrl);
+    }
+  });
 
   // Live search in picker
   document.getElementById('picker-search').addEventListener('input', e => {
@@ -1471,6 +1517,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   render();
+  syncPublicControls();
 });
 </script>
 {% endblock %}

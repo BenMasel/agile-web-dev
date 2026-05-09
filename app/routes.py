@@ -308,6 +308,8 @@ def serialize_plan(plan):
         'plan': {},
         'done': [],
         'substitutions': {},
+        'is_public': plan.is_public,
+        'share_url': url_for('main.public_plan_detail', plan_id=plan.id),
     }
     for unit in plan.units:
         key = f'{unit.year}-{unit.semester}'
@@ -383,6 +385,31 @@ def planner_delete():
         db.session.delete(plan)
     db.session.commit()
     return jsonify({'message': 'Saved planner deleted.'})
+
+
+@bp.route('/plans')
+def public_plans():
+    degree = request.args.get('degree')
+    query = StudyPlan.query.filter_by(is_public=True)
+    if degree:
+        query = query.filter(
+            (StudyPlan.primary_degree_slug == degree) | (StudyPlan.secondary_degree_slug == degree)
+        )
+    plans = query.order_by(StudyPlan.updated_at.desc()).all()
+    degrees = {d['slug']: d for d in load_all_yaml('degrees')}
+    units = {u['code']: u for u in load_all_yaml('units')}
+    return render_template('plans/index.html', plans=plans, degrees=degrees, units=units, selected_degree=degree)
+
+
+@bp.route('/plans/<int:plan_id>')
+def public_plan_detail(plan_id):
+    plan = db.session.get(StudyPlan, plan_id)
+    if plan is None or not plan.is_public:
+        return render_template('404.html', category='plan'), 404
+
+    degrees = {d['slug']: d for d in load_all_yaml('degrees')}
+    units = {u['code']: u for u in load_all_yaml('units')}
+    return render_template('plans/detail.html', plan=plan, degrees=degrees, units=units)
 
 
 @bp.route('/api/onboarding-data')

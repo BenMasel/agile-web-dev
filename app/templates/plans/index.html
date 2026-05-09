@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Shared Plans — stUwa{% endblock %}
+
+{% block content %}
+<div class="flex items-center gap-3 pt-4 pb-1">
+  <div class="w-8 h-8 rounded-[8px] bg-rc-blue-muted border border-rc-blue/20 flex items-center justify-center shrink-0">
+    <span class="text-[13px] font-semibold text-rc-blue">SP</span>
+  </div>
+  <div>
+    <h1 class="text-[17px] font-semibold text-rc-text tracking-tight">Shared Plans</h1>
+    <p class="text-[12px] text-rc-text-tertiary">Public study plans saved by students</p>
+  </div>
+</div>
+
+<div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex items-center gap-3">
+  <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Filter</span>
+  <form method="get" class="flex-1">
+    <select name="degree"
+            onchange="this.form.submit()"
+            class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
+      <option value="">All degrees</option>
+      {% for slug, degree in degrees.items() %}
+      <option value="{{ slug }}" {% if selected_degree == slug %}selected{% endif %}>{{ degree.title }}</option>
+      {% endfor %}
+    </select>
+  </form>
+  {% if selected_degree %}
+  <a href="{{ url_for('main.public_plans') }}"
+     class="text-[11px] text-white/45 hover:text-white/75 transition">Clear</a>
+  {% endif %}
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+  {% for plan in plans %}
+  {% set plan_units = plan.units | list %}
+  <a href="{{ url_for('main.public_plan_detail', plan_id=plan.id) }}"
+     class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3 hover:border-white/15 transition">
+    <div class="flex items-start gap-3">
+      <div class="flex-1 min-w-0">
+        <div class="text-[13px] font-medium text-white/80 truncate">{{ plan.name }}</div>
+        <div class="text-[12px] text-rc-text-faint truncate">by {{ plan.user.display_name }}</div>
+      </div>
+      <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Public</span>
+    </div>
+    <div class="flex flex-wrap gap-1.5">
+      {% for slug in [plan.primary_degree_slug, plan.secondary_degree_slug] if slug %}
+      <span class="text-[11px] text-rc-blue bg-rc-blue-muted border border-rc-blue/15 rounded-md px-2 py-1">
+        {{ degrees.get(slug, {}).get('title', slug) }}
+      </span>
+      {% endfor %}
+    </div>
+    <div class="flex items-center gap-3 text-[11px] text-rc-text-faint">
+      <span>{{ plan_units | length }} units</span>
+      <span>{{ plan_units | selectattr('status', 'equalto', 'completed') | list | length }} completed</span>
+      <span>starts S{{ plan.start_semester }} {{ plan.start_year }}</span>
+    </div>
+  </a>
+  {% else %}
+  <div class="md:col-span-2 bg-rc-surface border border-rc-border rounded-[10px] p-5 text-[12px] text-rc-text-faint">
+    No public plans yet.
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
