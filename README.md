@@ -40,10 +40,10 @@ The current app combines a YAML-backed catalogue with database-backed user featu
 
 | UWA ID | Name | GitHub username |
 |--------|------|-----------------|
-| TODO | TODO | TODO |
-| TODO | TODO | TODO |
-| TODO | TODO | TODO |
-| TODO | TODO | TODO |
+| 24357423 | Ben Masel | BenMasel |
+| 24483753 | Kaushik Oril | Kaushik-Oril |
+| 24518484 | Dhul Ratnayaka Ratnayaka Mudiyanselage | dhulrat |
+| 24729724 | Hridayesh Sharma | Hri-Sh |
 
 ---
 
@@ -58,7 +58,7 @@ The current app combines a YAML-backed catalogue with database-backed user featu
 
 ```bash
 # 1. Clone the repository
-git clone <repo-url>
+git clone https://github.com/BenMasel/agile-web-dev.git
 cd agile-web-dev
 
 # 2. Install dependencies

@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **259** checked items out of **383** total checklist items (**67.6%**).
+- Completion: **265** checked items out of **383** total checklist items (**69.2%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -23,7 +23,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Well considered database schema, authentication, and evidence of migrations.
 - [ ] 5+ unit tests and 5+ Selenium tests against a live server.
 - [x] Salted password hashes, CSRF protection for forms, and environment variable configuration.
-- [ ] Public GitHub repo with README containing app purpose, group member table, launch instructions, and test instructions.
+- [x] Public GitHub repo with README containing app purpose, group member table, launch instructions, and test instructions.
 - [ ] Regular GitHub Issues, Pull Requests, commits, reviews, and checkpoint evidence.
 
 ## Current Repo State
@@ -46,7 +46,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
 - [x] Tests.
 - [x] CSRF protection.
-- [ ] README group member table and test instructions.
+- [x] README group member table and test instructions.
 - [x] Data schemas referenced by docs but not present in the repo.
 
 ## Phase 1: Scope And Team Setup
@@ -377,10 +377,10 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Phase 14: README And Documentation
 
 - [x] Update README purpose section to match final app.
-- [ ] Add required group member table:
-  - [ ] UWA ID.
-  - [ ] Name.
-  - [ ] GitHub username.
+- [x] Add required group member table:
+  - [x] UWA ID.
+  - [x] Name.
+  - [x] GitHub username.
 - [ ] Keep launch instructions current:
   - [x] Install `uv`.
   - [x] Copy `.env.example` to `.env`.
