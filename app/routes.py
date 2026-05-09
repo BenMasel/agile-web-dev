@@ -9,8 +9,14 @@ import yaml
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
+import base64
+import io
+
+import pyotp
+import qrcode
+from flask import session
 from app.extensions import db
-from app.forms import AccountForm, LoginForm, RegisterForm, UnitReviewForm
+from app.forms import AccountForm, LoginForm, RegisterForm, TwoFASetupForm, TwoFAVerifyForm, UnitReviewForm
 from app.models import StudyPlan, StudyPlanUnit, UnitReview, User
 
 
@@ -533,6 +539,17 @@ def auth():
                 email = login_form.email.data.strip().lower()
                 user = User.query.filter_by(email=email).first()
                 if user and user.check_password(login_form.password.data):
+                    if user.two_fa_enabled:
+                        # Password is correct but we do NOT call login_user() yet.
+                        # Instead we park the user's id in the server-side session
+                        # and redirect to the TOTP verification step. The user is
+                        # only fully logged in once they supply a valid 6-digit code
+                        # in verify_2fa(). Using the server session (not a cookie
+                        # visible to the browser) means the pending state can't be
+                        # tampered with or skipped by the client.
+                        session['2fa_pending_user_id'] = user.id
+                        session['2fa_next'] = request.args.get('next', url_for('main.settings'))
+                        return redirect(url_for('main.verify_2fa'))
                     login_user(user)
                     flash('Signed in successfully.', 'success')
                     next_url = request.args.get('next')
@@ -636,6 +653,122 @@ def club_detail(slug):
         return render_template('404.html', category='club'), 404
 
     return render_template('club/detail.html', club=club)
+
+
+# ---------------------------------------------------------------------------
+# Two-factor authentication
+# ---------------------------------------------------------------------------
+
+@bp.route('/auth/2fa', methods=['GET', 'POST'])
+def verify_2fa():
+    """
+    Second step of login for users with 2FA enabled.
+    Expects '2fa_pending_user_id' to be in the Flask session.
+    """
+    user_id = session.get('2fa_pending_user_id')
+    if not user_id:
+        return redirect(url_for('main.auth'))
+
+    user = db.session.get(User, user_id)
+    if not user:
+        session.pop('2fa_pending_user_id', None)
+        return redirect(url_for('main.auth'))
+
+    form = TwoFAVerifyForm()
+    if form.validate_on_submit():
+        if user.verify_totp(form.code.data.strip()):
+            session.pop('2fa_pending_user_id', None)
+            next_url = session.pop('2fa_next', url_for('main.settings'))
+            login_user(user)
+            flash('Signed in successfully.', 'success')
+            return redirect(next_url if next_url.startswith('/') else url_for('main.settings'))
+        flash('Incorrect code. Please try again.', 'error')
+
+    return render_template('auth/verify_2fa.html', form=form)
+
+
+@bp.route('/settings/2fa/setup', methods=['GET'])
+@login_required
+def setup_2fa():
+    """
+    Step 1 of enabling 2FA: generate a secret and show the QR code.
+
+    A fresh secret is generated on every GET so that if the user
+    abandons the setup and comes back later they always get a clean one.
+    The secret is held in the server session — NOT saved to the DB yet.
+    It only gets written to the DB in enable_2fa() once the user proves
+    their authenticator app actually scanned it correctly.
+
+    QR code pipeline:
+      secret (base32 string)
+        → otpauth:// URI  (pyotp.TOTP.provisioning_uri)
+        → QR code image   (qrcode.make → PIL Image)
+        → PNG bytes       (img.save to BytesIO buffer)
+        → base64 string   (embedded directly in the <img> src tag)
+    This avoids writing any files to disk.
+    """
+    secret = pyotp.random_base32()
+    session['2fa_pending_secret'] = secret
+
+    # Build the provisioning URI and render as a QR code PNG → base64
+    uri = pyotp.TOTP(secret).provisioning_uri(
+        name=current_user.email,
+        issuer_name='stUwa',
+    )
+    img = qrcode.make(uri)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    form = TwoFASetupForm()
+    return render_template('auth/setup_2fa.html', form=form, qr_b64=qr_b64, secret=secret)
+
+
+@bp.route('/settings/2fa/enable', methods=['POST'])
+@login_required
+def enable_2fa():
+    """
+    Step 2 of enabling 2FA: validate the first code, then persist the secret.
+
+    We verify against the session-stored secret (not the DB, since it hasn't
+    been saved yet). Only if the code is correct do we write the secret to
+    the DB and set two_fa_enabled = True. This ensures we never enable 2FA
+    with a secret the user's app didn't successfully import — which would
+    lock them out of their account.
+    """
+    secret = session.get('2fa_pending_secret')
+    if not secret:
+        flash('Setup session expired. Please try again.', 'error')
+        return redirect(url_for('main.setup_2fa'))
+
+    form = TwoFASetupForm()
+    if form.validate_on_submit():
+        totp = pyotp.TOTP(secret)
+        if totp.verify(form.code.data.strip(), valid_window=1):
+            current_user.totp_secret = secret
+            current_user.two_fa_enabled = True
+            db.session.commit()
+            session.pop('2fa_pending_secret', None)
+            flash('Two-factor authentication is now enabled.', 'success')
+            return redirect(url_for('main.settings'))
+        flash('Incorrect code. Make sure your authenticator app is synced and try again.', 'error')
+        return redirect(url_for('main.setup_2fa'))
+
+    flash('Invalid request.', 'error')
+    return redirect(url_for('main.setup_2fa'))
+
+
+@bp.route('/settings/2fa/disable', methods=['POST'])
+@login_required
+def disable_2fa():
+    """
+    Disable 2FA for the current user and clear their TOTP secret.
+    """
+    current_user.two_fa_enabled = False
+    current_user.totp_secret = None
+    db.session.commit()
+    flash('Two-factor authentication has been disabled.', 'success')
+    return redirect(url_for('main.settings'))
 
 
 # ---------------------------------------------------------------------------

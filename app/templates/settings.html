@@ -164,6 +164,52 @@
 {% endif %}
 
 {# ══════════════════════════════════════════════════════ #}
+{# TWO-FACTOR AUTHENTICATION SECTION                      #}
+{# ══════════════════════════════════════════════════════ #}
+{% if current_user.is_authenticated %}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">Security</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-[13px] font-medium text-white/80">Two-factor authentication</span>
+        <span class="text-[11px] text-rc-text-faint">
+          {% if current_user.two_fa_enabled %}
+            <span class="text-rc-green">Enabled</span> — your account is protected with an authenticator app.
+          {% else %}
+            <span class="text-rc-amber">Disabled</span> — add an extra layer of security to your account.
+          {% endif %}
+        </span>
+      </div>
+
+      {% if current_user.two_fa_enabled %}
+      {# Disable button #}
+      <form method="POST" action="{{ url_for('main.disable_2fa') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit"
+          class="text-[12px] px-3 py-1.5 rounded-[7px] bg-rc-red-muted border border-rc-red/20
+                 text-rc-red/70 hover:text-rc-red hover:border-rc-red/35 transition cursor-pointer shrink-0">
+          Disable 2FA
+        </button>
+      </form>
+      {% else %}
+      {# Enable button #}
+      <a href="{{ url_for('main.setup_2fa') }}"
+        class="text-[12px] px-3 py-1.5 rounded-[7px] bg-rc-blue-muted border border-rc-blue/20
+               text-rc-blue/70 hover:text-rc-blue hover:border-rc-blue/35 transition shrink-0">
+        Enable 2FA
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ══════════════════════════════════════════════════════ #}
 {# NOTIFICATIONS SECTION                                  #}
 {# ══════════════════════════════════════════════════════ #}
 <div class="flex flex-col gap-2">
