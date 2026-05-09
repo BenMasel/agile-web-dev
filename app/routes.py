@@ -9,8 +9,14 @@ import yaml
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
+import base64
+import io
+
+import pyotp
+import qrcode
+from flask import session
 from app.extensions import db
-from app.forms import AccountForm, LoginForm, RegisterForm, UnitReviewForm
+from app.forms import AccountForm, LoginForm, RegisterForm, TwoFASetupForm, TwoFAVerifyForm, UnitReviewForm
 from app.models import StudyPlan, StudyPlanUnit, UnitReview, User
 
 
@@ -533,6 +539,11 @@ def auth():
                 email = login_form.email.data.strip().lower()
                 user = User.query.filter_by(email=email).first()
                 if user and user.check_password(login_form.password.data):
+                    if user.two_fa_enabled:
+                        # Store user id in session and redirect to 2FA verification
+                        session['2fa_pending_user_id'] = user.id
+                        session['2fa_next'] = request.args.get('next', url_for('main.settings'))
+                        return redirect(url_for('main.verify_2fa'))
                     login_user(user)
                     flash('Signed in successfully.', 'success')
                     next_url = request.args.get('next')
@@ -636,6 +647,104 @@ def club_detail(slug):
         return render_template('404.html', category='club'), 404
 
     return render_template('club/detail.html', club=club)
+
+
+# ---------------------------------------------------------------------------
+# Two-factor authentication
+# ---------------------------------------------------------------------------
+
+@bp.route('/auth/2fa', methods=['GET', 'POST'])
+def verify_2fa():
+    """
+    Second step of login for users with 2FA enabled.
+    Expects '2fa_pending_user_id' to be in the Flask session.
+    """
+    user_id = session.get('2fa_pending_user_id')
+    if not user_id:
+        return redirect(url_for('main.auth'))
+
+    user = db.session.get(User, user_id)
+    if not user:
+        session.pop('2fa_pending_user_id', None)
+        return redirect(url_for('main.auth'))
+
+    form = TwoFAVerifyForm()
+    if form.validate_on_submit():
+        if user.verify_totp(form.code.data.strip()):
+            session.pop('2fa_pending_user_id', None)
+            next_url = session.pop('2fa_next', url_for('main.settings'))
+            login_user(user)
+            flash('Signed in successfully.', 'success')
+            return redirect(next_url if next_url.startswith('/') else url_for('main.settings'))
+        flash('Incorrect code. Please try again.', 'error')
+
+    return render_template('auth/verify_2fa.html', form=form)
+
+
+@bp.route('/settings/2fa/setup', methods=['GET'])
+@login_required
+def setup_2fa():
+    """
+    Generate a new TOTP secret, store it temporarily in the session,
+    and render the QR code page so the user can scan it.
+    """
+    secret = pyotp.random_base32()
+    session['2fa_pending_secret'] = secret
+
+    # Build the provisioning URI and render as a QR code PNG → base64
+    uri = pyotp.TOTP(secret).provisioning_uri(
+        name=current_user.email,
+        issuer_name='stUwa',
+    )
+    img = qrcode.make(uri)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    form = TwoFASetupForm()
+    return render_template('auth/setup_2fa.html', form=form, qr_b64=qr_b64, secret=secret)
+
+
+@bp.route('/settings/2fa/enable', methods=['POST'])
+@login_required
+def enable_2fa():
+    """
+    Confirm the TOTP code the user entered after scanning the QR code.
+    If valid, save the secret and flip two_fa_enabled to True.
+    """
+    secret = session.get('2fa_pending_secret')
+    if not secret:
+        flash('Setup session expired. Please try again.', 'error')
+        return redirect(url_for('main.setup_2fa'))
+
+    form = TwoFASetupForm()
+    if form.validate_on_submit():
+        totp = pyotp.TOTP(secret)
+        if totp.verify(form.code.data.strip(), valid_window=1):
+            current_user.totp_secret = secret
+            current_user.two_fa_enabled = True
+            db.session.commit()
+            session.pop('2fa_pending_secret', None)
+            flash('Two-factor authentication is now enabled.', 'success')
+            return redirect(url_for('main.settings'))
+        flash('Incorrect code. Make sure your authenticator app is synced and try again.', 'error')
+        return redirect(url_for('main.setup_2fa'))
+
+    flash('Invalid request.', 'error')
+    return redirect(url_for('main.setup_2fa'))
+
+
+@bp.route('/settings/2fa/disable', methods=['POST'])
+@login_required
+def disable_2fa():
+    """
+    Disable 2FA for the current user and clear their TOTP secret.
+    """
+    current_user.two_fa_enabled = False
+    current_user.totp_secret = None
+    db.session.commit()
+    flash('Two-factor authentication has been disabled.', 'success')
+    return redirect(url_for('main.settings'))
 
 
 # ---------------------------------------------------------------------------
