@@ -1,35 +1,28 @@
-## What data does this PR add or update?
+## What changed?
 
-<!-- Briefly describe the units/degrees/clubs being added or changed. -->
+Briefly describe the feature, fix, docs update, or data change in this PR.
 
----
+## Why?
 
-## Data provenance
+Explain the problem this solves or the requirement/checklist item it supports.
 
-| Field | Value |
-|---|---|
-| Source URL | <!-- e.g. https://www.handbooks.uwa.edu.au/unitdetails?code=CITS3403 --> |
-| Handbook year | <!-- e.g. 2026 --> |
-| Date verified | <!-- YYYY-MM-DD — the date you personally checked this against the source --> |
+## How did you test it?
 
----
+- [ ] `uv run python scripts/validate_data.py`
+- [ ] `uv run pytest`
+- [ ] Manual browser check, if this changes the UI
 
-## Type of change
+## Data provenance, if this changes YAML catalogue data
 
-- [ ] New unit(s)
-- [ ] New degree
-- [ ] New club
-- [ ] Update to existing unit(s)
-- [ ] Update to existing degree
-- [ ] Community stats (ratings, study hours, etc.)
-- [ ] Bug fix / typo correction
+Source URL:
 
----
+Handbook/source year:
+
+Date verified:
 
 ## Checklist
 
-- [ ] Each YAML file has `source_url`, `handbook_year`, and `last_verified` set
-- [ ] Prerequisites use the structured format (`all_of`, `any_of`, `external`) — not free text
-- [ ] Community stats (if added) include `data_quality: seeded`
-- [ ] I verified this data against the official UWA handbook or equivalent source
-- [ ] No private or personally identifiable information is included
+- [ ] I kept the PR focused on one concern
+- [ ] I updated docs or checklist items if the behaviour changed
+- [ ] I avoided committing private data, secrets, local databases, or `.env`
+- [ ] For YAML data, I verified the change against the official UWA handbook or equivalent source

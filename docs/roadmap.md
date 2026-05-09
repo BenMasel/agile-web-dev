@@ -6,10 +6,10 @@ This page tracks what's planned, in progress, and being considered for future de
 
 ## Near-term
 
-- **Server-side study plans** — save, reload, delete, and optionally share plans from authenticated accounts
-- **Review management** — let students manage their own reviews and show aggregate review data
 - **Migrations** — add a repeatable Flask-Migrate setup for clean database creation and upgrades
 - **Selenium coverage** — add live-browser tests for the main assessed journeys
+- **Frontend quality sweep** — improve focus states, responsive checks, no-JavaScript empty states, and API key handling
+- **Bookmarking** — let signed-in users save useful benefits and resources
 
 ---
 

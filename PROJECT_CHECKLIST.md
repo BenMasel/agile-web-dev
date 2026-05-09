@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **214** checked items out of **383** total checklist items (**55.9%**).
+- Completion: **224** checked items out of **383** total checklist items (**58.5%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -65,7 +65,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Make sure every team member has correct Git config:
   - [ ] `git config user.name`
   - [ ] `git config user.email`
-- [ ] Add checkpoint notes to `docs/` or GitHub Issues so process work is visible.
+- [x] Add checkpoint notes to `docs/` or GitHub Issues so process work is visible.
 
 ## Phase 2: Project Structure And Configuration
 
@@ -248,9 +248,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Persist notification preferences to the database.
   - [x] Add import plan JSON if export remains.
   - [ ] Add account deletion or data clearing for logged-in users if time allows.
-- [ ] Docs:
-  - [ ] Update docs to match implemented database-backed behaviour.
-  - [ ] Add schema docs for SQLAlchemy models.
+- [x] Docs:
+  - [x] Update docs to match implemented database-backed behaviour.
+  - [x] Add schema docs for SQLAlchemy models.
   - [x] Fix data schema docs if `data/schemas/` remains absent, or add the schema files.
 
 ## Phase 8: HTML, CSS, And Design Quality
@@ -387,19 +387,19 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Run migrations.
   - [ ] Seed database if needed.
   - [x] Start with `uv run python run.py`.
-- [ ] Add test instructions:
+- [x] Add test instructions:
   - [x] Unit tests.
   - [x] Selenium tests.
-  - [ ] Any required browser driver setup.
+  - [x] Any required browser driver setup.
 - [ ] Add migration instructions.
 - [ ] Add screenshots or short usage walkthrough if time allows.
 - [x] Update `docs/overview.md` with final implemented features.
 - [x] Update `docs/roadmap.md` so completed features are not described as future work.
-- [ ] Add architecture notes:
-  - [ ] Flask blueprints.
+- [x] Add architecture notes:
+  - [x] Flask blueprints.
   - [x] SQLAlchemy models.
   - [x] YAML catalogue content.
-  - [ ] Client-side planner/search behaviour.
+  - [x] Client-side planner/search behaviour.
 
 ## Phase 15: GitHub Agile Evidence
 
@@ -414,7 +414,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Respond to review comments before merging.
 - [ ] Keep commits regular and scoped.
 - [ ] Avoid one giant final commit.
-- [ ] Track checkpoint meeting outcomes in Issues, PRs, or docs.
+- [x] Track checkpoint meeting outcomes in Issues, PRs, or docs.
 
 ## Phase 16: Final Polish And Submission Readiness
 

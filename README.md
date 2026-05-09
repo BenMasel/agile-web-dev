@@ -2,7 +2,7 @@
 
 > The middleman between you and your units — built by UWA students, for UWA students.
 
-stUwa is a web app that aggregates UWA unit information, degrees, student clubs, resources, and benefits into a single searchable interface. It eliminates the need to hunt across multiple university portals by surfacing everything in one place.
+stUwa is a web app that aggregates UWA unit information, degrees, student clubs, resources, benefits, account-backed study planning, public plan sharing, and student unit reviews into a single searchable interface. It eliminates the need to hunt across multiple university portals by surfacing everything in one place.
 
 ---
 
@@ -26,11 +26,13 @@ stUwa provides:
 - **Club pages** — descriptions, icons, and accent theming per club
 - **Student benefits** — categorised discounts and perks available to UWA students
 - **Global search** — client-side fuzzy search powered by [Fuse.js](https://fusejs.io/) across all units, degrees, and clubs with no round-trips to the server
-- **Study planner** — an interactive planner for mapping units across semesters and tracking degree progress
+- **Study planner** — an interactive planner for mapping units across semesters, tracking degree progress, syncing plans to an account, and sharing public plans
+- **Accounts** — UWA student registration, login/logout, settings, and server-side persistence for planner and review data
+- **Unit reviews** — student advice with rating, difficulty, workload, aggregate stats, owner delete controls, and a personal review list in settings
 
 All content is stored as YAML files under `data/`, making it easy to add or update entries without touching application code.
 
-The intended project direction is to turn this catalogue into a full student account system where UWA students can save study plans, mark completed units, share public plans, and leave unit reviews that help other students choose units with better context.
+The current app combines a YAML-backed catalogue with database-backed user features. Catalogue content remains easy to review in pull requests, while account data, saved plans, public plan visibility, and reviews are stored through SQLAlchemy.
 
 ---
 
@@ -62,7 +64,7 @@ cd agile-web-dev
 # 2. Install dependencies
 uv sync
 
-# 3. Create local environment config when .env.example exists
+# 3. Create local environment config
 cp .env.example .env
 
 # 4. Start the development server
@@ -83,23 +85,34 @@ The project should be configured through environment variables rather than hard-
 | `DATABASE_URL` | SQLite database path for SQLAlchemy |
 | `YOUTUBE_API_KEY` | Optional YouTube Data API key for resource search |
 
-When `.env.example` is added, copy it to `.env` and replace the placeholder values for local development.
+Copy `.env.example` to `.env` and replace the placeholder values for local development.
+
+### Database setup
+
+The development app currently uses SQLAlchemy `create_all()` during app startup instead of a migration workflow. This keeps local setup simple for the coursework build: set `DATABASE_URL` in `.env`, run the server, and the SQLite tables are created automatically if they do not exist.
+
+Flask-Migrate/Alembic is documented in the checklist as the intended production-grade next step, but migration files are not required for the current local development flow.
 
 ---
 
 ## Running Tests
 
-The project brief requires at least 5 unit tests and 5 Selenium tests. The test suite is planned around `pytest`.
+The automated test suite uses `pytest` for route, model, data validation, authentication, planner, review, and public plan coverage.
 
 ```bash
 # Install dependencies
 uv sync
 
-# Run unit tests
+# Run tests
 uv run pytest
+
+# Validate YAML catalogue data
+uv run python scripts/validate_data.py
 ```
 
-Selenium tests should run against a live development server:
+The repository also includes a GitHub Actions workflow at `.github/workflows/tests.yml` that installs dependencies with `uv sync` and runs `uv run pytest` on pushes and pull requests.
+
+Selenium live-browser tests are still a later hardening step. When they are added, they should run against a live development server:
 
 ```bash
 # Terminal 1
@@ -109,7 +122,7 @@ uv run python run.py
 uv run pytest tests/selenium
 ```
 
-If Selenium browser drivers are required, document the setup steps here when the Selenium suite is added.
+Install the matching browser driver for the browser used by the Selenium tests. For Chrome-based tests, use a Chrome/Chromium version with a compatible ChromeDriver available on `PATH`; for Firefox-based tests, use GeckoDriver.
 
 ---
 
@@ -121,7 +134,9 @@ agile-web-dev/
 │   ├── __init__.py        # Application factory (create_app)
 │   ├── routes.py          # All route handlers and YAML data helpers
 │   ├── docs_bp.py         # Docs blueprint — serves docs/ as /docs/<slug>
-│   ├── db.py              # SQLite connection management
+│   ├── models.py          # SQLAlchemy models for users, plans, reviews, preferences
+│   ├── forms.py           # Flask-WTF forms and validators
+│   ├── db.py              # Legacy SQLite helper retained for compatibility
 │   ├── templates/         # Jinja2 HTML templates
 │   │   ├── base.html
 │   │   ├── home.html
@@ -130,7 +145,8 @@ agile-web-dev/
 │   │   ├── docs/          # Docs page template
 │   │   ├── unit/
 │   │   ├── degree/
-│   │   └── club/
+│   │   ├── club/
+│   │   └── plans/         # Public study plan pages
 │   └── static/            # CSS, JS, icons, and images
 │       ├── css/
 │       ├── js/
@@ -164,7 +180,10 @@ agile-web-dev/
 | [uv](https://docs.astral.sh/uv/) | Dependency management and virtual environment |
 | [Fuse.js](https://fusejs.io/) | Client-side fuzzy search |
 | [Highlight.js](https://highlightjs.org/) | Syntax highlighting for code blocks in docs (CDN) |
-| [SQLite](https://www.sqlite.org/) | Lightweight database (via Flask's `g` context) |
+| [SQLite](https://www.sqlite.org/) | Lightweight development database |
+| [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/) | ORM for account, planner, review, and preference models |
+| [Flask-Login](https://flask-login.readthedocs.io/) | User session management |
+| [Flask-WTF](https://flask-wtf.readthedocs.io/) | Forms and CSRF protection |
 
 ### Adding a documentation page
 
