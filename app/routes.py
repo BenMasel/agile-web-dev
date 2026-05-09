@@ -257,6 +257,7 @@ def unit_detail(code):
     Unit detail page.
     Loads unit data from data/units/<CODE>.yaml and the associated club
     stubs from data/clubs/<slug>.yaml so the template can render their icons.
+    Shows the user's current status (planned/completed) if authenticated.
     """
     unit = load_yaml('units', f'{code}.yaml')
     if unit is None:
@@ -270,7 +271,26 @@ def unit_detail(code):
 
     filepath = os.path.join('data', 'units', f'{code}.yaml')
     git_meta = git_last_modified(filepath)
-    return render_template('unit/detail.html', unit=unit, clubs=clubs, git_meta=git_meta)
+    
+    # Check user's status with this unit if authenticated
+    user_status = None
+    if current_user.is_authenticated:
+        from app.models import StudyPlanUnit
+        # Find all instances of this unit across the user's study plans
+        plan_units = db.session.query(StudyPlanUnit).filter(
+            StudyPlanUnit.unit_code == code,
+            StudyPlanUnit.study_plan.has(user_id=current_user.id)
+        ).all()
+        
+        if plan_units:
+            # Get the most recent status
+            statuses = [pu.status for pu in plan_units]
+            if 'completed' in statuses:
+                user_status = 'completed'
+            elif 'planned' in statuses:
+                user_status = 'planned'
+    
+    return render_template('unit/detail.html', unit=unit, clubs=clubs, git_meta=git_meta, user_status=user_status)
 
 
 @bp.route('/degree/<slug>')
