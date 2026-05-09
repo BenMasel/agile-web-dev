@@ -70,7 +70,7 @@ def register(browser, base_url, suffix):
     browser.find_element(By.ID, 'register-password').send_keys('password123')
     browser.find_element(By.ID, 'register-confirm-password').send_keys('password123')
     browser.find_element(By.CSS_SELECTOR, '#signup-form button[type="submit"]').click()
-    wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Account settings'))
+    wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Settings'))
 
 
 def test_user_can_register_login_and_logout(browser, live_app):
@@ -89,8 +89,8 @@ def test_user_can_search_for_unit_and_open_detail(browser, live_app):
     browser.get(live_app)
     search = WebDriverWait(browser, 30).until(EC.visibility_of_element_located((By.ID, 'search-input')))
     search.send_keys('CITS3403')
-    WebDriverWait(browser, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.result-row')))
-    search.send_keys(Keys.ENTER)
+    result = WebDriverWait(browser, 30).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.result-row')))
+    result.click()
     WebDriverWait(browser, 30).until(EC.url_contains('/unit/CITS3403'))
     assert 'Agile Web Development' in browser.page_source
 
