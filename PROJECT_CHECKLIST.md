@@ -243,7 +243,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Persist saved/bookmarked resources for logged-in users if implemented.
 - [ ] Benefits page:
   - [ ] Add "save benefit" for logged-in users if implemented.
-  - [ ] Replace placeholder disclaimer data with verified entries or clearly label demo data.
+  - [x] Replace placeholder disclaimer data with verified entries or clearly label demo data.
 - [ ] Settings page:
   - [x] Persist notification preferences to the database.
   - [x] Add import plan JSON if export remains.
