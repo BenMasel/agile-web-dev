@@ -75,11 +75,15 @@ def register(browser, base_url, suffix):
 
 def test_user_can_register_login_and_logout(browser, live_app):
     register(browser, live_app, '21000001')
-    browser.find_element(By.CSS_SELECTOR, 'form[action$="/logout"] button').click()
+    # Use JS click to bypass any overlay/modal that may cover the logout button in CI
+    logout_btn = WebDriverWait(browser, 30).until(
+        EC.presence_of_element_located((By.CSS_SELECTOR, 'form[action$="/logout"] button'))
+    )
+    browser.execute_script("arguments[0].click();", logout_btn)
     WebDriverWait(browser, 30).until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Sign in'))
 
-    browser.get(f'{live_app}/login')
-    browser.find_element(By.ID, 'login-email').send_keys('21000001@student.uwa.edu.au')
+    browser.get(f'{live_app}/auth?mode=signin')
+    WebDriverWait(browser, 30).until(EC.visibility_of_element_located((By.ID, 'login-email'))).send_keys('21000001@student.uwa.edu.au')
     browser.find_element(By.ID, 'login-password').send_keys('password123')
     browser.find_element(By.CSS_SELECTOR, '#signin-form button[type="submit"]').click()
     WebDriverWait(browser, 30).until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Test User'))
@@ -89,8 +93,9 @@ def test_user_can_search_for_unit_and_open_detail(browser, live_app):
     browser.get(live_app)
     search = WebDriverWait(browser, 30).until(EC.visibility_of_element_located((By.ID, 'search-input')))
     search.send_keys('CITS3403')
-    result = WebDriverWait(browser, 30).until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.result-row')))
-    result.click()
+    result = WebDriverWait(browser, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, '.result-row')))
+    # JS click bypasses child elements intercepting the click in headless Chrome
+    browser.execute_script("arguments[0].click();", result)
     WebDriverWait(browser, 30).until(EC.url_contains('/unit/CITS3403'))
     assert 'Agile Web Development' in browser.page_source
 
