@@ -6,6 +6,17 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from app.extensions import db, login_manager
 
 
+class TimestampMixin:
+    """Mixin that adds created_at and updated_at timestamp columns."""
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(
+        db.DateTime,
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
+
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False, index=True)

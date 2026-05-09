@@ -33,7 +33,7 @@ CLUBS_DATA = [
 
 def generate_club_yaml(club_data):
     """Generate YAML content for a club."""
-    yaml_content = f"""# PLACEHOLDER — this club data is from UWA Student Guild and used for development/testing.
+    yaml_content = f"""# PLACEHOLDER - this club data is from UWA Student Guild and used for development/testing.
 # If you have more accurate information or additional details, please submit a PR.
 slug: {club_data['slug']}
 name: {club_data['name']}

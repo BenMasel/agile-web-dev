@@ -1,8 +1,9 @@
 from flask import Flask
 from dotenv import load_dotenv
+import os
 
 from config import CONFIG_BY_NAME
-from app.extensions import csrf, db as sqla_db, login_manager
+from app.extensions import csrf, db, login_manager
 
 
 def create_app(config_object=None):
@@ -12,7 +13,6 @@ def create_app(config_object=None):
     without side effects from a module-level app object.
     """
     app = Flask(__name__, instance_relative_config=True)
-    import os
     config_name = os.environ.get('FLASK_CONFIG', 'default')
     app.config.from_object(CONFIG_BY_NAME.get(config_name, CONFIG_BY_NAME['default']))
     app.config['DATABASE'] = os.path.join(app.instance_path, 'app.db')
@@ -22,7 +22,7 @@ def create_app(config_object=None):
     except OSError:
         pass
 
-    sqla_db.init_app(app)
+    db.init_app(app)
     csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'main.auth'
@@ -32,10 +32,9 @@ def create_app(config_object=None):
     from app.db import close_db
     app.teardown_appcontext(close_db)
 
-    from app.extensions import db, login_manager, migrate
-    db.init_app(app)
-    migrate.init_app(app, db)
-    login_manager.init_app(app)
+    # Import migration helper
+    from flask_migrate import Migrate
+    Migrate(app, db)
 
     # Import models so Flask-Migrate can discover SQLAlchemy metadata.
     from app import models  # noqa: F401
@@ -47,9 +46,5 @@ def create_app(config_object=None):
     # Register the docs blueprint (/docs).
     from app.docs_bp import docs_bp
     app.register_blueprint(docs_bp)
-
-    with app.app_context():
-        from app import models  # noqa: F401
-        sqla_db.create_all()
 
     return app

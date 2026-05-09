@@ -144,6 +144,54 @@ def home():
     return render_template('home.html', search_data=build_search_index())
 
 
+@bp.route('/search')
+def search():
+    """
+    Server-side search endpoint for no-JavaScript fallback.
+    Performs basic substring matching on the search index.
+    """
+    query = request.args.get('q', '').strip().lower()
+    if not query or len(query) < 2:
+        return render_template('search_results.html', query=query, results=[])
+    
+    index = build_search_index()
+    results = []
+    
+    # Simple substring matching with scoring
+    for item in index:
+        score = 0
+        searchable_text = ''
+        
+        if item['type'] == 'unit':
+            searchable_text = f"{item['code']} {item['title']} {item.get('faculty', '')}"
+        elif item['type'] == 'degree':
+            searchable_text = item['title']
+        elif item['type'] == 'club':
+            searchable_text = f"{item['name']} {item.get('abbreviation', '')} {item.get('description', '')}"
+        
+        searchable_text = searchable_text.lower()
+        
+        # Exact code match (for units)
+        if item['type'] == 'unit' and item['code'].lower() == query:
+            score = 100
+        # Start of text match (higher priority)
+        elif searchable_text.startswith(query):
+            score = 50
+        # Contains match (lower priority)
+        elif query in searchable_text:
+            score = 25
+        
+        if score > 0:
+            results.append((item, score))
+    
+    # Sort by score (descending) and then by type priority (unit > degree > club)
+    type_priority = {'unit': 3, 'degree': 2, 'club': 1}
+    results.sort(key=lambda x: (-x[1], -type_priority.get(x[0]['type'], 0)))
+    
+    results = [item for item, _ in results[:50]]
+    return render_template('search_results.html', query=query, results=results)
+
+
 @bp.route('/resources')
 def resources():
     """
