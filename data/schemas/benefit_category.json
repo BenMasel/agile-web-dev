@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "stUwa benefit category",
+  "type": "object",
+  "required": ["id", "label", "description", "accent_color", "accent_bg", "icon_svg"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "label": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "accent_color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+    "accent_bg": { "type": "string" },
+    "icon_svg": { "type": "string", "minLength": 1 }
+  }
+}

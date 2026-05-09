@@ -251,7 +251,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Docs:
   - [ ] Update docs to match implemented database-backed behaviour.
   - [ ] Add schema docs for SQLAlchemy models.
-  - [ ] Fix data schema docs if `data/schemas/` remains absent, or add the schema files.
+  - [x] Fix data schema docs if `data/schemas/` remains absent, or add the schema files.
 
 ## Phase 8: HTML, CSS, And Design Quality
 
@@ -318,17 +318,17 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 11: Data Integrity
 
-- [ ] Add JSON schemas under `data/schemas/` or update docs if schema validation will not be used.
-- [ ] Add validation script for YAML content:
-  - [ ] Units.
-  - [ ] Degrees.
-  - [ ] Clubs.
-  - [ ] Benefits.
-- [ ] Add tests for YAML loader and search index generation.
+- [x] Add JSON schemas under `data/schemas/` or update docs if schema validation will not be used.
+- [x] Add validation script for YAML content:
+  - [x] Units.
+  - [x] Degrees.
+  - [x] Clubs.
+  - [x] Benefits.
+- [x] Add tests for YAML loader and search index generation.
 - [ ] Check all YAML links, URLs, and unit references.
-- [ ] Ensure planner units referenced by degrees exist in `data/units`.
-- [ ] Ensure associated clubs referenced by units exist in `data/clubs`.
-- [ ] Add official source URLs and last verified dates for unit data.
+- [x] Ensure planner units referenced by degrees exist in `data/units`.
+- [x] Ensure associated clubs referenced by units exist in `data/clubs`.
+- [x] Add official source URLs and last verified dates for unit data.
 - [ ] Replace any known placeholder/inaccurate benefit data before final submission.
 
 ## Phase 12: Testing
