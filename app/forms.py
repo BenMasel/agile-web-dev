@@ -58,3 +58,27 @@ class UnitReviewForm(FlaskForm):
     semester_taken = StringField('Semester taken', validators=[Optional(), Length(max=32)])
     body = TextAreaField('Review', validators=[DataRequired(), Length(min=10, max=1200)])
     submit = SubmitField('Post review')
+
+
+class TwoFAVerifyForm(FlaskForm):
+    """Used on the login 2FA verification step."""
+    code = StringField(
+        'Authenticator code',
+        validators=[
+            DataRequired(),
+            Regexp(r'^\d{6}$', message='Enter the 6-digit code from your authenticator app.'),
+        ],
+    )
+    submit = SubmitField('Verify')
+
+
+class TwoFASetupForm(FlaskForm):
+    """Used to confirm a valid code before enabling 2FA."""
+    code = StringField(
+        'Authenticator code',
+        validators=[
+            DataRequired(),
+            Regexp(r'^\d{6}$', message='Enter the 6-digit code from your authenticator app.'),
+        ],
+    )
+    submit = SubmitField('Enable two-factor authentication')
