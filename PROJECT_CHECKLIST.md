@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **192** checked items out of **383** total checklist items (**50.1%**).
+- Completion: **201** checked items out of **383** total checklist items (**52.5%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -203,16 +203,16 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Short written advice.
 - [x] Require login to create/edit/delete a review.
 - [x] Allow anyone to view approved/public reviews on unit pages.
-- [ ] Show aggregate review data on unit pages:
-  - [ ] Average rating.
-  - [ ] Average difficulty.
-  - [ ] Review count.
-  - [ ] Common workload range.
-- [ ] Add "My reviews" section in settings.
+- [x] Show aggregate review data on unit pages:
+  - [x] Average rating.
+  - [x] Average difficulty.
+  - [x] Review count.
+  - [x] Common workload range.
+- [x] Add "My reviews" section in settings.
 - [x] Add edit/delete review controls for the review owner.
-- [ ] Add basic moderation guardrails:
+- [x] Add basic moderation guardrails:
   - [x] Character limits.
-  - [ ] Empty/abusive placeholder validation.
+  - [x] Empty/abusive placeholder validation.
   - [x] Hide emails from public review display.
 - [ ] Add public/shared study plan browsing if time allows:
   - [ ] "Shared Plans" page.
@@ -342,7 +342,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Registration model support creates a user with a hashed password.
   - [x] Login/logout changes session state correctly.
   - [x] Planner API saves and reloads a user plan.
-  - [ ] Unit review aggregation calculates average rating/difficulty.
+  - [x] Unit review aggregation calculates average rating/difficulty.
   - [x] Onboarding/catalogue API includes units and degrees.
 - [ ] Selenium tests, minimum 5, running against a live server:
   - [ ] User can register, log in, and log out.

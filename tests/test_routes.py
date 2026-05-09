@@ -210,3 +210,109 @@ def test_review_delete_requires_owner(client, db):
     delete_response = client.post(f'/reviews/{review.id}/delete', follow_redirects=True)
     assert delete_response.status_code == 200
     assert UnitReview.query.count() == 1
+
+
+def test_unit_review_aggregation_is_shown_on_unit_page(client, db):
+    from app.models import UnitReview, User
+
+    user = User(
+        email='88888888@student.uwa.edu.au',
+        student_id='88888888',
+        display_name='Review Stats',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.flush()
+    db.session.add_all([
+        UnitReview(
+            user_id=user.id,
+            unit_code='CITS3403',
+            rating=5,
+            difficulty=3,
+            workload_hours=8,
+            body='Great project structure and useful weekly practice.',
+        ),
+        UnitReview(
+            user_id=user.id,
+            unit_code='CITS3403',
+            rating=3,
+            difficulty=5,
+            workload_hours=12,
+            body='Busy semester but the team project helped a lot.',
+        ),
+    ])
+    db.session.commit()
+
+    response = client.get('/unit/CITS3403')
+
+    assert response.status_code == 200
+    assert b'Average rating' in response.data
+    assert b'Difficulty' in response.data
+    assert b'Review count' in response.data
+    assert b'Workload range' in response.data
+    assert b'4.0' in response.data
+    assert b'8-12 hrs/wk' in response.data
+
+
+def test_settings_lists_current_users_reviews(client, db):
+    from app.models import UnitReview, User
+
+    user = User(
+        email='99999999@student.uwa.edu.au',
+        student_id='99999999',
+        display_name='My Review User',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.flush()
+    db.session.add(UnitReview(
+        user_id=user.id,
+        unit_code='CITS3403',
+        rating=4,
+        difficulty=3,
+        workload_hours=10,
+        body='This is my settings-visible unit review.',
+    ))
+    db.session.commit()
+
+    client.post('/login', data={
+        'action': 'login',
+        'login-email': '99999999@student.uwa.edu.au',
+        'login-password': 'password123',
+    })
+    response = client.get('/settings')
+
+    assert response.status_code == 200
+    assert b'My reviews' in response.data
+    assert b'CITS3403' in response.data
+    assert b'This is my settings-visible unit review.' in response.data
+
+
+def test_placeholder_unit_review_is_rejected(client, db):
+    from app.models import UnitReview, User
+
+    user = User(
+        email='10101010@student.uwa.edu.au',
+        student_id='10101010',
+        display_name='Placeholder User',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.commit()
+
+    client.post('/login', data={
+        'action': 'login',
+        'login-email': '10101010@student.uwa.edu.au',
+        'login-password': 'password123',
+    })
+    response = client.post('/unit/CITS3403/reviews', data={
+        'rating': 3,
+        'difficulty': 3,
+        'workload_hours': 10,
+        'semester_taken': 'Sem 1 2026',
+        'body': 'placeholder review',
+    }, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b'Please write a specific review that helps other students.' in response.data
+    assert UnitReview.query.count() == 0

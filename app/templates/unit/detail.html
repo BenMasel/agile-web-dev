@@ -368,6 +368,35 @@
       {% endif %}
     </div>
 
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+      <div class="bg-rc-surface p-3">
+        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Average rating</div>
+        <div class="text-[15px] font-semibold text-white/80 mt-1">
+          {{ review_stats.average_rating if review_stats.average_rating is not none else '—' }}
+        </div>
+      </div>
+      <div class="bg-rc-surface p-3">
+        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Difficulty</div>
+        <div class="text-[15px] font-semibold text-white/80 mt-1">
+          {{ review_stats.average_difficulty if review_stats.average_difficulty is not none else '—' }}
+        </div>
+      </div>
+      <div class="bg-rc-surface p-3">
+        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Review count</div>
+        <div class="text-[15px] font-semibold text-white/80 mt-1">{{ review_stats.count }}</div>
+      </div>
+      <div class="bg-rc-surface p-3">
+        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Workload range</div>
+        <div class="text-[15px] font-semibold text-white/80 mt-1">
+          {% if review_stats.workload_range %}
+            {{ review_stats.workload_range.min }}-{{ review_stats.workload_range.max }} hrs/wk
+          {% else %}
+            —
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
     {% if current_user.is_authenticated %}
     <form method="post" action="{{ url_for('main.create_review', code=unit.code) }}" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-rc-fill-subtle rounded-lg p-3.5">
       {{ review_form.hidden_tag() }}

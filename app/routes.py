@@ -131,6 +131,44 @@ def build_search_index():
     return index
 
 
+def review_stats_for(reviews):
+    count = len(reviews)
+    if count == 0:
+        return {
+            'count': 0,
+            'average_rating': None,
+            'average_difficulty': None,
+            'workload_range': None,
+        }
+
+    workloads = [review.workload_hours for review in reviews if review.workload_hours is not None]
+    if workloads:
+        workload_range = {'min': min(workloads), 'max': max(workloads)}
+    else:
+        workload_range = None
+
+    return {
+        'count': count,
+        'average_rating': round(sum(review.rating for review in reviews) / count, 1),
+        'average_difficulty': round(sum(review.difficulty for review in reviews) / count, 1),
+        'workload_range': workload_range,
+    }
+
+
+def review_body_is_placeholder(body):
+    compact = re.sub(r'[^a-z0-9]+', '', body.lower())
+    if len(set(compact)) <= 2:
+        return True
+    return compact in {
+        'testreview',
+        'placeholder',
+        'placeholderreview',
+        'asdfasdfasdf',
+        'qwertyqwerty',
+        'noreviewyet',
+    }
+
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -230,6 +268,7 @@ def unit_detail(code):
         clubs=clubs,
         git_meta=git_meta,
         reviews=reviews,
+        review_stats=review_stats_for(reviews),
         review_form=review_form,
     )
 
@@ -455,7 +494,10 @@ def settings():
             flash('Account settings updated.', 'success')
             return redirect(url_for('main.settings'))
         flash('Please fix the highlighted account fields.', 'error')
-    return render_template('settings.html', account_form=account_form)
+    my_reviews = []
+    if current_user.is_authenticated:
+        my_reviews = UnitReview.query.filter_by(user_id=current_user.id).order_by(UnitReview.updated_at.desc()).all()
+    return render_template('settings.html', account_form=account_form, my_reviews=my_reviews)
 
 
 @bp.route('/unit/<code>/reviews', methods=['POST'])
@@ -467,6 +509,10 @@ def create_review(code):
 
     form = UnitReviewForm()
     if form.validate_on_submit():
+        body = form.body.data.strip()
+        if review_body_is_placeholder(body):
+            flash('Please write a specific review that helps other students.', 'error')
+            return redirect(url_for('main.unit_detail', code=code.upper()))
         review = UnitReview(
             user_id=current_user.id,
             unit_code=code.upper(),
@@ -474,7 +520,7 @@ def create_review(code):
             difficulty=form.difficulty.data,
             workload_hours=form.workload_hours.data,
             semester_taken=(form.semester_taken.data or '').strip() or None,
-            body=form.body.data.strip(),
+            body=body,
         )
         db.session.add(review)
         db.session.commit()
