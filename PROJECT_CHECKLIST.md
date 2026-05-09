@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **240** checked items out of **383** total checklist items (**62.7%**).
+- Completion: **251** checked items out of **383** total checklist items (**65.5%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -224,7 +224,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Home/search:
   - [x] Ensure search result HTML is accessible and keyboard navigation works across browsers.
   - [ ] Add no-JavaScript fallback or graceful empty state.
-  - [ ] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
+  - [x] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
 - [ ] Unit pages:
   - [x] Add review/community section.
   - [ ] Show whether current user has planned/completed the unit.
@@ -255,22 +255,22 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 8: HTML, CSS, And Design Quality
 
-- [ ] Validate rendered HTML for major pages:
-  - [ ] Home.
-  - [ ] Planner.
-  - [ ] Unit detail.
-  - [ ] Degree detail.
-  - [ ] Resources.
-  - [ ] Benefits.
-  - [ ] Auth.
-  - [ ] Settings.
+- [x] Validate rendered HTML for major pages:
+  - [x] Home.
+  - [x] Planner.
+  - [x] Unit detail.
+  - [x] Degree detail.
+  - [x] Resources.
+  - [x] Benefits.
+  - [x] Auth.
+  - [x] Settings.
 - [ ] Review Jinja templates for repeated UI that should become components:
   - [ ] Form field component.
   - [ ] Flash message component.
   - [ ] Review card component.
   - [ ] Plan unit chip/card component.
 - [ ] Ensure responsive layouts work on mobile, tablet, and desktop.
-- [ ] Add visible focus states to interactive controls.
+- [x] Add visible focus states to interactive controls.
 - [ ] Add labels or `aria-label` attributes for icon-only buttons.
 - [ ] Replace inline SVG duplication with reusable components where practical.
 - [ ] Keep Tailwind/custom CSS maintainable and avoid page-specific hacks where reusable utilities/components fit.

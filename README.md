@@ -119,6 +119,9 @@ uv run pytest
 
 # Validate YAML catalogue data
 uv run python scripts/validate_data.py
+
+# Check major pages render valid core HTML through Flask
+uv run python scripts/check_rendered_pages.py
 ```
 
 The repository also includes a GitHub Actions workflow at `.github/workflows/tests.yml` that installs dependencies with `uv sync` and runs `uv run pytest` on pushes and pull requests.
