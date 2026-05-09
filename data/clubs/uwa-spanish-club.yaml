@@ -1,0 +1,27 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-spanish-club
+name: UWA Spanish Club
+abbreviation: UWASpC
+categories:
+- Academic
+- Arts
+- Hobby Activities
+- Multicultural
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: To promote the study of Spanish language and culture at UWA. To officially
+  represent an
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-spanish-club
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-spanish-club
+last_verified: '2026-05-09'
+active: true

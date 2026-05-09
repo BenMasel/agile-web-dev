@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: korean-cultural-club
+name: Korean Cultural Club
+abbreviation: KCC
+categories:
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: We are a socio-cultural club for university students that aims to promote
+  Korean Cultur
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/korean-cultural-club
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/korean-cultural-club
+last_verified: '2026-05-09'
+active: true

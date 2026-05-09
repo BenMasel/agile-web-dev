@@ -1,0 +1,26 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-psychology-society
+name: UWA Psychology Society
+abbreviation: PsySoc
+categories:
+- Arts
+- Science
+- Social
+- Volunteering
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: The UWA Psychology Society (PsySoc) is a Guild-affiliated club representing
+  psychology
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-psychology-society
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-psychology-society
+last_verified: '2026-05-09'
+active: true

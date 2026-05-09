@@ -1,0 +1,24 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: university-nuclear-society-of-western-australia
+name: University Nuclear Society of Western Australia
+abbreviation: UNSWA
+categories:
+- Engineering
+- Science
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: University Nuclear Society of Western Australia is a student club at
+  the University of Western Australia.
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/university-nuclear-society-of-western-australia
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/university-nuclear-society-of-western-australia
+last_verified: '2026-05-09'
+active: true

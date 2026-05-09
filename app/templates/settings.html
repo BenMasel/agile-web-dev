@@ -111,9 +111,25 @@
   <div class="flex items-center gap-2 px-0.5">
     <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">Notifications</span>
     <div class="flex-1 h-px bg-rc-border-light"></div>
+    {% if current_user.is_authenticated %}
+    <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Synced</span>
+    {% else %}
     <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber">Coming soon</span>
+    {% endif %}
   </div>
 
+  {% if not current_user.is_authenticated %}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 text-center">
+    <div class="text-[13px] text-rc-text-tertiary mb-2">Sign in to manage notification preferences</div>
+    <div class="text-[12px] text-white/35 mb-4">
+      Your notification settings will be saved and synced across all your devices.
+    </div>
+    <a href="{{ url_for('main.auth') }}"
+       class="inline-block px-4 py-2 rounded-lg bg-rc-red/90 hover:bg-rc-red text-white text-[12px] font-medium transition">
+      Sign in to your account
+    </a>
+  </div>
+  {% else %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden">
 
     <div class="px-4 py-3 border-b border-rc-border-light">
@@ -124,27 +140,25 @@
     <div class="divide-y divide-rc-border-light">
 
       {% set notif_items = [
-        ('notif-planner',  'Planner reminders',    'Reminders before semester enrolment deadlines',     True),
-        ('notif-updates',  'Unit catalogue updates','When unit info, prerequisites, or availability changes', False),
-        ('notif-replies',  'Community replies',     'When someone replies to your unit comments',         False),
-        ('notif-digest',   'Weekly digest',         'A summary of new resources added for your units',   False),
+        ('planner_reminders', 'Planner reminders', 'Reminders before semester enrolment deadlines', notification_prefs.planner_reminders if notification_prefs else True),
+        ('unit_catalogue_updates', 'Unit catalogue updates', 'When unit info, prerequisites, or availability changes', notification_prefs.unit_catalogue_updates if notification_prefs else False),
+        ('community_replies', 'Community replies', 'When someone replies to your unit comments', notification_prefs.community_replies if notification_prefs else False),
+        ('weekly_digest', 'Weekly digest', 'A summary of new resources added for your units', notification_prefs.weekly_digest if notification_prefs else False),
       ] %}
 
-      {% for id, label, desc, default in notif_items %}
+      {% for key, label, desc, current_value in notif_items %}
       <div class="flex items-center gap-4 px-4 py-3.5">
         <div class="flex-1 min-w-0">
           <div class="text-[12px] font-medium text-white/60">{{ label }}</div>
           <div class="text-[11px] text-rc-text-faint mt-0.5">{{ desc }}</div>
         </div>
-        <button id="{{ id }}-toggle"
+        <button class="notif-toggle shrink-0 w-9 h-5 rounded-full border transition cursor-pointer relative {% if current_value %}bg-rc-green border-rc-green/40{% else %}bg-rc-fill border-rc-border{% endif %}"
                 role="switch"
-                aria-checked="{{ 'true' if default else 'false' }}"
-                data-notif="{{ id }}"
-                onclick="toggleNotif(this)"
-                class="notif-toggle shrink-0 w-9 h-5 rounded-full border transition cursor-pointer relative
-                  {{ 'bg-rc-green border-rc-green/40' if default else 'bg-rc-fill border-rc-border' }}">
-          <span class="absolute top-[3px] w-3.5 h-3.5 rounded-full transition-all
-            {{ 'left-[18px] bg-white' if default else 'left-[3px] bg-white/30' }}"></span>
+                aria-checked="{{ 'true' if current_value else 'false' }}"
+                data-key="{{ key }}"
+                data-state="{{ 'on' if current_value else 'off' }}"
+                onclick="toggleNotification(this)">
+          <span class="absolute top-[3px] w-3.5 h-3.5 rounded-full transition-all {% if current_value %}left-[18px] bg-white{% else %}left-[3px] bg-white/30{% endif %}"></span>
         </button>
       </div>
       {% endfor %}
@@ -156,8 +170,10 @@
         <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.1"/>
         <path d="M5.5 4v2.5M5.5 7.5h.01" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
-      <span class="text-[11px] text-rc-text-faint">Preferences saved locally — linked to your account once you sign in</span>
+      <span class="text-[11px] text-rc-text-faint">Changes are saved automatically to your account</span>
     </div>
+  </div>
+  {% endif %}
 
   </div>
 </div>
@@ -262,7 +278,7 @@ function loadNotifPrefs() {
   try {
     const saved = JSON.parse(localStorage.getItem(NOTIF_KEY)) || {};
     document.querySelectorAll('.notif-toggle').forEach(btn => {
-      const id = btn.dataset.notif;
+      const id = btn.dataset.key;
       if (id in saved) applyToggle(btn, saved[id]);
     });
   } catch {}
@@ -271,6 +287,7 @@ function loadNotifPrefs() {
 function applyToggle(btn, on) {
   const knob = btn.querySelector('span');
   btn.setAttribute('aria-checked', on ? 'true' : 'false');
+  btn.dataset.state = on ? 'on' : 'off';
   if (on) {
     btn.classList.add('bg-rc-green', 'border-rc-green/40');
     btn.classList.remove('bg-rc-fill', 'border-rc-border');
@@ -289,9 +306,35 @@ function toggleNotif(btn) {
   applyToggle(btn, !isOn);
   try {
     const saved = JSON.parse(localStorage.getItem(NOTIF_KEY)) || {};
-    saved[btn.dataset.notif] = !isOn;
+    saved[btn.dataset.key] = !isOn;
     localStorage.setItem(NOTIF_KEY, JSON.stringify(saved));
   } catch {}
+}
+
+async function toggleNotification(btn) {
+  const wasOn = btn.getAttribute('aria-checked') === 'true';
+  const nextValue = !wasOn;
+  applyToggle(btn, nextValue);
+
+  try {
+    const response = await fetch('{{ url_for("main.update_notification_prefs") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify({ [btn.dataset.key]: nextValue })
+    });
+
+    if (!response.ok) throw new Error('Preference update failed');
+    const payload = await response.json();
+    if (payload.prefs && btn.dataset.key in payload.prefs) {
+      applyToggle(btn, payload.prefs[btn.dataset.key]);
+    }
+  } catch {
+    applyToggle(btn, wasOn);
+    alert('Could not save that preference. Please try again.');
+  }
 }
 
 // ── Planner data size ────────────────────────────────────

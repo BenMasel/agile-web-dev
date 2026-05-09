@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: women-in-engineering-mathematical-sciences
+name: Women in Engineering & Mathematical Sciences
+abbreviation: WiEMS
+categories:
+- Engineering
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: Women in Engineering and Mathematical Sciences aim to create a platform
+  to support fema
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/women-in-engineering-mathematical-sciences
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/women-in-engineering-mathematical-sciences
+last_verified: '2026-05-09'
+active: true

@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: greek-students-association
+name: Greek Students Association
+abbreviation: GSA
+categories:
+- Multicultural
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: The Greek Students Association of UWA provides all Greek students and
+  philhellenes an o
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/greek-students-association
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/greek-students-association
+last_verified: '2026-05-09'
+active: true

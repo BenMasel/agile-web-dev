@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: overseas-christian-fellowship-perth
+name: Overseas Christian Fellowship (Perth)
+abbreviation: OCF (Perth)
+categories:
+- Faith
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: We are a group of Christian students that strive to reach out to all
+  international stud
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/overseas-christian-fellowship-perth
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/overseas-christian-fellowship-perth
+last_verified: '2026-05-09'
+active: true

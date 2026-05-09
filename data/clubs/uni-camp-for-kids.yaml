@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uni-camp-for-kids
+name: Uni Camp for Kids
+abbreviation: UCFK
+categories:
+- Volunteering
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: Uni Camp for Kids is Perth’s oldest registered children’s charity, being
+  re
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uni-camp-for-kids
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uni-camp-for-kids
+last_verified: '2026-05-09'
+active: true

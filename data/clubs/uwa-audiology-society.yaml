@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-audiology-society
+name: UWA Audiology Society
+abbreviation: UWAAS
+categories:
+- Academic
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: UWA Audiology Society is a student club at the University of Western
+  Australia.
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-audiology-society
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-audiology-society
+last_verified: '2026-05-09'
+active: true

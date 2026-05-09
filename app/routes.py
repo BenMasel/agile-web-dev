@@ -9,7 +9,7 @@ from flask_login import current_user, login_user, logout_user
 
 from app.extensions import db
 from app.forms import LoginForm, RegisterForm
-from app.models import User
+from app.models import NotificationPreference, User
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
@@ -417,7 +417,57 @@ def logout():
 
 @bp.route('/settings')
 def settings():
-    return render_template('settings.html')
+    prefs = None
+    if current_user.is_authenticated:
+        prefs = db.session.query(NotificationPreference).filter_by(
+            user_id=current_user.id
+        ).first()
+        if not prefs:
+            # Create default preferences if they don't exist
+            prefs = NotificationPreference(user_id=current_user.id)
+            db.session.add(prefs)
+            db.session.commit()
+    
+    return render_template('settings.html', notification_prefs=prefs)
+
+
+@bp.route('/api/notification-prefs', methods=['POST'])
+def update_notification_prefs():
+    """Update user's notification preferences."""
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    # Get or create preferences
+    prefs = db.session.query(NotificationPreference).filter_by(
+        user_id=current_user.id
+    ).first()
+    
+    if not prefs:
+        prefs = NotificationPreference(user_id=current_user.id)
+
+    # Update preferences from request data
+    data = request.get_json(silent=True) or {}
+    allowed_keys = (
+        'planner_reminders',
+        'unit_catalogue_updates',
+        'community_replies',
+        'weekly_digest',
+    )
+    for key in allowed_keys:
+        if key in data:
+            if not isinstance(data[key], bool):
+                return jsonify({'error': f'{key} must be true or false'}), 400
+            setattr(prefs, key, data[key])
+    
+    db.session.add(prefs)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'prefs': {
+        'planner_reminders': prefs.planner_reminders,
+        'unit_catalogue_updates': prefs.unit_catalogue_updates,
+        'community_replies': prefs.community_replies,
+        'weekly_digest': prefs.weekly_digest,
+    }})
 
 
 @bp.route('/club/<slug>')

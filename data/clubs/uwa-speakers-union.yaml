@@ -1,0 +1,25 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-speakers-union
+name: UWA Speaker's Union
+abbreviation: USUC
+categories:
+- Academic
+- Guild
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: We exist to help improve students’ skill and confidence in public speaking
+  as wel
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-speakers-union
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-speakers-union
+last_verified: '2026-05-09'
+active: true

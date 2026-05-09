@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 
 from config import CONFIG_BY_NAME
-from app.extensions import csrf, db, login_manager
+from app.extensions import csrf, db as sqla_db, login_manager
 
 
 def create_app(config_object=None):
@@ -13,8 +13,11 @@ def create_app(config_object=None):
     without side effects from a module-level app object.
     """
     app = Flask(__name__, instance_relative_config=True)
-    config_name = os.environ.get('FLASK_CONFIG', 'default')
-    app.config.from_object(CONFIG_BY_NAME.get(config_name, CONFIG_BY_NAME['default']))
+    if config_object:
+        app.config.from_object(config_object)
+    else:
+        config_name = os.environ.get('FLASK_CONFIG', 'default')
+        app.config.from_object(CONFIG_BY_NAME.get(config_name, CONFIG_BY_NAME['default']))
     app.config['DATABASE'] = os.path.join(app.instance_path, 'app.db')
 
     try:
@@ -22,7 +25,7 @@ def create_app(config_object=None):
     except OSError:
         pass
 
-    db.init_app(app)
+    sqla_db.init_app(app)
     csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'main.auth'
@@ -34,7 +37,7 @@ def create_app(config_object=None):
 
     # Import migration helper
     from flask_migrate import Migrate
-    Migrate(app, db)
+    Migrate(app, sqla_db)
 
     # Import models so Flask-Migrate can discover SQLAlchemy metadata.
     from app import models  # noqa: F401
