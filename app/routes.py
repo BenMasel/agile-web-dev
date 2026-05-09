@@ -540,7 +540,13 @@ def auth():
                 user = User.query.filter_by(email=email).first()
                 if user and user.check_password(login_form.password.data):
                     if user.two_fa_enabled:
-                        # Store user id in session and redirect to 2FA verification
+                        # Password is correct but we do NOT call login_user() yet.
+                        # Instead we park the user's id in the server-side session
+                        # and redirect to the TOTP verification step. The user is
+                        # only fully logged in once they supply a valid 6-digit code
+                        # in verify_2fa(). Using the server session (not a cookie
+                        # visible to the browser) means the pending state can't be
+                        # tampered with or skipped by the client.
                         session['2fa_pending_user_id'] = user.id
                         session['2fa_next'] = request.args.get('next', url_for('main.settings'))
                         return redirect(url_for('main.verify_2fa'))
@@ -685,8 +691,21 @@ def verify_2fa():
 @login_required
 def setup_2fa():
     """
-    Generate a new TOTP secret, store it temporarily in the session,
-    and render the QR code page so the user can scan it.
+    Step 1 of enabling 2FA: generate a secret and show the QR code.
+
+    A fresh secret is generated on every GET so that if the user
+    abandons the setup and comes back later they always get a clean one.
+    The secret is held in the server session — NOT saved to the DB yet.
+    It only gets written to the DB in enable_2fa() once the user proves
+    their authenticator app actually scanned it correctly.
+
+    QR code pipeline:
+      secret (base32 string)
+        → otpauth:// URI  (pyotp.TOTP.provisioning_uri)
+        → QR code image   (qrcode.make → PIL Image)
+        → PNG bytes       (img.save to BytesIO buffer)
+        → base64 string   (embedded directly in the <img> src tag)
+    This avoids writing any files to disk.
     """
     secret = pyotp.random_base32()
     session['2fa_pending_secret'] = secret
@@ -709,8 +728,13 @@ def setup_2fa():
 @login_required
 def enable_2fa():
     """
-    Confirm the TOTP code the user entered after scanning the QR code.
-    If valid, save the secret and flip two_fa_enabled to True.
+    Step 2 of enabling 2FA: validate the first code, then persist the secret.
+
+    We verify against the session-stored secret (not the DB, since it hasn't
+    been saved yet). Only if the code is correct do we write the secret to
+    the DB and set two_fa_enabled = True. This ensures we never enable 2FA
+    with a secret the user's app didn't successfully import — which would
+    lock them out of their account.
     """
     secret = session.get('2fa_pending_secret')
     if not secret:
