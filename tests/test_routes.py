@@ -18,6 +18,14 @@ def test_missing_unit_returns_404(client):
     assert response.status_code == 404
 
 
+def test_unit_detail_route_returns_unit_page(client):
+    response = client.get('/unit/CITS3403')
+
+    assert response.status_code == 200
+    assert b'Agile Web Development' in response.data
+    assert b'Student reviews' in response.data
+
+
 def test_onboarding_data_contains_catalogue(client):
     response = client.get('/api/onboarding-data')
 
@@ -25,6 +33,105 @@ def test_onboarding_data_contains_catalogue(client):
     payload = response.get_json()
     assert payload['units']
     assert payload['degrees']
+
+
+def test_login_and_logout_change_session_state(client, db):
+    from app.models import User
+
+    user = User(
+        email='33333333@student.uwa.edu.au',
+        student_id='33333333',
+        display_name='Session Tester',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.commit()
+
+    login_response = client.post('/login', data={
+        'action': 'login',
+        'login-email': '33333333@student.uwa.edu.au',
+        'login-password': 'password123',
+    }, follow_redirects=True)
+    assert login_response.status_code == 200
+    assert b'Session Tester' in login_response.data
+
+    logout_response = client.post('/logout', follow_redirects=True)
+    assert logout_response.status_code == 200
+    assert b'Sign in' in logout_response.data
+
+
+def test_planner_api_saves_loads_and_deletes_plan(client, db):
+    from app.models import StudyPlan, User
+
+    user = User(
+        email='44444444@student.uwa.edu.au',
+        student_id='44444444',
+        display_name='Planner Tester',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.commit()
+
+    client.post('/login', data={
+        'action': 'login',
+        'login-email': '44444444@student.uwa.edu.au',
+        'login-password': 'password123',
+    })
+
+    payload = {
+        'state': {
+            'degrees': ['BS-CS'],
+            'startYear': 2026,
+            'startSem': 1,
+            'plan': {'2026-1': ['CITS1401']},
+            'done': ['CITS1401'],
+        },
+        'name': 'Test plan',
+    }
+    save_response = client.post('/api/planner', json=payload)
+    assert save_response.status_code == 200
+    assert StudyPlan.query.count() == 1
+
+    load_response = client.get('/api/planner')
+    assert load_response.status_code == 200
+    loaded = load_response.get_json()['plan']
+    assert loaded['degrees'] == ['BS-CS']
+    assert loaded['done'] == ['CITS1401']
+    assert loaded['plan']['2026-1'] == ['CITS1401']
+
+    delete_response = client.delete('/api/planner')
+    assert delete_response.status_code == 200
+    assert StudyPlan.query.count() == 0
+
+
+def test_settings_account_update(client, db):
+    from app.models import User
+
+    user = User(
+        email='55555555@student.uwa.edu.au',
+        student_id='55555555',
+        display_name='Original Name',
+    )
+    user.set_password('password123')
+    db.session.add(user)
+    db.session.commit()
+
+    client.post('/login', data={
+        'action': 'login',
+        'login-email': '55555555@student.uwa.edu.au',
+        'login-password': 'password123',
+    })
+
+    response = client.post('/settings', data={
+        'display_name': 'Updated Name',
+        'faculty': 'Science',
+    }, follow_redirects=True)
+    assert response.status_code == 200
+    assert b'Updated Name' in response.data
+
+    saved = db.session.get(User, user.id)
+    assert saved.display_name == 'Updated Name'
+    assert saved.faculty == 'Science'
 
 
 def test_unit_review_ui_create_display_and_delete(client, db):

@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **182** checked items out of **383** total checklist items (**47.5%**).
+- Completion: **192** checked items out of **383** total checklist items (**50.1%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -47,7 +47,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Tests.
 - [x] CSRF protection.
 - [ ] README group member table and test instructions.
-- [ ] Data schemas referenced by docs but not present in the repo.
+- [x] Data schemas referenced by docs but not present in the repo.
 
 ## Phase 1: Scope And Team Setup
 
@@ -77,7 +77,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Add `.env.example` documenting required environment variables.
 - [x] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
 - [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
-- [ ] Decide whether to use:
+- [x] Decide whether to use:
   - [x] Flask-SQLAlchemy for models and sessions.
   - [x] Flask-Migrate/Alembic for migrations.
   - [x] Flask-Login for session management.
@@ -88,7 +88,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 3: Database Models
 
-- [ ] Design the SQLite schema using SQLAlchemy models.
+- [x] Design the SQLite schema using SQLAlchemy models.
 - [x] Add `User` model:
   - [x] `id`
   - [x] `email`
@@ -325,7 +325,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Clubs.
   - [x] Benefits.
 - [x] Add tests for YAML loader and search index generation.
-- [ ] Check all YAML links, URLs, and unit references.
+- [x] Check all YAML links, URLs, and unit references.
 - [x] Ensure planner units referenced by degrees exist in `data/units`.
 - [x] Ensure associated clubs referenced by units exist in `data/clubs`.
 - [x] Add official source URLs and last verified dates for unit data.
@@ -340,8 +340,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Home route returns 200 and contains search data.
   - [x] Unit detail route returns correct unit page and 404 for missing unit.
   - [x] Registration model support creates a user with a hashed password.
-  - [ ] Login/logout changes session state correctly.
-  - [ ] Planner API saves and reloads a user plan.
+  - [x] Login/logout changes session state correctly.
+  - [x] Planner API saves and reloads a user plan.
   - [ ] Unit review aggregation calculates average rating/difficulty.
   - [x] Onboarding/catalogue API includes units and degrees.
 - [ ] Selenium tests, minimum 5, running against a live server:
@@ -353,10 +353,10 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Resources/benefits navigation works on mobile viewport.
 - [x] Add test command to README.
 - [ ] Add coverage command if time allows.
-- [ ] Add CI workflow if time allows:
-  - [ ] Install with `uv sync`.
+- [x] Add CI workflow if time allows:
+  - [x] Install with `uv sync`.
   - [ ] Run lint/format checks.
-  - [ ] Run unit tests.
+  - [x] Run unit tests.
 
 ## Phase 13: Security
 
@@ -398,7 +398,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Add architecture notes:
   - [ ] Flask blueprints.
   - [x] SQLAlchemy models.
-  - [ ] YAML catalogue content.
+  - [x] YAML catalogue content.
   - [ ] Client-side planner/search behaviour.
 
 ## Phase 15: GitHub Agile Evidence
