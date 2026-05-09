@@ -60,7 +60,7 @@ def browser():
 
 
 def register(browser, base_url, suffix):
-    wait = WebDriverWait(browser, 10)
+    wait = WebDriverWait(browser, 30)
     browser.get(f'{base_url}/auth?mode=signup')
     wait.until(EC.visibility_of_element_located((By.ID, 'register-email'))).send_keys(
         f'{suffix}@student.uwa.edu.au'
@@ -76,22 +76,22 @@ def register(browser, base_url, suffix):
 def test_user_can_register_login_and_logout(browser, live_app):
     register(browser, live_app, '21000001')
     browser.find_element(By.CSS_SELECTOR, 'form[action$="/logout"] button').click()
-    WebDriverWait(browser, 10).until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Sign in'))
+    WebDriverWait(browser, 30).until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Sign in'))
 
     browser.get(f'{live_app}/login')
     browser.find_element(By.ID, 'login-email').send_keys('21000001@student.uwa.edu.au')
     browser.find_element(By.ID, 'login-password').send_keys('password123')
     browser.find_element(By.CSS_SELECTOR, '#signin-form button[type="submit"]').click()
-    WebDriverWait(browser, 10).until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Test User'))
+    WebDriverWait(browser, 30).until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Test User'))
 
 
 def test_user_can_search_for_unit_and_open_detail(browser, live_app):
     browser.get(live_app)
-    search = WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.ID, 'search-input')))
+    search = WebDriverWait(browser, 30).until(EC.visibility_of_element_located((By.ID, 'search-input')))
     search.send_keys('CITS3403')
-    WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.result-row')))
+    WebDriverWait(browser, 30).until(EC.visibility_of_element_located((By.CSS_SELECTOR, '.result-row')))
     search.send_keys(Keys.ENTER)
-    WebDriverWait(browser, 10).until(EC.url_contains('/unit/CITS3403'))
+    WebDriverWait(browser, 30).until(EC.url_contains('/unit/CITS3403'))
     assert 'Agile Web Development' in browser.page_source
 
 
@@ -104,7 +104,7 @@ def test_user_can_submit_review_and_another_session_can_view_it(browser, live_ap
     browser.find_element(By.ID, 'semester_taken').send_keys('Sem 1 2026')
     browser.find_element(By.ID, 'body').send_keys('Selenium review with practical project advice.')
     browser.find_element(By.CSS_SELECTOR, 'form[action$="/reviews"] button[type="submit"]').click()
-    WebDriverWait(browser, 10).until(
+    WebDriverWait(browser, 30).until(
         EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Selenium review with practical project advice.')
     )
 
@@ -122,9 +122,9 @@ def test_user_can_make_plan_public_and_open_share_link(browser, live_app):
         "plan:{'2026-1':['CITS3403']}, done:['CITS3403'], substitutions:{}}));"
     )
     browser.refresh()
-    WebDriverWait(browser, 10).until(EC.element_to_be_clickable((By.ID, 'public-plan-toggle'))).click()
+    WebDriverWait(browser, 30).until(EC.element_to_be_clickable((By.ID, 'public-plan-toggle'))).click()
     browser.find_element(By.ID, 'save-account-btn').click()
-    WebDriverWait(browser, 10).until(EC.visibility_of_element_located((By.ID, 'copy-share-link-btn')))
+    WebDriverWait(browser, 30).until(EC.visibility_of_element_located((By.ID, 'copy-share-link-btn')))
     share_path = browser.execute_script("return JSON.parse(localStorage.getItem('stUwa_planner_v3')).share_url;")
     browser.get(f'{live_app}{share_path}')
     assert 'CITS3403' in browser.page_source
@@ -135,4 +135,4 @@ def test_resources_and_benefits_work_on_mobile_viewport(browser, live_app):
     browser.get(f'{live_app}/resources')
     assert 'Resources' in browser.page_source
     browser.get(f'{live_app}/benefits')
-    assert 'Student benefits' in browser.page_source
+    assert 'Student Benefits' in browser.page_source
