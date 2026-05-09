@@ -1,0 +1,16 @@
+# PLACEHOLDER — this club data is from UWA Student Guild and used for development/testing.
+# If you have more accurate information or additional details, please submit a PR.
+slug: 8-ball-club
+name: 8 Ball Club
+abbreviation: 8BC
+categories: ['Hobby Activities', 'Sports & Fitness']
+
+# icon_svg is rendered raw into an <svg> tag via Jinja's |safe filter.
+# Use currentColor for strokes so the accent_color propagates automatically.
+icon_svg: '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2" fill="none"/>'
+
+description: >
+  8 Ball Club is a student club at the University of Western Australia. 
+  For more information, visit the UWA Student Guild website at https://www.uwastudentguild.com/clubs/8-ball-club.
+
+active: true
