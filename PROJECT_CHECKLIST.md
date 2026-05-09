@@ -223,19 +223,19 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 - [ ] Home/search:
   - [x] Ensure search result HTML is accessible and keyboard navigation works across browsers.
-  - [ ] Add no-JavaScript fallback or graceful empty state.
+  - [x] Add no-JavaScript fallback or graceful empty state.
   - [ ] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
 - [ ] Unit pages:
   - [ ] Add review/community section.
-  - [ ] Show whether current user has planned/completed the unit.
-  - [ ] Add "Add to planner" action for authenticated users.
+  - [x] Show whether current user has planned/completed the unit.
+  - [x] Add "Add to planner" action for authenticated users.
 - [ ] Degree pages:
   - [ ] Add call-to-action to create a plan from a degree.
   - [x] Show units grouped by year/semester from YAML data.
   - [ ] Link to public plans for the degree if implemented.
 - [ ] Club pages:
   - [ ] Link clubs to related units and resources.
-  - [ ] Add richer event/contact fields if available.
+  - [x] Add richer event/contact fields if available.
 - [ ] Resources page:
   - [ ] Move `CONFIG.YOUTUBE_API_KEY` handling out of client-side committed files.
   - [ ] Add backend proxy endpoint for YouTube search if API keys must be hidden.
