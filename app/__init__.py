@@ -1,5 +1,6 @@
 from importlib import import_module
 import os
+import sys
 
 from flask import Flask
 
@@ -51,8 +52,9 @@ def create_app(config_object=None):
     from app.docs_bp import docs_bp
     app.register_blueprint(docs_bp)
 
-    with app.app_context():
-        from app import models  # noqa: F401
-        sqlalchemy_db.create_all()
+    if 'db' not in sys.argv:
+        with app.app_context():
+            from app import models  # noqa: F401
+            sqlalchemy_db.create_all()
 
     return app

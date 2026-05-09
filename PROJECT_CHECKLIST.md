@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **234** checked items out of **383** total checklist items (**61.1%**).
+- Completion: **240** checked items out of **383** total checklist items (**62.7%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -20,7 +20,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Maintainable responsive CSS using allowed framework/custom classes.
 - [ ] Well formatted JavaScript with validation, DOM manipulation, and AJAX where appropriate.
 - [x] Flask code performs non-trivial request handling, data manipulation, and page generation.
-- [ ] Well considered database schema, authentication, and evidence of migrations.
+- [x] Well considered database schema, authentication, and evidence of migrations.
 - [ ] 5+ unit tests and 5+ Selenium tests against a live server.
 - [x] Salted password hashes, CSRF protection for forms, and environment variable configuration.
 - [ ] Public GitHub repo with README containing app purpose, group member table, launch instructions, and test instructions.
@@ -136,9 +136,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Unit catalogue updates.
   - [x] Review replies or community replies.
   - [x] Weekly digest preference.
-- [ ] Create initial migration.
+- [x] Create initial migration.
 - [ ] Add seed/demo data for development and testing.
-- [ ] Document migration commands in the README.
+- [x] Document migration commands in the README.
 
 ## Phase 4: Authentication And Account Flow
 
@@ -384,14 +384,14 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Keep launch instructions current:
   - [x] Install `uv`.
   - [x] Copy `.env.example` to `.env`.
-  - [ ] Run migrations.
+  - [x] Run migrations.
   - [ ] Seed database if needed.
   - [x] Start with `uv run python run.py`.
 - [x] Add test instructions:
   - [x] Unit tests.
   - [x] Selenium tests.
   - [x] Any required browser driver setup.
-- [ ] Add migration instructions.
+- [x] Add migration instructions.
 - [ ] Add screenshots or short usage walkthrough if time allows.
 - [x] Update `docs/overview.md` with final implemented features.
 - [x] Update `docs/roadmap.md` so completed features are not described as future work.
@@ -431,7 +431,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Test on desktop and mobile widths.
 - [ ] Check all external links.
 - [ ] Check empty/error/loading states.
-- [ ] Check database migration from a clean checkout.
+- [x] Check database migration from a clean checkout.
 - [ ] Confirm no secrets are committed.
 - [ ] Confirm README launch and test commands work from a fresh clone.
 - [ ] Tag or mark the final submission commit.

@@ -67,7 +67,10 @@ uv sync
 # 3. Create local environment config
 cp .env.example .env
 
-# 4. Start the development server
+# 4. Apply database migrations
+FLASK_APP=run.py uv run flask db upgrade
+
+# 5. Start the development server
 uv run python run.py
 ```
 
@@ -89,9 +92,17 @@ Copy `.env.example` to `.env` and replace the placeholder values for local devel
 
 ### Database setup
 
-The development app currently uses SQLAlchemy `create_all()` during app startup instead of a migration workflow. This keeps local setup simple for the coursework build: set `DATABASE_URL` in `.env`, run the server, and the SQLite tables are created automatically if they do not exist.
+The project includes a Flask-Migrate/Alembic migration baseline under `migrations/`.
 
-Flask-Migrate/Alembic is documented in the checklist as the intended production-grade next step, but migration files are not required for the current local development flow.
+```bash
+# Apply database migrations
+FLASK_APP=run.py uv run flask db upgrade
+
+# Create a new migration after model changes
+FLASK_APP=run.py uv run flask db migrate -m "Describe the model change"
+```
+
+For development convenience, the app also calls SQLAlchemy `create_all()` during startup so a fresh local SQLite database is created automatically if migrations have not been run yet.
 
 ---
 

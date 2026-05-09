@@ -26,7 +26,7 @@ SQLAlchemy models live in `app/models.py`.
 - `UnitReview` stores student reviews for unit pages.
 - `NotificationPreference` stores account notification preferences for planned future persistence.
 
-The development app currently creates tables with SQLAlchemy `create_all()` on startup. A migration workflow is still a future hardening item.
+The repository includes a Flask-Migrate/Alembic baseline in `migrations/`. For local development convenience, the app also creates missing tables with SQLAlchemy `create_all()` on startup.
 
 ## YAML Catalogue
 

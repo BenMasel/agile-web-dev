@@ -66,7 +66,6 @@ The planner is client-side first. It keeps a local browser draft in `localStorag
 
 ### Near-term
 
-- **Migrations** — add a repeatable Flask-Migrate setup for clean database creation and upgrades
 - **Selenium coverage** — add live-browser tests for the main assessed journeys
 - **Frontend quality sweep** — improve focus states, responsive checks, no-JavaScript empty states, and API key handling
 
