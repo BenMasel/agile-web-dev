@@ -5,7 +5,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Progress Summary
 
 - Last checked: 8 May 2026.
-- Completion: **251** checked items out of **383** total checklist items (**65.5%**).
+- Completion: **259** checked items out of **383** total checklist items (**67.6%**).
 - Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
 
 ## Brief Requirements Snapshot
@@ -18,7 +18,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Good navigation, useful purpose, intuitive UI, and strong visual design.
 - [x] Valid, organised HTML with meaningful Jinja templates.
 - [x] Maintainable responsive CSS using allowed framework/custom classes.
-- [ ] Well formatted JavaScript with validation, DOM manipulation, and AJAX where appropriate.
+- [x] Well formatted JavaScript with validation, DOM manipulation, and AJAX where appropriate.
 - [x] Flask code performs non-trivial request handling, data manipulation, and page generation.
 - [x] Well considered database schema, authentication, and evidence of migrations.
 - [ ] 5+ unit tests and 5+ Selenium tests against a live server.
@@ -190,7 +190,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Shows degree selections, planned units, completed units, and credits.
   - [x] Hides private plans.
 - [ ] Add conflict/prerequisite validation server-side so important rules are not only client-side.
-- [ ] Add AJAX fetch calls with loading, success, and error states.
+- [x] Add AJAX fetch calls with loading, success, and error states.
 
 ## Phase 6: Shared User Data And Community Features
 
@@ -289,8 +289,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Planner save/share.
   - [ ] Unit review submission.
   - [ ] Settings updates.
-- [ ] Add AJAX helper for JSON requests with CSRF token support.
-- [ ] Handle API errors consistently with visible page feedback.
+- [x] Add AJAX helper for JSON requests with CSRF token support.
+- [x] Handle API errors consistently with visible page feedback.
 - [x] Keep server-side validation authoritative for all submitted data.
 - [x] Avoid exposing secrets in static JavaScript.
 - [ ] Add debounce/throttle where user input triggers network calls.
@@ -312,8 +312,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] YouTube/resource search if proxied.
 - [x] Keep YAML loading cached where safe.
 - [x] Add error handlers for 400, 403, 404, and 500.
-- [ ] Add flash messages for form actions.
-- [ ] Ensure all route functions return the right status codes.
+- [x] Add flash messages for form actions.
+- [x] Ensure all route functions return the right status codes.
 - [x] Add logging for important failures without leaking secrets.
 
 ## Phase 11: Data Integrity
@@ -369,8 +369,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Users can only edit/delete their own plans.
   - [x] Users can only edit/delete their own reviews.
   - [x] Private plans are not visible to other users.
-- [ ] Escape user-generated content in templates.
-- [ ] Validate all form and JSON input server-side.
+- [x] Escape user-generated content in templates.
+- [x] Validate all form and JSON input server-side.
 - [ ] Rate-limit or add basic protection to login if time allows.
 - [x] Use secure session config for non-debug deployment notes.
 
