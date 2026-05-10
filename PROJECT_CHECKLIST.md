@@ -4,9 +4,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Progress Summary
 
-- Last checked: 7 May 2026.
-- Completion: **69** checked items out of **383** total checklist items (**18.0%**).
-- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
+- Last checked: 9 May 2026.
+- Completion: **115** checked items out of **383** total checklist items (**30.0%**).
+- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, real account registration/login/logout works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes, and the club catalogue now contains 149 UWA Student Guild clubs with hardened club detail pages. Phase 7 hardening has progressed on search fallback, unit planner status/actions, settings notification persistence, and benefits placeholder labelling. The main remaining project risk is merging this branch with the newer `main`, completing server-side planner/review/resource persistence, removing client-side YouTube API-key usage, broadening tests, and finishing README/process evidence.
 
 ## Brief Requirements Snapshot
 
