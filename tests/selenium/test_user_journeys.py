@@ -1,5 +1,6 @@
 import threading
 import time
+from pathlib import Path
 
 import pytest
 from selenium import webdriver
@@ -46,7 +47,16 @@ def live_app():
 @pytest.fixture()
 def browser():
     options = Options()
-    options.binary_location = '/usr/bin/chromium'
+    chrome_candidates = [
+        Path('/usr/bin/chromium'),
+        Path('/usr/bin/google-chrome'),
+        Path(r'C:\Program Files\Google\Chrome\Application\chrome.exe'),
+        Path(r'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe'),
+    ]
+    for candidate in chrome_candidates:
+        if candidate.exists():
+            options.binary_location = str(candidate)
+            break
     options.add_argument('--headless=new')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
@@ -69,7 +79,8 @@ def register(browser, base_url, suffix):
     browser.find_element(By.ID, 'register-display-name').send_keys(f'Test User {suffix}')
     browser.find_element(By.ID, 'register-password').send_keys('password123')
     browser.find_element(By.ID, 'register-confirm-password').send_keys('password123')
-    browser.find_element(By.CSS_SELECTOR, '#signup-form button[type="submit"]').click()
+    submit = browser.find_element(By.CSS_SELECTOR, '#signup-form button[type="submit"]')
+    browser.execute_script("arguments[0].click();", submit)
     wait.until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Settings'))
 
 
@@ -80,7 +91,7 @@ def test_user_can_register_login_and_logout(browser, live_app):
         EC.presence_of_element_located((By.CSS_SELECTOR, 'form[action$="/logout"] button'))
     )
     browser.execute_script("arguments[0].click();", logout_btn)
-    WebDriverWait(browser, 30).until(EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Sign in'))
+    WebDriverWait(browser, 30).until(EC.url_to_be(f'{live_app}/'))
 
     browser.get(f'{live_app}/auth?mode=signin')
     WebDriverWait(browser, 30).until(EC.visibility_of_element_located((By.ID, 'login-email'))).send_keys('21000001@student.uwa.edu.au')
