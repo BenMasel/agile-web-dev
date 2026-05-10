@@ -1,9 +1,11 @@
-from flask import Flask
-from dotenv import load_dotenv
+from importlib import import_module
 import os
+import sys
+
+from flask import Flask
 
 from config import CONFIG_BY_NAME
-from app.extensions import csrf, db as sqla_db, login_manager
+from app.extensions import csrf, db as sqlalchemy_db, login_manager, migrate
 
 
 def create_app(config_object=None):
@@ -14,6 +16,9 @@ def create_app(config_object=None):
     """
     app = Flask(__name__, instance_relative_config=True)
     if config_object:
+        if isinstance(config_object, str):
+            module_name, class_name = config_object.rsplit('.', 1)
+            config_object = getattr(import_module(module_name), class_name)
         app.config.from_object(config_object)
     else:
         config_name = os.environ.get('FLASK_CONFIG', 'default')
@@ -25,19 +30,16 @@ def create_app(config_object=None):
     except OSError:
         pass
 
-    sqla_db.init_app(app)
+    sqlalchemy_db.init_app(app)
+    migrate.init_app(app, sqlalchemy_db)
     csrf.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'main.auth'
     login_manager.login_message = 'Please sign in to continue.'
 
-    # Tear down the DB connection at the end of every request.
+    # Tear down the legacy sqlite connection at the end of every request.
     from app.db import close_db
     app.teardown_appcontext(close_db)
-
-    # Import migration helper
-    from flask_migrate import Migrate
-    Migrate(app, sqla_db)
 
     # Import models so Flask-Migrate can discover SQLAlchemy metadata.
     from app import models  # noqa: F401
@@ -49,5 +51,10 @@ def create_app(config_object=None):
     # Register the docs blueprint (/docs).
     from app.docs_bp import docs_bp
     app.register_blueprint(docs_bp)
+
+    if 'db' not in sys.argv:
+        with app.app_context():
+            from app import models  # noqa: F401
+            sqlalchemy_db.create_all()
 
     return app

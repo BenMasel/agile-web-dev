@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Set up two-factor authentication — stUwa{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-4 max-w-sm mx-auto mt-8">
+
+  {# Header #}
+  <div class="flex items-center gap-3">
+    <div class="w-10 h-10 rounded-[10px] bg-rc-blue-muted flex items-center justify-center shrink-0">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="4" y="9" width="12" height="9" rx="1.5" stroke="#6CA0F0" stroke-width="1.3"/>
+        <path d="M7 9V6.5a3 3 0 0 1 6 0V9" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="10" cy="13.5" r="1" fill="#6CA0F0"/>
+      </svg>
+    </div>
+    <div>
+      <div class="text-base font-semibold text-white/90">Set up two-factor authentication</div>
+      <div class="text-xs text-rc-text-secondary">Scan the QR code with your authenticator app</div>
+    </div>
+  </div>
+
+  {# Flash messages #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="text-sm px-3 py-2 rounded-lg
+      {% if category == 'error' %}bg-rc-red-muted text-rc-red
+      {% else %}bg-rc-green-muted text-rc-green{% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  {% endwith %}
+
+  {# Step 1 — QR code #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+    <div class="flex items-center gap-2">
+      <span class="w-5 h-5 rounded-full bg-rc-blue-muted text-rc-blue text-[11px] font-bold flex items-center justify-center shrink-0">1</span>
+      <span class="text-sm font-medium text-white/85">Scan this QR code</span>
+    </div>
+    <p class="text-xs text-rc-text-secondary">
+      Open <strong class="text-white/70">Google Authenticator</strong>, <strong class="text-white/70">Authy</strong>,
+      or any TOTP app and scan the code below.
+    </p>
+
+    {# QR code image — embedded as base64 PNG #}
+    <div class="flex justify-center">
+      <div class="bg-white p-3 rounded-lg inline-block">
+        <img src="data:image/png;base64,{{ qr_b64 }}" alt="2FA QR code" width="180" height="180">
+      </div>
+    </div>
+
+    {# Manual entry fallback #}
+    <details class="text-xs text-rc-text-faint">
+      <summary class="cursor-pointer hover:text-white/60 transition">Can't scan? Enter the code manually</summary>
+      <div class="mt-2 bg-rc-fill rounded-lg px-3 py-2 font-mono text-white/60 tracking-widest text-center break-all select-all">
+        {{ secret }}
+      </div>
+    </details>
+  </div>
+
+  {# Step 2 — Confirm code #}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+    <div class="flex items-center gap-2">
+      <span class="w-5 h-5 rounded-full bg-rc-blue-muted text-rc-blue text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
+      <span class="text-sm font-medium text-white/85">Confirm it's working</span>
+    </div>
+    <p class="text-xs text-rc-text-secondary">
+      Enter the 6-digit code your app shows to confirm the setup worked.
+    </p>
+
+    <form method="POST" action="{{ url_for('main.enable_2fa') }}" class="flex flex-col gap-3">
+      {{ form.hidden_tag() }}
+
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-rc-text-secondary">Authenticator code</label>
+        <input
+          type="text"
+          name="code"
+          id="code"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="6"
+          placeholder="000000"
+          class="bg-rc-fill border border-rc-border rounded-lg px-3 py-2.5 text-sm text-white/80
+                 placeholder:text-white/20 focus:outline-none focus:border-rc-blue transition
+                 tracking-[0.3em] text-center text-lg font-mono"
+        >
+        {% if form.code.errors %}
+        <span class="text-xs text-rc-red">{{ form.code.errors[0] }}</span>
+        {% endif %}
+      </div>
+
+      <button type="submit"
+        class="bg-rc-blue text-rc-bg font-medium text-[13px] px-4 py-2.5 rounded-lg
+               transition hover:opacity-90 cursor-pointer w-full">
+        Enable two-factor authentication
+      </button>
+    </form>
+  </div>
+
+  <a href="{{ url_for('main.settings') }}"
+    class="text-xs text-rc-text-faint hover:text-white/60 transition text-center">
+    ← Cancel and go back to settings
+  </a>
+
+</div>
+{% endblock %}

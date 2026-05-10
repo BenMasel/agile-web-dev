@@ -51,19 +51,37 @@
       <span class="text-[12px] font-medium text-white/70">Account information</span>
       <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Signed in</span>
     </div>
-    <div class="divide-y divide-rc-border-light">
-      {% for row in [
-        ('Email', current_user.email),
-        ('Display name', current_user.display_name),
-        ('Student ID', current_user.student_id),
-        ('Faculty', current_user.faculty or 'Not set')
-      ] %}
+    <form method="post" action="{{ url_for('main.settings') }}" class="divide-y divide-rc-border-light">
+      {{ account_form.hidden_tag() }}
       <div class="flex items-center justify-between px-4 py-3">
-        <span class="text-[12px] text-rc-text-tertiary">{{ row[0] }}</span>
-        <span class="text-[12px] text-white/55">{{ row[1] }}</span>
+        <span class="text-[12px] text-rc-text-tertiary">Email</span>
+        <span class="text-[12px] text-white/55">{{ current_user.email }}</span>
       </div>
-      {% endfor %}
-    </div>
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">Student ID</span>
+        <span class="text-[12px] text-white/55">{{ current_user.student_id }}</span>
+      </div>
+      <label class="flex flex-col gap-1 px-4 py-3">
+        {{ account_form.display_name.label(class_="text-[12px] text-rc-text-tertiary") }}
+        {{ account_form.display_name(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20") }}
+        {% for error in account_form.display_name.errors %}
+        <span class="text-[11px] text-rc-red">{{ error }}</span>
+        {% endfor %}
+      </label>
+      <label class="flex flex-col gap-1 px-4 py-3">
+        {{ account_form.faculty.label(class_="text-[12px] text-rc-text-tertiary") }}
+        {{ account_form.faculty(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Faculty") }}
+        {% for error in account_form.faculty.errors %}
+        <span class="text-[11px] text-rc-red">{{ error }}</span>
+        {% endfor %}
+      </label>
+      <div class="flex justify-end px-4 py-3">
+        <button type="submit"
+                class="text-[11px] px-3 py-1.5 rounded-[6px] bg-rc-fill border border-rc-border text-white/55 hover:text-white/80 hover:border-white/15 transition cursor-pointer">
+          Save account
+        </button>
+      </div>
+    </form>
   </div>
   {% else %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex items-center gap-4">
@@ -103,6 +121,93 @@
   </div>
   {% endif %}
 </div>
+
+{% if current_user.is_authenticated %}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">My reviews</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+    <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-fill text-white/35">{{ my_reviews | length }}</span>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden">
+    {% if my_reviews %}
+    <div class="divide-y divide-rc-border-light">
+      {% for review in my_reviews %}
+      <div class="px-4 py-3 flex items-start gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <a href="{{ url_for('main.unit_detail', code=review.unit_code) }}"
+               class="text-[12px] font-medium text-rc-blue/80 hover:text-rc-blue transition">
+              {{ review.unit_code }}
+            </a>
+            <span class="text-[11px] text-rc-text-faint">Rating {{ review.rating }}/5</span>
+            <span class="text-[11px] text-rc-text-faint">Difficulty {{ review.difficulty }}/5</span>
+          </div>
+          <p class="text-[12px] text-white/50 leading-relaxed mt-1 line-clamp-2">{{ review.body }}</p>
+        </div>
+        <form method="post" action="{{ url_for('main.delete_review', review_id=review.id) }}" class="shrink-0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="submit"
+                  class="text-[11px] px-2.5 py-1 rounded-[6px] bg-rc-red-muted border border-rc-red/20 text-rc-red/70 hover:text-rc-red hover:border-rc-red/35 transition cursor-pointer">
+            Delete
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-4 py-3 text-[12px] text-rc-text-faint">Reviews you write on unit pages will appear here.</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{# ══════════════════════════════════════════════════════ #}
+{# TWO-FACTOR AUTHENTICATION SECTION                      #}
+{# ══════════════════════════════════════════════════════ #}
+{% if current_user.is_authenticated %}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">Security</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-[13px] font-medium text-white/80">Two-factor authentication</span>
+        <span class="text-[11px] text-rc-text-faint">
+          {% if current_user.two_fa_enabled %}
+            <span class="text-rc-green">Enabled</span> — your account is protected with an authenticator app.
+          {% else %}
+            <span class="text-rc-amber">Disabled</span> — add an extra layer of security to your account.
+          {% endif %}
+        </span>
+      </div>
+
+      {% if current_user.two_fa_enabled %}
+      {# Disable button #}
+      <form method="POST" action="{{ url_for('main.disable_2fa') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit"
+          class="text-[12px] px-3 py-1.5 rounded-[7px] bg-rc-red-muted border border-rc-red/20
+                 text-rc-red/70 hover:text-rc-red hover:border-rc-red/35 transition cursor-pointer shrink-0">
+          Disable 2FA
+        </button>
+      </form>
+      {% else %}
+      {# Enable button #}
+      <a href="{{ url_for('main.setup_2fa') }}"
+        class="text-[12px] px-3 py-1.5 rounded-[7px] bg-rc-blue-muted border border-rc-blue/20
+               text-rc-blue/70 hover:text-rc-blue hover:border-rc-blue/35 transition shrink-0">
+        Enable 2FA
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
 
 {# ══════════════════════════════════════════════════════ #}
 {# NOTIFICATIONS SECTION                                  #}

@@ -372,6 +372,114 @@
   </div>
   {% endif %}{# /community #}
 
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <div class="text-sm font-medium text-white/85">Student reviews</div>
+        <div class="text-[12px] text-rc-text-faint">{{ reviews | length }} review{{ 's' if reviews | length != 1 }}</div>
+      </div>
+      {% if not current_user.is_authenticated %}
+      <a href="{{ url_for('main.auth', next=url_for('main.unit_detail', code=unit.code)) }}"
+         class="text-[11px] text-white bg-rc-red/90 hover:bg-rc-red transition px-3 py-1.5 rounded-[7px]">
+        Sign in to review
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+      <div class="bg-rc-surface p-3">
+        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Average rating</div>
+        <div class="text-[15px] font-semibold text-white/80 mt-1">
+          {{ review_stats.average_rating if review_stats.average_rating is not none else '—' }}
+        </div>
+      </div>
+      <div class="bg-rc-surface p-3">
+        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Difficulty</div>
+        <div class="text-[15px] font-semibold text-white/80 mt-1">
+          {{ review_stats.average_difficulty if review_stats.average_difficulty is not none else '—' }}
+        </div>
+      </div>
+      <div class="bg-rc-surface p-3">
+        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Review count</div>
+        <div class="text-[15px] font-semibold text-white/80 mt-1">{{ review_stats.count }}</div>
+      </div>
+      <div class="bg-rc-surface p-3">
+        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Workload range</div>
+        <div class="text-[15px] font-semibold text-white/80 mt-1">
+          {% if review_stats.workload_range %}
+            {{ review_stats.workload_range.min }}-{{ review_stats.workload_range.max }} hrs/wk
+          {% else %}
+            —
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <form method="post" action="{{ url_for('main.create_review', code=unit.code) }}" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-rc-fill-subtle rounded-lg p-3.5">
+      {{ review_form.hidden_tag() }}
+      <label class="flex flex-col gap-1">
+        {{ review_form.rating.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.rating(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20") }}
+      </label>
+      <label class="flex flex-col gap-1">
+        {{ review_form.difficulty.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.difficulty(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20") }}
+      </label>
+      <label class="flex flex-col gap-1">
+        {{ review_form.workload_hours.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.workload_hours(min="0", max="80", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
+      </label>
+      <label class="flex flex-col gap-1 md:col-span-3">
+        {{ review_form.semester_taken.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.semester_taken(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="e.g. Sem 1 2025") }}
+      </label>
+      <label class="flex flex-col gap-1 md:col-span-3">
+        {{ review_form.body.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.body(rows="4", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Share what helped, workload, assessments, and advice.") }}
+      </label>
+      <div class="md:col-span-3 flex justify-end">
+        <button type="submit"
+                class="text-[12px] px-3 py-1.5 rounded-[7px] bg-rc-fill border border-rc-border text-white/60 hover:text-white/85 hover:border-white/15 transition cursor-pointer">
+          Post review
+        </button>
+      </div>
+    </form>
+    {% endif %}
+
+    <div class="flex flex-col gap-2">
+      {% for review in reviews %}
+      <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex flex-col gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-[12px] font-medium text-white/70">{{ review.user.display_name }}</span>
+          <span class="text-[11px] text-rc-text-faint">Rating {{ review.rating }}/5</span>
+          <span class="text-[11px] text-rc-text-faint">Difficulty {{ review.difficulty }}/5</span>
+          {% if review.workload_hours is not none %}
+          <span class="text-[11px] text-rc-text-faint">{{ review.workload_hours }} hrs/wk</span>
+          {% endif %}
+          {% if review.semester_taken %}
+          <span class="text-[11px] text-rc-text-faint">{{ review.semester_taken }}</span>
+          {% endif %}
+          {% if current_user.is_authenticated and review.user_id == current_user.id %}
+          <form method="post" action="{{ url_for('main.delete_review', review_id=review.id) }}" class="ml-auto">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit"
+                    class="text-[11px] text-rc-red/70 hover:text-rc-red transition cursor-pointer">
+              Delete
+            </button>
+          </form>
+          {% endif %}
+        </div>
+        <p class="text-[13px] text-white/55 leading-relaxed">{{ review.body }}</p>
+      </div>
+      {% else %}
+      <div class="text-[12px] text-rc-text-faint bg-rc-fill-subtle rounded-lg p-3.5">
+        No student reviews yet.
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
 {% endblock %}
 
 
