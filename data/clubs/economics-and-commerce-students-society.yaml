@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: economics-and-commerce-students-society
+name: Economics and Commerce Students' Society
+abbreviation: ECOMS
+categories:
+- Business
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: The Economics and Commerce Students’ Society (ECOMS) is the official
+  student soci
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/economics-and-commerce-students-society
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/economics-and-commerce-students-society
+last_verified: '2026-05-09'
+active: true

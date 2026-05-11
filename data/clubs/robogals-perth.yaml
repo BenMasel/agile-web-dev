@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: robogals-perth
+name: Robogals Perth
+abbreviation: null
+categories:
+- Culture
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: Robogals is a student volunteering organisation recognised internationally
+  around the w
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/robogals-perth
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/robogals-perth
+last_verified: '2026-05-09'
+active: true

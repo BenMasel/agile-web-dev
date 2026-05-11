@@ -1,0 +1,25 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: students-of-natural-and-agricultural-sciences
+name: Students of Natural and Agricultural Sciences
+abbreviation: SNAGS
+categories:
+- Academic
+- Science
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: Students of Natural and Agricultural Sciences (SNAGS) is a student run
+  club at UWA for
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/students-of-natural-and-agricultural-sciences
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/students-of-natural-and-agricultural-sciences
+last_verified: '2026-05-09'
+active: true

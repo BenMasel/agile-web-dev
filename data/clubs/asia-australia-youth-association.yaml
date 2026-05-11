@@ -1,0 +1,30 @@
+# PLACEHOLDER - this club data is from UWA Student Guild and used for development/testing.
+# If you have more accurate information or additional details, please submit a PR.
+slug: asia-australia-youth-association
+name: Asia-Australia Youth Association
+abbreviation: AAYA
+categories: ['Multicultural']
+
+# icon_svg is rendered raw into an <svg> tag via Jinja's |safe filter.
+# Use currentColor for strokes so the accent_color propagates automatically.
+icon_svg: '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2" fill="none"/>'
+
+description: >
+  Asia-Australia Youth Association is a student club at the University of Western Australia. 
+  For more information, visit the UWA Student Guild website.
+
+# Contact and event information (optional, placeholder data)
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/asia-australia-youth-association
+room: null  # Location/room number if applicable
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+
+# Related units and resources (optional, to be populated as data is gathered)
+related_units: []
+related_resources: []
+
+active: true

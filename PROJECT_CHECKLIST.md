@@ -4,9 +4,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Progress Summary
 
-- Last checked: 8 May 2026.
+- Last checked: 9 May 2026.
 - Completion: **265** checked items out of **383** total checklist items (**69.2%**).
-- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
+- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, real account registration/login/logout works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes, the club catalogue now contains 149 UWA Student Guild clubs with hardened club detail pages, and `main` now adds planner persistence, reviews, 2FA, tests, migrations, data schemas, and YouTube backend proxy work. The main remaining project risk is validating the merged branch, broadening process evidence, and finishing any remaining shared data/resource bookmark polish.
 
 ## Brief Requirements Snapshot
 
@@ -223,19 +223,19 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 - [ ] Home/search:
   - [x] Ensure search result HTML is accessible and keyboard navigation works across browsers.
-  - [ ] Add no-JavaScript fallback or graceful empty state.
+  - [x] Add no-JavaScript fallback or graceful empty state.
   - [x] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
 - [ ] Unit pages:
   - [x] Add review/community section.
-  - [ ] Show whether current user has planned/completed the unit.
-  - [ ] Add "Add to planner" action for authenticated users.
+  - [x] Show whether current user has planned/completed the unit.
+  - [x] Add "Add to planner" action for authenticated users.
 - [ ] Degree pages:
   - [x] Add call-to-action to create a plan from a degree.
   - [x] Show units grouped by year/semester from YAML data.
   - [x] Link to public plans for the degree if implemented.
 - [ ] Club pages:
   - [ ] Link clubs to related units and resources.
-  - [ ] Add richer event/contact fields if available.
+  - [x] Add richer event/contact fields if available.
 - [ ] Resources page:
   - [x] Move `CONFIG.YOUTUBE_API_KEY` handling out of client-side committed files.
   - [x] Add backend proxy endpoint for YouTube search if API keys must be hidden.
@@ -243,9 +243,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Persist saved/bookmarked resources for logged-in users if implemented.
 - [ ] Benefits page:
   - [ ] Add "save benefit" for logged-in users if implemented.
-  - [ ] Replace placeholder disclaimer data with verified entries or clearly label demo data.
+  - [x] Replace placeholder disclaimer data with verified entries or clearly label demo data.
 - [ ] Settings page:
-  - [ ] Persist notification preferences to the database.
+  - [x] Persist notification preferences to the database.
   - [x] Add import plan JSON if export remains.
   - [ ] Add account deletion or data clearing for logged-in users if time allows.
 - [x] Docs:

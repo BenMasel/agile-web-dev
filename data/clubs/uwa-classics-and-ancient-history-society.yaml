@@ -1,0 +1,25 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-classics-and-ancient-history-society
+name: UWA Classics and Ancient History Society
+abbreviation: CLANSOC
+categories:
+- Academic
+- Arts
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: Salvete omnes! Welcome to the UWA Classics and Ancient History, born
+  in 2024! We celebr
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-classics-and-ancient-history-society
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-classics-and-ancient-history-society
+last_verified: '2026-05-09'
+active: true

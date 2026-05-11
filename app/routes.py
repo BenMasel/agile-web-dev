@@ -17,7 +17,7 @@ import qrcode
 from flask import session
 from app.extensions import db
 from app.forms import AccountForm, LoginForm, RegisterForm, TwoFASetupForm, TwoFAVerifyForm, UnitReviewForm
-from app.models import StudyPlan, StudyPlanUnit, UnitReview, User
+from app.models import NotificationPreference, StudyPlan, StudyPlanUnit, UnitReview, User
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
@@ -190,6 +190,54 @@ def home():
     return render_template('home.html', search_data=build_search_index())
 
 
+@bp.route('/search')
+def search():
+    """
+    Server-side search endpoint for no-JavaScript fallback.
+    Performs basic substring matching on the search index.
+    """
+    query = request.args.get('q', '').strip().lower()
+    if not query or len(query) < 2:
+        return render_template('search_results.html', query=query, results=[])
+    
+    index = build_search_index()
+    results = []
+    
+    # Simple substring matching with scoring
+    for item in index:
+        score = 0
+        searchable_text = ''
+        
+        if item['type'] == 'unit':
+            searchable_text = f"{item['code']} {item['title']} {item.get('faculty', '')}"
+        elif item['type'] == 'degree':
+            searchable_text = item['title']
+        elif item['type'] == 'club':
+            searchable_text = f"{item['name']} {item.get('abbreviation', '')} {item.get('description', '')}"
+        
+        searchable_text = searchable_text.lower()
+        
+        # Exact code match (for units)
+        if item['type'] == 'unit' and item['code'].lower() == query:
+            score = 100
+        # Start of text match (higher priority)
+        elif searchable_text.startswith(query):
+            score = 50
+        # Contains match (lower priority)
+        elif query in searchable_text:
+            score = 25
+        
+        if score > 0:
+            results.append((item, score))
+    
+    # Sort by score (descending) and then by type priority (unit > degree > club)
+    type_priority = {'unit': 3, 'degree': 2, 'club': 1}
+    results.sort(key=lambda x: (-x[1], -type_priority.get(x[0]['type'], 0)))
+    
+    results = [item for item, _ in results[:50]]
+    return render_template('search_results.html', query=query, results=results)
+
+
 @bp.route('/resources')
 def resources():
     """
@@ -255,6 +303,7 @@ def unit_detail(code):
     Unit detail page.
     Loads unit data from data/units/<CODE>.yaml and the associated club
     stubs from data/clubs/<slug>.yaml so the template can render their icons.
+    Shows the user's current status (planned/completed) if authenticated.
     """
     unit = load_yaml('units', f'{code}.yaml')
     if unit is None:
@@ -268,6 +317,20 @@ def unit_detail(code):
 
     filepath = os.path.join('data', 'units', f'{code}.yaml')
     git_meta = git_last_modified(filepath)
+    user_status = None
+    if current_user.is_authenticated:
+        plan_units = db.session.query(StudyPlanUnit).filter(
+            StudyPlanUnit.unit_code == code,
+            StudyPlanUnit.study_plan.has(user_id=current_user.id)
+        ).all()
+
+        if plan_units:
+            statuses = [pu.status for pu in plan_units]
+            if 'completed' in statuses:
+                user_status = 'completed'
+            elif 'planned' in statuses:
+                user_status = 'planned'
+
     reviews = UnitReview.query.filter_by(unit_code=code.upper()).order_by(UnitReview.created_at.desc()).all()
     review_form = UnitReviewForm()
     return render_template(
@@ -278,6 +341,7 @@ def unit_detail(code):
         reviews=reviews,
         review_stats=review_stats_for(reviews),
         review_form=review_form,
+        user_status=user_status,
     )
 
 
@@ -590,9 +654,54 @@ def settings():
             return redirect(url_for('main.settings'))
         flash('Please fix the highlighted account fields.', 'error')
     my_reviews = []
+    prefs = None
     if current_user.is_authenticated:
         my_reviews = UnitReview.query.filter_by(user_id=current_user.id).order_by(UnitReview.updated_at.desc()).all()
-    return render_template('settings.html', account_form=account_form, my_reviews=my_reviews)
+        prefs = NotificationPreference.query.filter_by(user_id=current_user.id).first()
+        if not prefs:
+            prefs = NotificationPreference(user_id=current_user.id)
+            db.session.add(prefs)
+            db.session.commit()
+    return render_template(
+        'settings.html',
+        account_form=account_form,
+        my_reviews=my_reviews,
+        notification_prefs=prefs,
+    )
+
+
+@bp.route('/api/notification-prefs', methods=['POST'])
+def update_notification_prefs():
+    """Update user's notification preferences."""
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    prefs = NotificationPreference.query.filter_by(user_id=current_user.id).first()
+    if not prefs:
+        prefs = NotificationPreference(user_id=current_user.id)
+
+    data = request.get_json(silent=True) or {}
+    allowed_keys = (
+        'planner_reminders',
+        'unit_catalogue_updates',
+        'community_replies',
+        'weekly_digest',
+    )
+    for key in allowed_keys:
+        if key in data:
+            if not isinstance(data[key], bool):
+                return jsonify({'error': f'{key} must be true or false'}), 400
+            setattr(prefs, key, data[key])
+
+    db.session.add(prefs)
+    db.session.commit()
+
+    return jsonify({'success': True, 'prefs': {
+        'planner_reminders': prefs.planner_reminders,
+        'unit_catalogue_updates': prefs.unit_catalogue_updates,
+        'community_replies': prefs.community_replies,
+        'weekly_digest': prefs.weekly_digest,
+    }})
 
 
 @bp.route('/unit/<code>/reviews', methods=['POST'])

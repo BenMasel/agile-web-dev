@@ -8,6 +8,7 @@ from app.extensions import db, login_manager
 
 
 class TimestampMixin:
+    """Mixin that adds created_at and updated_at timestamp columns."""
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(
         db.DateTime,
@@ -15,7 +16,6 @@ class TimestampMixin:
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
-
 
 class User(TimestampMixin, UserMixin, db.Model):
     __tablename__ = 'users'

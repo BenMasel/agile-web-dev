@@ -6,13 +6,12 @@
     "slug",
     "name",
     "abbreviation",
-    "description",
-    "accent_color"
+    "description"
   ],
   "properties": {
     "slug": { "type": "string", "minLength": 1 },
     "name": { "type": "string", "minLength": 1 },
-    "abbreviation": { "type": "string", "minLength": 1 },
+    "abbreviation": { "type": ["string", "null"], "minLength": 1 },
     "accent": { "type": "string" },
     "accent_bg": { "type": "string" },
     "accent_color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
@@ -20,7 +19,7 @@
     "description": { "type": "string", "minLength": 1 },
     "founded": { "type": "integer" },
     "member_count": { "type": "integer", "minimum": 0 },
-    "room": { "type": "string" },
+    "room": { "type": ["string", "null"] },
     "active": { "type": "boolean" },
     "study_night_note": { "type": "string" },
     "study_units": { "type": "array" },

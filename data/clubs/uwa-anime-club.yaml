@@ -1,0 +1,24 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-anime-club
+name: UWA Anime Club
+abbreviation: UWAnime
+categories:
+- Hobby Activities
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: UWAnime is a club focused on Japanese Animation and culture. Our goal
+  is the share this
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-anime-club
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-anime-club
+last_verified: '2026-05-09'
+active: true

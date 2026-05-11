@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-italian-club
+name: UWA Italian Club
+abbreviation: null
+categories:
+- Multicultural
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: The UWA Italian Club celebrates everything Italian. Whether you are learning
+  the langua
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-italian-club
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-italian-club
+last_verified: '2026-05-09'
+active: true

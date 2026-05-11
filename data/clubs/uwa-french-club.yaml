@@ -1,0 +1,24 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-french-club
+name: UWA French Club
+abbreviation: null
+categories:
+- Arts
+- Multicultural
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: UWA French Club are for students studying French or for students with
+  appreciation for
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-french-club
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-french-club
+last_verified: '2026-05-09'
+active: true

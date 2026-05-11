@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Search results for "{{ query }}" — stUwa{% endblock %}
+
+{% block content %}
+
+  {# ========== HEADER ========== #}
+  <div class="flex flex-col items-center gap-1.5 pt-10 pb-2">
+    <h1 class="text-[22px] font-semibold text-rc-text tracking-tight">Search Results</h1>
+    <p class="text-[13px] text-rc-text-tertiary">{{ results|length }} result{{ "s" if results|length != 1 else "" }} for <strong>"{{ query }}"</strong></p>
+  </div>
+
+  {# ========== SEARCH BAR ========== #}
+  <form method="get" action="/search" class="mb-6">
+    <div class="relative">
+      <div class="flex items-center gap-2.5 bg-rc-surface border border-rc-border rounded-[10px] px-4 py-3 focus-within:border-[rgba(255,255,255,0.16)] transition">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="shrink-0">
+          <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.3)" stroke-width="1.3"/>
+          <line x1="11.2" y1="11.2" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <input
+          type="text"
+          name="q"
+          value="{{ query }}"
+          placeholder="Search units, degrees, clubs…"
+          class="flex-1 bg-transparent text-sm text-rc-text placeholder-rc-text-tertiary outline-none"
+          autocomplete="off"
+        />
+        <a href="/" class="text-[11px] text-rc-text-tertiary hover:text-rc-text transition">Clear</a>
+      </div>
+    </div>
+  </form>
+
+  {# ========== RESULTS ========== #}
+  {% if results %}
+    <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden divide-y divide-rc-border">
+      {% for item in results %}
+        {# Unit Result #}
+        {% if item.type == 'unit' %}
+          <a href="{{ item.url }}" class="flex items-center gap-3 px-4 py-3 hover:bg-rc-fill transition">
+            <div class="w-1.5 h-1.5 rounded-full bg-rc-red shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-white/85">{{ item.code }}</div>
+              <div class="text-[11px] text-white/35 truncate">{{ item.title }}</div>
+            </div>
+            <div class="flex gap-1 shrink-0">
+              <span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(255,99,99,0.12)] text-[#FF6363] whitespace-nowrap">{{ item.credit_points }} CP</span>
+              {% if item.availability == 'year_long' %}
+                <span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(167,139,250,0.12)] text-[#A78BFA] whitespace-nowrap">Year-long</span>
+              {% elif item.availability %}
+                {% for sem in item.availability %}
+                  <span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(239,159,39,0.1)] text-[#D4A340] whitespace-nowrap">Sem {{ sem }}</span>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </a>
+
+        {# Degree Result #}
+        {% elif item.type == 'degree' %}
+          <a href="{{ item.url }}" class="flex items-center gap-3 px-4 py-3 hover:bg-rc-fill transition">
+            <div class="w-1.5 h-1.5 rounded-full bg-[#A78BFA] shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-white/85">{{ item.title }}</div>
+              <div class="text-[11px] text-white/35 truncate">{{ item.faculty }}</div>
+            </div>
+            <span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(167,139,250,0.12)] text-[#A78BFA] whitespace-nowrap shrink-0">{{ item.duration_years }} yr</span>
+          </a>
+
+        {# Club Result #}
+        {% elif item.type == 'club' %}
+          <a href="{{ item.url }}" class="flex items-center gap-3 px-4 py-3 hover:bg-rc-fill transition">
+            <div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:{{ item.accent_color }}"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-white/85">{{ item.abbreviation }}</div>
+              <div class="text-[11px] text-white/35 truncate">{{ item.name }}</div>
+            </div>
+          </a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bg-rc-surface border border-rc-border rounded-[10px] p-6 text-center">
+      <div class="text-[14px] text-rc-text-tertiary mb-2">
+        No results found for <strong>"{{ query }}"</strong>
+      </div>
+      <p class="text-[12px] text-white/35 mb-4">
+        Try a different search term or <a href="/" class="text-rc-text hover:underline">browse all units, degrees and clubs</a>.
+      </p>
+    </div>
+  {% endif %}
+
+{% endblock %}
+
+{% block footer_nav %}
+<div class="flex items-center gap-[3px]">
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">↑↓</span>
+  <span class="text-[11px] text-rc-text-faint mx-0.5">navigate</span>
+  <span class="bg-rc-fill border border-rc-border rounded px-1.5 py-[1px] text-[11px] text-white/35">↩</span>
+  <span class="text-[11px] text-rc-text-faint">open</span>
+</div>
+{% endblock %}

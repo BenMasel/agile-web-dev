@@ -20,6 +20,27 @@
     <p class="text-[13px] text-rc-text-tertiary">Search units, degrees and clubs</p>
   </div>
 
+  {# ========== NO-JAVASCRIPT FALLBACK ========== #}
+  <noscript>
+    <div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 mb-4">
+      <p class="text-[13px] text-white/70 mb-3">
+        <strong>JavaScript is disabled.</strong> Using basic search instead. Enable JavaScript for better search functionality.
+      </p>
+      <form method="get" action="/search" class="flex gap-2">
+        <input
+          type="text"
+          name="q"
+          placeholder="Search units, degrees, clubs…"
+          class="flex-1 bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-[13px] text-rc-text placeholder-rc-text-tertiary outline-none"
+          autocomplete="off"
+        />
+        <button type="submit" class="bg-rc-red-muted text-rc-red px-4 py-2 rounded-lg text-[13px] font-medium hover:bg-rc-red hover:text-white transition">
+          Search
+        </button>
+      </form>
+    </div>
+  </noscript>
+
   {# ========== SEARCH BAR ========== #}
   <div class="relative">
     <div class="flex items-center gap-2.5 bg-rc-surface border border-rc-border rounded-[10px] px-4 py-3 focus-within:border-[rgba(255,255,255,0.16)] transition"
