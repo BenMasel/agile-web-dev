@@ -4,9 +4,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Progress Summary
 
-- Last checked: 9 May 2026.
-- Completion: **265** checked items out of **383** total checklist items (**69.2%**).
-- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, real account registration/login/logout works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes, the club catalogue now contains 149 UWA Student Guild clubs with hardened club detail pages, and `main` now adds planner persistence, reviews, 2FA, tests, migrations, data schemas, and YouTube backend proxy work. The main remaining project risk is validating the merged branch, broadening process evidence, and finishing any remaining shared data/resource bookmark polish.
+- Last checked: 12 May 2026.
+- Completion: **286** checked items out of **391** total checklist items (**73.1%**).
+- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, real account registration/login/logout works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, salted Werkzeug password hashes, and optional TOTP 2FA. The merged branch now includes planner persistence, public plan sharing, unit reviews, data schemas, CI, migrations, YouTube backend proxy work, and five Selenium journey tests. Remaining risk is mostly GitHub/process evidence, final manual/browser verification, saved resource/benefit bookmarks, and some code/design polish. Local test execution could not be re-run during this check because `uv` and `pytest` are not installed in the current shell.
 
 ## Brief Requirements Snapshot
 
@@ -21,7 +21,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Well formatted JavaScript with validation, DOM manipulation, and AJAX where appropriate.
 - [x] Flask code performs non-trivial request handling, data manipulation, and page generation.
 - [x] Well considered database schema, authentication, and evidence of migrations.
-- [ ] 5+ unit tests and 5+ Selenium tests against a live server.
+- [x] 5+ unit tests and 5+ Selenium tests against a live server.
 - [x] Salted password hashes, CSRF protection for forms, and environment variable configuration.
 - [x] Public GitHub repo with README containing app purpose, group member table, launch instructions, and test instructions.
 - [ ] Regular GitHub Issues, Pull Requests, commits, reviews, and checkpoint evidence.
@@ -47,12 +47,12 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Tests.
 - [x] CSRF protection.
 - [x] README group member table and test instructions.
-- [x] Data schemas referenced by docs but not present in the repo.
+- [x] Data schemas present under `data/schemas/`.
 
 ## Phase 1: Scope And Team Setup
 
 - [x] Confirm the final product statement: "stUwa helps UWA students plan their degree, save their study progress, and share unit advice with other students."
-- [ ] Decide the minimum viable project features for marking:
+- [x] Decide the minimum viable project features for marking:
   - [x] Search/browse units, degrees, clubs, benefits, and resources.
   - [x] Register, login, logout, and account settings.
   - [x] Save a personal study plan to the database.
@@ -169,7 +169,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 5: Persist The Planner Server-Side
 
-- [ ] Audit current planner localStorage shape in `app/templates/planner.html`.
+- [x] Audit current planner localStorage shape in `app/templates/planner.html`.
 - [ ] Create JSON API endpoints:
   - [ ] `GET /api/plans`
   - [ ] `POST /api/plans`
@@ -344,13 +344,13 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Planner API saves and reloads a user plan.
   - [x] Unit review aggregation calculates average rating/difficulty.
   - [x] Onboarding/catalogue API includes units and degrees.
-- [ ] Selenium tests, minimum 5, running against a live server:
-  - [ ] User can register, log in, and log out.
-  - [ ] User can search for a unit and open its detail page.
+- [x] Selenium tests, minimum 5, running against a live server:
+  - [x] User can register, log in, and log out.
+  - [x] User can search for a unit and open its detail page.
   - [ ] User can create/save a study plan and reload it after login.
-  - [ ] User can submit a unit review and another browser/session can view it.
-  - [ ] User can make a plan public and open the share link.
-  - [ ] Resources/benefits navigation works on mobile viewport.
+  - [x] User can submit a unit review and another browser/session can view it.
+  - [x] User can make a plan public and open the share link.
+  - [x] Resources/benefits navigation works on mobile viewport.
 - [x] Add test command to README.
 - [ ] Add coverage command if time allows.
 - [x] Add CI workflow if time allows:
@@ -447,11 +447,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Recommended MVP Order
 
-1. [ ] SQLAlchemy setup, migrations, config, and test database.
-2. [ ] Real registration/login/logout with CSRF and password hashing.
+1. [x] SQLAlchemy setup, migrations, config, and test database.
+2. [x] Real registration/login/logout with CSRF and password hashing.
 3. [x] Persist planner to the database for logged-in users.
-4. [ ] Public plan sharing.
+4. [x] Public plan sharing.
 5. [x] Unit reviews visible to other users.
-6. [ ] Tests: at least 5 unit tests and 5 Selenium tests.
+6. [x] Tests: at least 5 unit tests and 5 Selenium tests.
 7. [ ] README and GitHub process cleanup.
 8. [ ] UI polish, accessibility, and final presentation flow.
