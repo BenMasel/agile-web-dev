@@ -183,11 +183,69 @@ def review_body_is_placeholder(body):
 
 @bp.route('/')
 def home():
+    return render_template('home.html')
+
+
+def _score_search_results(index, query):
     """
-    Home page — passes the full search index to the template as JSON so
-    Fuse.js can run client-side search with no round-trips.
+    Score and sort search index items against a lowercased query string.
+    Returns a list of matching items sorted by score then type priority.
+
+    Scoring tiers (mirrors Fuse.js field weights):
+      100 — exact code/abbreviation match
+       80 — primary field (title/name/code) starts with query
+       50 — primary field contains query
+       25 — secondary field (faculty/description) contains query
     """
-    return render_template('home.html', search_data=build_search_index())
+    scored = []
+    for item in index:
+        score = 0
+
+        if item['type'] == 'unit':
+            code = item['code'].lower()
+            primary = f"{item['code']} {item['title']}".lower()
+            secondary = item.get('faculty', '').lower()
+
+            if code == query:
+                score = 100
+            elif primary.startswith(query):
+                score = 80
+            elif query in primary:
+                score = 50
+            elif query in secondary:
+                score = 25
+
+        elif item['type'] == 'degree':
+            primary = item['title'].lower()
+            secondary = item.get('faculty', '').lower()
+
+            if primary.startswith(query):
+                score = 80
+            elif query in primary:
+                score = 50
+            elif query in secondary:
+                score = 25
+
+        elif item['type'] == 'club':
+            abbr = (item.get('abbreviation') or '').lower()
+            primary = f"{item['name']} {abbr}".lower()
+            secondary = item.get('description', '').lower()
+
+            if abbr == query:
+                score = 100
+            elif primary.startswith(query):
+                score = 80
+            elif query in primary:
+                score = 50
+            elif query in secondary:
+                score = 25
+
+        if score > 0:
+            scored.append((item, score))
+
+    type_priority = {'unit': 3, 'degree': 2, 'club': 1}
+    scored.sort(key=lambda x: (-x[1], -type_priority.get(x[0]['type'], 0)))
+    return [item for item, _ in scored]
 
 
 @bp.route('/search')
@@ -199,43 +257,31 @@ def search():
     query = request.args.get('q', '').strip().lower()
     if not query or len(query) < 2:
         return render_template('search_results.html', query=query, results=[])
-    
-    index = build_search_index()
+
+    results = _score_search_results(build_search_index(), query)
+    return render_template('search_results.html', query=query, results=results[:50])
+
+
+@bp.route('/api/search')
+def api_search():
+    """JSON search endpoint used by the home page AJAX search."""
+    query = request.args.get('q', '').strip().lower()
+    if not query or len(query) < 2:
+        return jsonify([])
+
+    all_results = _score_search_results(build_search_index(), query)
+
+    # Cap per type so a flood of unit matches can't push out degrees/clubs.
+    caps = {'unit': 8, 'degree': 4, 'club': 4}
+    counts: dict[str, int] = {}
     results = []
-    
-    # Simple substring matching with scoring
-    for item in index:
-        score = 0
-        searchable_text = ''
-        
-        if item['type'] == 'unit':
-            searchable_text = f"{item['code']} {item['title']} {item.get('faculty', '')}"
-        elif item['type'] == 'degree':
-            searchable_text = item['title']
-        elif item['type'] == 'club':
-            searchable_text = f"{item['name']} {item.get('abbreviation', '')} {item.get('description', '')}"
-        
-        searchable_text = searchable_text.lower()
-        
-        # Exact code match (for units)
-        if item['type'] == 'unit' and item['code'].lower() == query:
-            score = 100
-        # Start of text match (higher priority)
-        elif searchable_text.startswith(query):
-            score = 50
-        # Contains match (lower priority)
-        elif query in searchable_text:
-            score = 25
-        
-        if score > 0:
-            results.append((item, score))
-    
-    # Sort by score (descending) and then by type priority (unit > degree > club)
-    type_priority = {'unit': 3, 'degree': 2, 'club': 1}
-    results.sort(key=lambda x: (-x[1], -type_priority.get(x[0]['type'], 0)))
-    
-    results = [item for item, _ in results[:50]]
-    return render_template('search_results.html', query=query, results=results)
+    for item in all_results:
+        t = item['type']
+        if counts.get(t, 0) < caps.get(t, 5):
+            results.append(item)
+            counts[t] = counts.get(t, 0) + 1
+
+    return jsonify(results)
 
 
 @bp.route('/resources')
