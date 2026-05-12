@@ -3,9 +3,35 @@ import os
 import sys
 
 from flask import Flask
+from sqlalchemy import inspect, text
 
 from config import CONFIG_BY_NAME
 from app.extensions import csrf, db as sqlalchemy_db, login_manager, migrate
+
+
+def ensure_sqlite_schema_compatibility(db):
+    """Patch older local SQLite databases that predate recent model columns."""
+    engine = db.engine
+    if engine.dialect.name != 'sqlite':
+        return
+
+    inspector = inspect(engine)
+    if 'users' not in inspector.get_table_names():
+        return
+
+    user_columns = {column['name'] for column in inspector.get_columns('users')}
+    statements = []
+    if 'two_fa_enabled' not in user_columns:
+        statements.append('ALTER TABLE users ADD COLUMN two_fa_enabled BOOLEAN NOT NULL DEFAULT 0')
+    if 'totp_secret' not in user_columns:
+        statements.append('ALTER TABLE users ADD COLUMN totp_secret VARCHAR(64)')
+
+    if not statements:
+        return
+
+    with engine.begin() as connection:
+        for statement in statements:
+            connection.execute(text(statement))
 
 
 def create_app(config_object=None):
@@ -56,5 +82,6 @@ def create_app(config_object=None):
         with app.app_context():
             from app import models  # noqa: F401
             sqlalchemy_db.create_all()
+            ensure_sqlite_schema_compatibility(sqlalchemy_db)
 
     return app
