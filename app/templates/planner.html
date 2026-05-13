@@ -44,32 +44,48 @@
 
     <div class="h-px bg-rc-border-light -mx-4"></div>
 
-    {# Primary degree #}
+    {# Primary degree — two-step cascade: family → major #}
     <div class="flex flex-col gap-1.5">
       <div class="flex items-center gap-1.5">
         <div class="w-1.5 h-1.5 rounded-full bg-rc-blue shrink-0"></div>
         <label class="text-[11px] text-rc-text-tertiary">Primary degree</label>
       </div>
-      <select id="degree1-select"
+      <select id="degree1-family"
               class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
         <option value="">— select degree —</option>
+        {% for fam in degree_families %}
+        <option value="{{ fam.slug }}">{{ fam.title }}</option>
+        {% endfor %}
+      </select>
+      <select id="degree1-select"
+              class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition disabled:opacity-40"
+              disabled>
+        <option value="">— select major —</option>
         {% for deg in degrees %}
-        <option value="{{ deg.slug }}">{{ deg.title }}</option>
+        <option value="{{ deg.slug }}" data-family="{{ deg.degree_family_slug }}">{{ deg.major_title }}</option>
         {% endfor %}
       </select>
     </div>
 
-    {# Second degree #}
+    {# Second degree — two-step cascade: family → major #}
     <div class="flex flex-col gap-1.5">
       <div class="flex items-center gap-1.5">
         <div class="w-1.5 h-1.5 rounded-full bg-rc-purple shrink-0"></div>
         <label class="text-[11px] text-rc-text-tertiary">Second degree</label>
       </div>
-      <select id="degree2-select"
+      <select id="degree2-family"
               class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-purple/40 cursor-pointer transition">
         <option value="">— none —</option>
+        {% for fam in degree_families %}
+        <option value="{{ fam.slug }}">{{ fam.title }}</option>
+        {% endfor %}
+      </select>
+      <select id="degree2-select"
+              class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-purple/40 cursor-pointer transition disabled:opacity-40"
+              disabled>
+        <option value="">— select major —</option>
         {% for deg in degrees %}
-        <option value="{{ deg.slug }}">{{ deg.title }}</option>
+        <option value="{{ deg.slug }}" data-family="{{ deg.degree_family_slug }}">{{ deg.major_title }}</option>
         {% endfor %}
       </select>
     </div>
@@ -1434,14 +1450,44 @@ document.addEventListener('DOMContentLoaded', () => {
   load();
   initDragDrop();
 
-  const d1Sel   = document.getElementById('degree1-select');
-  const d2Sel   = document.getElementById('degree2-select');
-  const yearSel = document.getElementById('start-year');
-  const semSel  = document.getElementById('start-sem');
+  const d1FamSel = document.getElementById('degree1-family');
+  const d1Sel    = document.getElementById('degree1-select');
+  const d2FamSel = document.getElementById('degree2-family');
+  const d2Sel    = document.getElementById('degree2-select');
+  const yearSel  = document.getElementById('start-year');
+  const semSel   = document.getElementById('start-sem');
 
-  // Restore selects
-  if (state.degrees[0]) d1Sel.value = state.degrees[0];
-  if (state.degrees[1]) d2Sel.value = state.degrees[1];
+  // Filter major options to those belonging to the chosen family
+  function filterMajors(famSel, majorSel, allowEmpty) {
+    const fam = famSel.value;
+    const prev = majorSel.value;
+    Array.from(majorSel.options).forEach(opt => {
+      if (!opt.value) return; // keep the placeholder
+      opt.hidden = fam ? opt.dataset.family !== fam : false;
+    });
+    majorSel.disabled = !fam;
+    // If previously selected major is now hidden, reset it
+    const selected = majorSel.options[majorSel.selectedIndex];
+    if (selected && selected.hidden) majorSel.value = '';
+  }
+
+  // Reverse-lookup: given a major slug, find and set its family select
+  function restoreFamilyForMajor(majorSlug, famSel, majorSel) {
+    if (!majorSlug) return;
+    const opt = Array.from(majorSel.options).find(o => o.value === majorSlug);
+    if (opt) {
+      famSel.value = opt.dataset.family || '';
+      filterMajors(famSel, majorSel, true);
+      majorSel.value = majorSlug;
+    }
+  }
+
+  // Restore selects from saved state
+  restoreFamilyForMajor(state.degrees[0], d1FamSel, d1Sel);
+  restoreFamilyForMajor(state.degrees[1], d2FamSel, d2Sel);
+  // Ensure major selects are enabled/filtered even if no saved state
+  if (!state.degrees[0]) filterMajors(d1FamSel, d1Sel, false);
+  if (!state.degrees[1]) filterMajors(d2FamSel, d2Sel, true);
   yearSel.value = String(state.startYear);
   semSel.value  = String(state.startSem);
 
@@ -1461,7 +1507,9 @@ document.addEventListener('DOMContentLoaded', () => {
     save(); render();
   }
 
+  d1FamSel.addEventListener('change', () => { filterMajors(d1FamSel, d1Sel, false); applyDegrees(true); });
   d1Sel.addEventListener('change', () => applyDegrees(true));
+  d2FamSel.addEventListener('change', () => { filterMajors(d2FamSel, d2Sel, true); applyDegrees(false); });
   d2Sel.addEventListener('change', () => applyDegrees(false));
 
   yearSel.addEventListener('change', () => {

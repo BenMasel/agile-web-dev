@@ -403,7 +403,8 @@ def degree_detail(slug):
 
     filepath = os.path.join('data', 'degrees', f'{slug}.yaml')
     git_meta = git_last_modified(filepath)
-    return render_template('degree/detail.html', degree=degree, git_meta=git_meta)
+    families = {f['slug']: f for f in load_all_yaml('degree-families')}
+    return render_template('degree/detail.html', degree=degree, git_meta=git_meta, degree_families=families)
 
 
 @bp.route('/planner')
@@ -414,8 +415,9 @@ def planner():
     can compute prerequisite chains and render the semester timeline.
     """
     degrees = load_all_yaml('degrees')
+    degree_families = load_all_yaml('degree-families')
     units = {u['code']: u for u in load_all_yaml('units')}
-    return render_template('planner.html', degrees=degrees, units=units)
+    return render_template('planner.html', degrees=degrees, degree_families=degree_families, units=units)
 
 
 def serialize_plan(plan):
@@ -515,8 +517,9 @@ def public_plans():
         )
     plans = query.order_by(StudyPlan.updated_at.desc()).all()
     degrees = {d['slug']: d for d in load_all_yaml('degrees')}
+    degree_families = {f['slug']: f for f in load_all_yaml('degree-families')}
     units = {u['code']: u for u in load_all_yaml('units')}
-    return render_template('plans/index.html', plans=plans, degrees=degrees, units=units, selected_degree=degree)
+    return render_template('plans/index.html', plans=plans, degrees=degrees, degree_families=degree_families, units=units, selected_degree=degree)
 
 
 @bp.route('/plans/<int:plan_id>')

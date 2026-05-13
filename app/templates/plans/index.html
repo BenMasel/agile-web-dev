@@ -20,7 +20,15 @@
             onchange="this.form.submit()"
             class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
       <option value="">All degrees</option>
-      {% for slug, degree in degrees.items() %}
+      {% for fam_slug, fam in degree_families.items() %}
+      <optgroup label="{{ fam.title }}">
+        {% for slug, degree in degrees.items() if degree.degree_family_slug == fam_slug %}
+        <option value="{{ slug }}" {% if selected_degree == slug %}selected{% endif %}>{{ degree.major_title }}</option>
+        {% endfor %}
+      </optgroup>
+      {% endfor %}
+      {# Degrees without a family fall through here #}
+      {% for slug, degree in degrees.items() if not degree.get('degree_family_slug') %}
       <option value="{{ slug }}" {% if selected_degree == slug %}selected{% endif %}>{{ degree.title }}</option>
       {% endfor %}
     </select>
@@ -45,8 +53,11 @@
     </div>
     <div class="flex flex-wrap gap-1.5">
       {% for slug in [plan.primary_degree_slug, plan.secondary_degree_slug] if slug %}
-      <span class="text-[11px] text-rc-blue bg-rc-blue-muted border border-rc-blue/15 rounded-md px-2 py-1">
-        {{ degrees.get(slug, {}).get('title', slug) }}
+      {% set deg = degrees.get(slug, {}) %}
+      {% set fam = degree_families.get(deg.get('degree_family_slug', ''), {}) %}
+      <span class="text-[11px] text-rc-blue bg-rc-blue-muted border border-rc-blue/15 rounded-md px-2 py-1 flex flex-col gap-0">
+        {% if fam %}<span class="text-[9px] text-rc-text-faint leading-none">{{ fam.short_title }}</span>{% endif %}
+        {{ deg.get('major_title', deg.get('title', slug)) }}
       </span>
       {% endfor %}
     </div>
