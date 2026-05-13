@@ -163,6 +163,73 @@ def review_stats_for(reviews):
     }
 
 
+_RADAR_LABELS = ['Content', 'Exams', 'Workload', 'Group work', 'Time commit', 'Rote learning']
+
+
+def community_stats_for(unit_code, reviews):
+    """Build a community stats dict entirely from live DB reviews.
+    Returns None when there are no reviews — no YAML fallback."""
+    if not reviews:
+        return None
+
+    count = len(reviews)
+
+    avg_rating     = round(sum(r.rating for r in reviews) / count, 1)
+    avg_difficulty = round(sum(r.difficulty for r in reviews) / count, 1)
+    workloads = [r.workload_hours for r in reviews if r.workload_hours is not None]
+    avg_workload = round(sum(workloads) / len(workloads), 1) if workloads else None
+
+    def _avg(attr):
+        vals = [getattr(r, attr) for r in reviews if getattr(r, attr, None) is not None]
+        return round(sum(vals) / len(vals), 1) if vals else None
+
+    avg_exam  = _avg('exam_difficulty')
+    avg_group = _avg('group_work')
+    avg_time  = _avg('time_commitment')
+    avg_rote  = _avg('rote_learning')
+    rec_vals  = [r.would_recommend for r in reviews if getattr(r, 'would_recommend', None) is not None]
+    recommend_pct = round(sum(rec_vals) / len(rec_vals) * 100) if rec_vals else None
+
+    def norm15(v):   # 1–5 → 0.0–1.0
+        return round((v - 1) / 4, 2) if v is not None else 0
+    def norm_wl(v):  # workload hours → 0.0–1.0  (40 hrs = max)
+        return round(min(v / 40.0, 1.0), 2) if v is not None else 0
+    def bar_color(v15):
+        return 'red' if v15 >= 3.5 else 'amber' if v15 >= 2.5 else 'green'
+
+    # Radar: missing optional axes collapse to 0 (visually signals no data)
+    radar_values = [
+        norm15(avg_difficulty),
+        norm15(avg_exam),
+        norm_wl(avg_workload),
+        norm15(avg_group),
+        norm15(avg_time) if avg_time is not None else norm_wl(avg_workload),
+        norm15(avg_rote),
+    ]
+
+    # Rating bars — only include axes with actual data
+    bars = [{'label': 'Content difficulty', 'value': round(avg_difficulty * 2, 1), 'color': bar_color(avg_difficulty)}]
+    if avg_exam     is not None: bars.append({'label': 'Exam difficulty',  'value': round(avg_exam  * 2, 1), 'color': bar_color(avg_exam)})
+    if avg_workload is not None:
+        wl_proxy = max(1.0, min(5.0, avg_workload / 8.0))
+        bars.append({'label': 'Workload', 'value': round(wl_proxy * 2, 1), 'color': bar_color(wl_proxy)})
+    if avg_group    is not None: bars.append({'label': 'Group work',       'value': round(avg_group * 2, 1), 'color': bar_color(avg_group)})
+    if avg_time     is not None: bars.append({'label': 'Time commitment',  'value': round(avg_time  * 2, 1), 'color': bar_color(avg_time)})
+    if avg_rote     is not None: bars.append({'label': 'Rote learning',    'value': round(avg_rote  * 2, 1), 'color': bar_color(avg_rote)})
+
+    return {
+        'data_quality':        'live',
+        'votes':               count,
+        'reviews_count':       count,
+        'overall_rating':      avg_rating,
+        'study_hours_per_week': avg_workload,
+        'would_recommend_pct': recommend_pct,
+        'radar_labels':        _RADAR_LABELS,
+        'radar_values':        radar_values,
+        'ratings':             bars,
+    }
+
+
 def review_body_is_placeholder(body):
     compact = re.sub(r'[^a-z0-9]+', '', body.lower())
     if len(set(compact)) <= 2:
@@ -378,6 +445,7 @@ def unit_detail(code):
                 user_status = 'planned'
 
     reviews = UnitReview.query.filter_by(unit_code=code.upper()).order_by(UnitReview.created_at.desc()).all()
+    unit['community'] = community_stats_for(code.upper(), reviews)
     review_form = UnitReviewForm()
     return render_template(
         'unit/detail.html',
@@ -768,6 +836,11 @@ def create_review(code):
             unit_code=code.upper(),
             rating=form.rating.data,
             difficulty=form.difficulty.data,
+            exam_difficulty=form.exam_difficulty.data,
+            group_work=form.group_work.data,
+            time_commitment=form.time_commitment.data,
+            rote_learning=form.rote_learning.data,
+            would_recommend=form.would_recommend.data if form.would_recommend.data is not None else None,
             workload_hours=form.workload_hours.data,
             semester_taken=(form.semester_taken.data or '').strip() or None,
             body=body,

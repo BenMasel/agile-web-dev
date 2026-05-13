@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, PasswordField, StringField, SubmitField, TextAreaField
+from wtforms import BooleanField, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional, Regexp
 
 
@@ -52,12 +52,17 @@ class AccountForm(FlaskForm):
 
 
 class UnitReviewForm(FlaskForm):
-    rating = IntegerField('Rating', validators=[DataRequired(), NumberRange(min=1, max=5)])
-    difficulty = IntegerField('Difficulty', validators=[DataRequired(), NumberRange(min=1, max=5)])
-    workload_hours = IntegerField('Hours per week', validators=[Optional(), NumberRange(min=0, max=80)])
-    semester_taken = StringField('Semester taken', validators=[Optional(), Length(max=32)])
-    body = TextAreaField('Review', validators=[DataRequired(), Length(min=10, max=1200)])
-    submit = SubmitField('Post review')
+    rating          = IntegerField('Overall rating',    validators=[DataRequired(), NumberRange(min=1, max=5)])
+    difficulty      = IntegerField('Content difficulty', validators=[DataRequired(), NumberRange(min=1, max=5)])
+    exam_difficulty = IntegerField('Exam difficulty',   validators=[Optional(), NumberRange(min=1, max=5)])
+    group_work      = IntegerField('Group work load',   validators=[Optional(), NumberRange(min=1, max=5)])
+    time_commitment = IntegerField('Time commitment',   validators=[Optional(), NumberRange(min=1, max=5)])
+    rote_learning   = IntegerField('Rote learning',     validators=[Optional(), NumberRange(min=1, max=5)])
+    would_recommend = BooleanField('Would recommend')
+    workload_hours  = IntegerField('Hours per week',    validators=[Optional(), NumberRange(min=0, max=80)])
+    semester_taken  = StringField('Semester taken',     validators=[Optional(), Length(max=32)])
+    body            = TextAreaField('Review',           validators=[DataRequired(), Length(min=10, max=1200)])
+    submit          = SubmitField('Post review')
 
 
 class TwoFAVerifyForm(FlaskForm):
