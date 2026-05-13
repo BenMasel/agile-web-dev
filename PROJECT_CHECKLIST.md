@@ -4,9 +4,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Progress Summary
 
-- Last checked: 12 May 2026.
-- Completion: **286** checked items out of **391** total checklist items (**73.1%**).
-- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, real account registration/login/logout works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, salted Werkzeug password hashes, and optional TOTP 2FA. The merged branch now includes planner persistence, public plan sharing, unit reviews, data schemas, CI, migrations, YouTube backend proxy work, and five Selenium journey tests. Remaining risk is mostly GitHub/process evidence, final manual/browser verification, saved resource/benefit bookmarks, and some code/design polish. Local test execution could not be re-run during this check because `uv` and `pytest` are not installed in the current shell.
+- Last checked: 13 May 2026.
+- Completion: **294** checked items out of **395** total checklist items (**74.4%**).
+- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, real account registration/login/logout works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, salted Werkzeug password hashes, and optional TOTP 2FA. The current branch includes account-backed planner save/load/delete through `/api/planner`, public plan sharing and browsing, unit reviews, notification preferences, data schemas, CI, migrations, YouTube backend proxy work, rendered-page checks, and five Selenium journey tests. Remaining risk is mostly GitHub/process evidence, final manual/browser verification, saved resource/benefit bookmarks, and code/design polish. Local test execution could not be re-run during this check because `uv` is not installed in the current shell.
 
 ## Brief Requirements Snapshot
 
@@ -32,8 +32,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Route blueprint in `app/routes.py`.
 - [x] YAML-backed unit, degree, club, benefit, and docs content.
 - [x] Jinja template structure with shared `base.html`, navbar, account menu, context menu, and page templates.
-- [x] Client-side global search using Fuse.js.
-- [x] Study planner UI with localStorage persistence.
+- [x] Client-side global search using Fuse.js plus server-rendered/AJAX search fallback.
+- [x] Study planner UI with localStorage persistence and account sync.
 - [x] Resources page using planner state and YouTube/channel metadata.
 - [x] Benefits page with category filters.
 - [x] Docs section rendered from Markdown.
@@ -42,9 +42,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] `run.py` launches the Flask app through the application factory.
 - [x] Real authentication with register, login, logout, Flask-Login sessions, and hashed passwords.
 - [x] SQLAlchemy `User` model and SQLite connection configured through Flask-SQLAlchemy.
-- [x] Server-side persistence for planner/settings/reviews.
-- [x] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
-- [x] Tests.
+- [x] Server-side persistence for planner/settings/reviews/notification preferences.
+- [x] Shared user-visible data through public plans and unit reviews, plus global YAML catalogue data.
+- [x] Unit, route, data validation, rendered-page, and Selenium tests.
 - [x] CSRF protection.
 - [x] README group member table and test instructions.
 - [x] Data schemas present under `data/schemas/`.
@@ -76,7 +76,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] YouTube API key loaded from environment variables instead of committed JS config.
 - [x] Add `.env.example` documenting required environment variables.
 - [x] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
-- [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
+- [ ] Retire legacy `app/db.py` helper or document why it remains; production database access now goes through SQLAlchemy models.
 - [x] Decide whether to use:
   - [x] Flask-SQLAlchemy for models and sessions.
   - [x] Flask-Migrate/Alembic for migrations.
@@ -170,7 +170,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 ## Phase 5: Persist The Planner Server-Side
 
 - [x] Audit current planner localStorage shape in `app/templates/planner.html`.
-- [ ] Create JSON API endpoints:
+- [x] Create JSON API endpoints for the implemented single saved planner flow:
+  - [x] `GET /api/planner`
+  - [x] `POST /api/planner`
+  - [x] `DELETE /api/planner`
+- [ ] Add granular multi-plan/unit JSON endpoints if time allows:
   - [ ] `GET /api/plans`
   - [ ] `POST /api/plans`
   - [ ] `GET /api/plans/<id>`
@@ -221,15 +225,15 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Phase 7: Existing Feature Hardening
 
-- [ ] Home/search:
+- [x] Home/search:
   - [x] Ensure search result HTML is accessible and keyboard navigation works across browsers.
   - [x] Add no-JavaScript fallback or graceful empty state.
   - [x] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
-- [ ] Unit pages:
+- [x] Unit pages:
   - [x] Add review/community section.
   - [x] Show whether current user has planned/completed the unit.
   - [x] Add "Add to planner" action for authenticated users.
-- [ ] Degree pages:
+- [x] Degree pages:
   - [x] Add call-to-action to create a plan from a degree.
   - [x] Show units grouped by year/semester from YAML data.
   - [x] Link to public plans for the degree if implemented.
@@ -381,11 +385,11 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] UWA ID.
   - [x] Name.
   - [x] GitHub username.
-- [ ] Keep launch instructions current:
+- [x] Keep launch instructions current:
   - [x] Install `uv`.
   - [x] Copy `.env.example` to `.env`.
   - [x] Run migrations.
-  - [ ] Seed database if needed.
+  - [ ] Seed database if needed; no seed script exists yet.
   - [x] Start with `uv run python run.py`.
 - [x] Add test instructions:
   - [x] Unit tests.
