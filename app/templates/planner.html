@@ -32,6 +32,12 @@
         border-color: rgba(108, 160, 240, 0.3) !important;
     }
 
+    /* Prerequisite highlight — glows on cards the hovered unit depends on */
+    .prereq-highlight {
+      box-shadow: 0 0 0 1.5px rgba(212,163,64,0.5), 0 0 10px rgba(212,163,64,0.18) !important;
+      transition: box-shadow 0.15s;
+    }
+
     /* NST drag-and-drop feedback */
     .nst-drag-over {
         box-shadow: inset 0 0 0 1px rgba(108,160,240,0.28), 0 0 0 1px rgba(108,160,240,0.12);
@@ -753,6 +759,20 @@
       _tt.classList.remove('flex');
     }
 
+    function highlightPrereqs(codes) {
+      for (const code of codes) {
+        for (const el of document.querySelectorAll(`[data-code="${code}"]`)) {
+          el.classList.add('prereq-highlight');
+        }
+      }
+    }
+
+    function clearPrereqHighlights() {
+      for (const el of document.querySelectorAll('.prereq-highlight')) {
+        el.classList.remove('prereq-highlight');
+      }
+    }
+
     // ─────────────────────────────────────────────────────────
     // STATE
     // ─────────────────────────────────────────────────────────
@@ -1444,11 +1464,22 @@
       const done = isDone(code);
 
       const missingPrereqs = [];
+      const prereqHighlightCodes = [];
       if (!prereqsMet(code, key) && u?.prerequisites) {
         const p = u.prerequisites;
         const before = unitsBefore(key);
-        for (const c of (p.all_of||[])) if (!resolve(c).some(x=>before.includes(x))) missingPrereqs.push(c);
-        for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>before.includes(x))) missingPrereqs.push(`one of [${g.join('/')}]`);
+        for (const c of (p.all_of||[])) {
+          if (!resolve(c).some(x=>before.includes(x))) {
+            missingPrereqs.push(c);
+            if (!state.done.includes(c)) prereqHighlightCodes.push(c);
+          }
+        }
+        for (const g of (p.any_of||[])) {
+          if (!g.flatMap(c=>resolve(c)).some(x=>before.includes(x))) {
+            missingPrereqs.push(`one of [${g.join('/')}]`);
+            for (const c of g) if (!state.done.includes(c)) prereqHighlightCodes.push(c);
+          }
+        }
       }
 
       // Degree badge(s)
@@ -1465,8 +1496,8 @@
       el.dataset.code = code;
 
       if (missingPrereqs.length && !done) {
-        el.addEventListener('mouseenter', () => showTooltip(el, missingPrereqs));
-        el.addEventListener('mouseleave', hideTooltip);
+        el.addEventListener('mouseenter', () => { showTooltip(el, missingPrereqs); highlightPrereqs(prereqHighlightCodes); });
+        el.addEventListener('mouseleave', () => { hideTooltip(); clearPrereqHighlights(); });
       }
 
       el.innerHTML = `
@@ -1597,15 +1628,26 @@
 
       if (!ready) {
         const missing = [];
+        const prereqHighlightCodes = [];
         const p = UNITS_DATA[code]?.prerequisites;
         if (p) {
           const have = [...state.done, ...Object.values(state.plan).flat()];
-          for (const c of (p.all_of||[])) if (!resolve(c).some(x=>have.includes(x))) missing.push(c);
-          for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>have.includes(x))) missing.push(`one of [${g.join('/')}]`);
+          for (const c of (p.all_of||[])) {
+            if (!resolve(c).some(x=>have.includes(x))) {
+              missing.push(c);
+              if (!state.done.includes(c)) prereqHighlightCodes.push(c);
+            }
+          }
+          for (const g of (p.any_of||[])) {
+            if (!g.flatMap(c=>resolve(c)).some(x=>have.includes(x))) {
+              missing.push(`one of [${g.join('/')}]`);
+              for (const c of g) if (!state.done.includes(c)) prereqHighlightCodes.push(c);
+            }
+          }
         }
         if (missing.length) {
-          el.addEventListener('mouseenter', () => showTooltip(el, missing));
-          el.addEventListener('mouseleave', hideTooltip);
+          el.addEventListener('mouseenter', () => { showTooltip(el, missing); highlightPrereqs(prereqHighlightCodes); });
+          el.addEventListener('mouseleave', () => { hideTooltip(); clearPrereqHighlights(); });
         }
       }
       el.innerHTML = `
