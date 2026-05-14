@@ -216,32 +216,19 @@
         {# ── Conflict warnings ── #}
         <div
             id="conflict-wrap"
-            class="hidden bg-rc-surface border border-[rgba(212,163,64,0.25)] rounded-[10px] p-4 flex flex-col gap-3"
+            class="bg-rc-surface border border-[rgba(212,163,64,0.15)] rounded-[10px] p-3 flex flex-col gap-2.5"
+            style="display: none"
         >
             <div class="flex items-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path
-                        d="M7 2L13 12H1L7 2Z"
-                        stroke="#D4A340"
-                        stroke-width="1.1"
-                        stroke-linejoin="round"
-                    />
-                    <path
-                        d="M7 6v3"
-                        stroke="#D4A340"
-                        stroke-width="1.1"
-                        stroke-linecap="round"
-                    />
-                    <circle cx="7" cy="10.5" r="0.6" fill="#D4A340" />
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 2L13 12H1L7 2Z" stroke="#D4A340" stroke-width="1.2" stroke-linejoin="round"/>
+                    <path d="M7 6v3" stroke="#D4A340" stroke-width="1.2" stroke-linecap="round"/>
+                    <circle cx="7" cy="10.5" r="0.6" fill="#D4A340"/>
                 </svg>
-                <span class="text-[11px] font-medium text-rc-amber"
-                    >Double degree conflicts</span
-                >
-                <span class="text-[11px] text-rc-text-faint ml-1"
-                    >— units incompatible between your two degrees</span
-                >
+                <span class="text-[11px] font-medium text-rc-amber/80">Conflicts</span>
+                <span class="text-[10px] text-white/25 ml-auto">double degree</span>
             </div>
-            <div id="conflict-list" class="flex flex-col gap-2"></div>
+            <div id="conflict-list" class="flex flex-col gap-1.5"></div>
         </div>
 
         {# ── Account sync ── #}
@@ -1083,7 +1070,7 @@
       document.getElementById('tray-wrap').classList.toggle('hidden', !has);
       document.getElementById('planner-stats').classList.toggle('hidden', !has);
       document.getElementById('planner-stats').classList.toggle('flex-col', has);
-      if (!has) { document.getElementById('conflict-wrap').classList.add('hidden'); return; }
+      if (!has) { document.getElementById('conflict-wrap').style.display = 'none'; return; }
 
       renderConflicts();
       renderGrid();
@@ -1114,35 +1101,68 @@
       const conflicts = getCrossConflicts();
       const wrap = document.getElementById('conflict-wrap');
       const list = document.getElementById('conflict-list');
-      wrap.classList.toggle('hidden', conflicts.length === 0);
+      wrap.style.display = conflicts.length ? 'flex' : 'none';
       if (!conflicts.length) return;
-      wrap.classList.remove('hidden');
-      wrap.classList.add('flex');
 
       list.innerHTML = '';
       for (const c of conflicts) {
-        const hasSub = state.substitutions[c.code1] === c.code2 || state.substitutions[c.code2] === c.code1;
-        const row = document.createElement('div');
-        row.className = 'flex items-center gap-3 bg-rc-fill-subtle rounded-lg px-3 py-2';
-        row.innerHTML = `
-          <div class="flex items-center gap-1.5 flex-1 flex-wrap gap-y-1">
-            <span class="text-xs font-medium text-rc-amber px-2 py-[2px] bg-rc-amber-muted border border-rc-amber/15 rounded">${c.code1}</span>
-            <span class="text-[10px] text-white/30">(D1)</span>
-            <span class="text-[11px] text-white/20 mx-1">⊗</span>
-            <span class="text-xs font-medium text-rc-amber px-2 py-[2px] bg-rc-amber-muted border border-rc-amber/15 rounded">${c.code2}</span>
-            <span class="text-[10px] text-white/30">(D2)</span>
-            <span class="text-[10px] text-white/25 ml-1">— these units are incompatible</span>
-          </div>
-          <div class="flex items-center gap-2 shrink-0">
-            ${hasSub
-              ? `<span class="text-[10px] text-rc-green">✓ using ${c.code2} as equivalent</span>
-                 <button onclick="clearSub('${c.code1}','${c.code2}')" class="text-[10px] text-white/25 hover:text-white/50 cursor-pointer">undo</button>`
-              : `<button onclick="setSub('${c.code1}','${c.code2}')" class="text-[10px] px-2 py-[3px] rounded bg-rc-fill border border-rc-border text-white/45 hover:border-white/20 hover:text-white/70 cursor-pointer transition whitespace-nowrap">
-                   Use ${c.code2} in place of ${c.code1}
-                 </button>`
-            }
-          </div>`;
-        list.appendChild(row);
+        const d1Sel = state.substitutions[c.code2] === c.code1;
+        const d2Sel = state.substitutions[c.code1] === c.code2;
+
+        const card = document.createElement('div');
+        card.className = 'rounded-[8px] border border-rc-border overflow-hidden';
+
+        // Header row — two conflict codes
+        const hdr = document.createElement('div');
+        hdr.className = 'flex items-center gap-1.5 px-3 py-2 bg-rc-fill-subtle border-b border-rc-border-light';
+        hdr.innerHTML = `
+          <span class="text-[10px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue border border-rc-blue/10">${c.code1}</span>
+          <span class="text-[10px] text-white/20">×</span>
+          <span class="text-[10px] font-semibold px-1.5 py-[2px] rounded bg-rc-purple-muted text-rc-purple border border-rc-purple/10">${c.code2}</span>
+          <span class="text-[9px] text-white/20 ml-auto uppercase tracking-wider">pick one</span>`;
+        card.appendChild(hdr);
+
+        // Option row factory
+        const makeRow = (code, title, isD1, isSelected) => {
+          const choice = isD1 ? 'd1' : 'd2';
+          const nextChoice = isSelected ? 'none' : choice;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors cursor-pointer ${
+            isSelected ? 'bg-rc-amber-muted/70' : 'hover:bg-rc-fill-subtle'
+          }`;
+          btn.onclick = () => pickConflict(c.code1, c.code2, nextChoice);
+
+          const dot = document.createElement('div');
+          dot.className = `w-2.5 h-2.5 rounded-full shrink-0 border transition-colors ${
+            isSelected
+              ? 'bg-rc-amber border-rc-amber/60'
+              : 'bg-transparent border-white/20'
+          }`;
+
+          const info = document.createElement('div');
+          info.className = 'flex-1 min-w-0';
+          info.innerHTML = `
+            <div class="text-[12px] font-medium leading-tight truncate ${isSelected ? 'text-white/80' : 'text-white/45'}">${title}</div>
+            <div class="text-[10px] mt-0.5 ${isSelected ? 'text-rc-amber/60' : 'text-white/20'}">${code}</div>`;
+
+          const badge = document.createElement('span');
+          badge.className = `text-[9px] font-semibold px-1.5 py-[2px] rounded shrink-0 ${
+            isD1 ? 'bg-rc-blue-muted text-rc-blue' : 'bg-rc-purple-muted text-rc-purple'
+          }`;
+          badge.textContent = isD1 ? 'D1' : 'D2';
+
+          btn.append(dot, info, badge);
+          return btn;
+        };
+
+        card.appendChild(makeRow(c.code1, c.title1, true,  d1Sel));
+        const div = document.createElement('div');
+        div.className = 'h-px bg-rc-border-light mx-3';
+        card.appendChild(div);
+        card.appendChild(makeRow(c.code2, c.title2, false, d2Sel));
+
+        list.appendChild(card);
       }
     }
 
@@ -1771,6 +1791,14 @@
 
     function clearSub(from, to) {
       delete state.substitutions[from]; delete state.substitutions[to];
+      save(); render();
+    }
+
+    function pickConflict(code1, code2, choice) {
+      delete state.substitutions[code1];
+      delete state.substitutions[code2];
+      if (choice === 'd1') state.substitutions[code2] = code1;
+      if (choice === 'd2') state.substitutions[code1] = code2;
       save(); render();
     }
 
