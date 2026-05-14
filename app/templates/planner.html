@@ -41,15 +41,52 @@
         filter: brightness(1.1);
         transform: translateY(-0.5px);
     }
+
+    /* Sidebar nav buttons */
+    .sidebar-nav-btn {
+        width: 2.25rem; height: 2.25rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 8px; color: rgba(255,255,255,0.3);
+        transition: background 0.15s, color 0.15s;
+        cursor: pointer; border: none; background: transparent;
+    }
+    .sidebar-nav-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); }
+    .sidebar-nav-btn.active { background: rgba(108,160,240,0.15); color: #6CA0F0; }
 </style>
 {% endblock %} {% block content %}
 
-<div class="flex gap-4 items-start">
-    {# ══════════════════════════════════════════════════════════════ SIDEBAR
+<div class="flex items-start">
+    {# ══════════════════════════════════════════════════════════════ SIDEBAR NAV
     ══════════════════════════════════════════════════════════════ #}
-    <aside
-        class="w-[17rem] shrink-0 flex flex-col gap-3 sticky top-[2.75rem] max-h-[calc(100vh-3.25rem)] overflow-y-auto pb-6"
-    >
+    <nav id="sidebar-nav"
+         class="w-12 shrink-0 sticky top-[2.75rem] h-[calc(100vh-3.25rem)] flex flex-col items-center pt-3 gap-1.5 border-r border-rc-border bg-rc-surface z-10">
+
+        {# Unit Tray button #}
+        <button id="nav-btn-tray" class="sidebar-nav-btn" title="Unit Tray"
+                onclick="openPanel('tray')">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <rect x="1.5" y="8" width="12" height="5" rx="1.2" stroke="currentColor" stroke-width="1.15"/>
+                <path d="M4.5 8V5.5a3 3 0 0 1 6 0V8" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+        {# Degree Overview button #}
+        <button id="nav-btn-degree" class="sidebar-nav-btn" title="Degree Overview"
+                onclick="openPanel('degree')">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <path d="M7.5 2L1 5.5l6.5 3.5L14 5.5 7.5 2Z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/>
+                <path d="M4 7.2V10.5c0 1.1 1.567 2 3.5 2s3.5-.9 3.5-2V7.2" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+                <line x1="14" y1="5.5" x2="14" y2="9" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+            </svg>
+        </button>
+
+    </nav>
+
+    {# ══════════════════════════════════════════════════════════════ PANEL: DEGREE OVERVIEW
+    ══════════════════════════════════════════════════════════════ #}
+    <div id="panel-degree"
+         class="hidden w-[17rem] shrink-0 sticky top-[2.75rem] max-h-[calc(100vh-3.25rem)] overflow-y-auto flex flex-col gap-3 p-3 pb-6 border-r border-rc-border">
+
         {# ── Config card ── #}
         <div
             class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-4"
@@ -172,7 +209,38 @@
             </div>
         </div>
 
-        {# ── Unit tray ── #}
+        {# ── Conflict warnings ── #}
+        <div
+            id="conflict-wrap"
+            class="hidden bg-rc-surface border border-[rgba(212,163,64,0.25)] rounded-[10px] p-4 flex flex-col gap-3"
+        >
+            <div class="flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path
+                        d="M7 2L13 12H1L7 2Z"
+                        stroke="#D4A340"
+                        stroke-width="1.1"
+                        stroke-linejoin="round"
+                    />
+                    <path
+                        d="M7 6v3"
+                        stroke="#D4A340"
+                        stroke-width="1.1"
+                        stroke-linecap="round"
+                    />
+                    <circle cx="7" cy="10.5" r="0.6" fill="#D4A340" />
+                </svg>
+                <span class="text-[11px] font-medium text-rc-amber"
+                    >Double degree conflicts</span
+                >
+                <span class="text-[11px] text-rc-text-faint ml-1"
+                    >— units incompatible between your two degrees</span
+                >
+            </div>
+            <div id="conflict-list" class="flex flex-col gap-2"></div>
+        </div>
+
+        {# ── Account sync ── #}
         <div
             class="bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2"
         >
@@ -253,6 +321,13 @@
             {% endif %}
         </div>
 
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════ PANEL: UNIT TRAY
+    ══════════════════════════════════════════════════════════════ #}
+    <div id="panel-tray"
+         class="hidden w-[17rem] shrink-0 sticky top-[2.75rem] max-h-[calc(100vh-3.25rem)] overflow-y-auto flex flex-col gap-3 p-3 pb-6 border-r border-rc-border">
+
         <div
             id="tray-wrap"
             class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2"
@@ -306,42 +381,12 @@
                 <div id="tray-locked" class="flex flex-col gap-1.5"></div>
             </div>
         </div>
-    </aside>
+
+    </div>
 
     {# ══════════════════════════════════════════════════════════════ MAIN
     CONTENT ══════════════════════════════════════════════════════════════ #}
-    <div class="flex-1 min-w-0 flex flex-col gap-3">
-        {# Conflict warnings #}
-        <div
-            id="conflict-wrap"
-            class="hidden bg-rc-surface border border-[rgba(212,163,64,0.25)] rounded-[10px] p-4 flex flex-col gap-3"
-        >
-            <div class="flex items-center gap-2">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path
-                        d="M7 2L13 12H1L7 2Z"
-                        stroke="#D4A340"
-                        stroke-width="1.1"
-                        stroke-linejoin="round"
-                    />
-                    <path
-                        d="M7 6v3"
-                        stroke="#D4A340"
-                        stroke-width="1.1"
-                        stroke-linecap="round"
-                    />
-                    <circle cx="7" cy="10.5" r="0.6" fill="#D4A340" />
-                </svg>
-                <span class="text-[11px] font-medium text-rc-amber"
-                    >Double degree conflicts</span
-                >
-                <span class="text-[11px] text-rc-text-faint ml-1"
-                    >— units incompatible between your two degrees</span
-                >
-            </div>
-            <div id="conflict-list" class="flex flex-col gap-2"></div>
-        </div>
-
+    <div class="flex-1 min-w-0 flex flex-col gap-3 p-4">
         {# Empty state #}
         <div
             id="empty-state"
@@ -1038,6 +1083,24 @@
       renderGrid();
       renderTray();
       renderStats();
+    }
+
+    // ─── Panel switching ─────────────────────────────────────
+    function openPanel(name) {
+      const panels = { tray: 'panel-tray', degree: 'panel-degree' };
+      const btns   = { tray: 'nav-btn-tray', degree: 'nav-btn-degree' };
+      const panelEl = document.getElementById(panels[name]);
+      const isOpen  = !panelEl.classList.contains('hidden');
+
+      for (const [k, id] of Object.entries(panels)) {
+        document.getElementById(id).classList.add('hidden');
+        document.getElementById(btns[k]).classList.remove('active');
+      }
+
+      if (!isOpen) {
+        panelEl.classList.remove('hidden');
+        document.getElementById(btns[name]).classList.add('active');
+      }
     }
 
     // ─── Conflicts ───────────────────────────────────────────
@@ -1936,6 +1999,7 @@
         closeDegreeModal();
         renderDegreeDisplay();
         save(); render();
+        openPanel('tray');
       }
 
       // Modal event wiring
@@ -2017,6 +2081,7 @@
       renderDegreeDisplay();
       render();
       syncPublicControls();
+      openPanel(state.degrees.length > 0 ? 'tray' : 'degree');
     });
 </script>
 {% endblock %}
