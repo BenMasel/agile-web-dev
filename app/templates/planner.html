@@ -32,6 +32,17 @@
         border-color: rgba(108, 160, 240, 0.3) !important;
     }
 
+    /* NST drag-and-drop feedback */
+    .nst-drag-over {
+        box-shadow: inset 0 0 0 1px rgba(108,160,240,0.28), 0 0 0 1px rgba(108,160,240,0.12);
+        transition: box-shadow 0.12s;
+    }
+    .nst-drop-active {
+        border-color: rgba(108,160,240,0.55) !important;
+        background: rgba(108,160,240,0.08) !important;
+        color: rgba(108,160,240,0.7) !important;
+    }
+
     /* Degree display pills */
     .degree-pill {
         display: inline;
@@ -1255,18 +1266,23 @@
           // Show 5th slot when dragging over a full card; hide when leaving
           let enterCount = 0;
           card.addEventListener('dragenter', e => {
+            if (dragState && isYearLong(dragState.code)) return;
             e.preventDefault();
             enterCount++;
             if (units.length >= 4) fifthSlot.classList.remove('hidden');
           });
           card.addEventListener('dragleave', () => {
+            if (dragState && isYearLong(dragState.code)) return;
             enterCount--;
             if (enterCount <= 0) {
               enterCount = 0;
               if (!units[4]) fifthSlot.classList.add('hidden');
             }
           });
-          card.addEventListener('dragover', e => e.preventDefault());
+          card.addEventListener('dragover', e => {
+            if (dragState && isYearLong(dragState.code)) return;
+            e.preventDefault();
+          });
 
           const addBtn = document.createElement('button');
           addBtn.className = 'mt-auto pt-1.5 text-[11px] text-white/20 hover:text-white/50 border border-dashed border-white/10 hover:border-white/20 rounded-lg py-1.5 text-center transition cursor-pointer';
@@ -1277,24 +1293,53 @@
           cluster.appendChild(card);
         }
 
-        // Year-long strip — only shown when units are present
+        // NST zone — always present, lights up when a year-long unit is dragged over
+        const nstZone = document.createElement('div');
+        nstZone.className = 'flex items-center gap-2 flex-wrap rounded-lg border border-dashed border-rc-border-light/60 bg-rc-fill-subtle/50 px-3 py-2 transition-colors';
+
+        const nstLbl = document.createElement('span');
+        nstLbl.className = 'text-[9px] uppercase tracking-widest text-white/15 shrink-0';
+        nstLbl.textContent = 'Year-long';
+        nstZone.appendChild(nstLbl);
+
         if (yearLongCodes.length > 0) {
-          const strip = document.createElement('div');
-          strip.className = 'flex items-center gap-2 flex-wrap rounded-lg border border-dashed border-rc-border-light bg-rc-fill-subtle px-3 py-2';
-
-          const lbl = document.createElement('span');
-          lbl.className = 'text-[9px] uppercase tracking-widest text-white/20 shrink-0';
-          lbl.textContent = 'Year-long';
-          strip.appendChild(lbl);
-
           const div = document.createElement('div');
           div.className = 'w-px h-3 bg-rc-border-light shrink-0';
-          strip.appendChild(div);
-
-          for (const code of yearLongCodes) strip.appendChild(mkYearLongChip(code, yearKeys[0]));
-          cluster.appendChild(strip);
+          nstZone.appendChild(div);
+          for (const code of yearLongCodes) nstZone.appendChild(mkYearLongChip(code, yearKeys[0]));
         }
 
+        // Cluster-level drag for year-long units
+        let clusterEnterCount = 0;
+        cluster.addEventListener('dragenter', () => {
+          if (!dragState || !isYearLong(dragState.code)) return;
+          clusterEnterCount++;
+          cluster.classList.add('nst-drag-over');
+          nstZone.classList.add('nst-drop-active');
+        });
+        cluster.addEventListener('dragleave', () => {
+          if (!dragState || !isYearLong(dragState.code)) return;
+          clusterEnterCount--;
+          if (clusterEnterCount <= 0) {
+            clusterEnterCount = 0;
+            cluster.classList.remove('nst-drag-over');
+            nstZone.classList.remove('nst-drop-active');
+          }
+        });
+        cluster.addEventListener('dragover', e => {
+          if (!dragState || !isYearLong(dragState.code)) return;
+          e.preventDefault();
+        });
+        cluster.addEventListener('drop', e => {
+          if (!dragState || !isYearLong(dragState.code)) return;
+          e.preventDefault();
+          clusterEnterCount = 0;
+          cluster.classList.remove('nst-drag-over');
+          nstZone.classList.remove('nst-drop-active');
+          handleYearLongDrop(dragState.code, yearKeys[0]);
+        });
+
+        cluster.appendChild(nstZone);
         container.appendChild(cluster);
       }
     }
@@ -1316,6 +1361,7 @@
           ? `<div class="w-1 h-1 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
           : `<div class="w-1 h-1 rounded-full ${dot} shrink-0"></div>`}
         ${code}
+        <span class="text-[7px] font-bold text-white/25 bg-white/[0.06] px-1 py-[1px] rounded leading-none">NST</span>
         ${done ? '' : `<button class="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer text-[12px] leading-none ml-0.5"
                 title="Remove" onclick="event.stopPropagation();removeUnitAnyKey('${code}')">×</button>`}`;
 
@@ -1341,6 +1387,16 @@
       save(); render();
     }
 
+    function handleYearLongDrop(code, targetYearKey) {
+      for (const k of Object.keys(state.plan)) {
+        state.plan[k] = state.plan[k].filter(c => c !== code);
+      }
+      if (!state.plan[targetYearKey]) state.plan[targetYearKey] = [];
+      if (!state.plan[targetYearKey].includes(code)) state.plan[targetYearKey].push(code);
+      dragState = null;
+      save(); render();
+    }
+
     function buildSemSlot(semKey, slotIdx, code, isFifth = false) {
       const slot = document.createElement('div');
       slot.className = `slot-box rounded-lg border border-dashed ${isFifth ? 'border-white/[0.04]' : 'border-white/[0.07]'} min-h-10 transition`;
@@ -1353,11 +1409,15 @@
         slot.appendChild(mkUnitCard(code, semKey, slotIdx));
       }
 
-      slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drop-hover'); });
+      slot.addEventListener('dragover', e => {
+        if (dragState && isYearLong(dragState.code)) return;
+        e.preventDefault(); slot.classList.add('drop-hover');
+      });
       slot.addEventListener('dragleave', e => {
         if (!slot.contains(e.relatedTarget)) slot.classList.remove('drop-hover');
       });
       slot.addEventListener('drop', e => {
+        if (dragState && isYearLong(dragState.code)) return;
         e.preventDefault();
         e.stopPropagation();
         slot.classList.remove('drop-hover');
@@ -1522,6 +1582,10 @@
         return `<span class="text-[8px] font-bold ${cl} px-1 py-[1px] rounded leading-none">D${i+1}</span>`;
       }).join('');
 
+      const nstBadge = isYearLong(code)
+        ? `<span class="text-[8px] font-bold text-white/35 bg-white/[0.07] px-1 py-[1px] rounded leading-none">NST</span>`
+        : '';
+
       const dotHtml = dotCls === 'dot-shared'
         ? `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
         : `<div class="w-1.5 h-1.5 rounded-full ${dotCls} shrink-0"></div>`;
@@ -1550,6 +1614,7 @@
           <div class="flex items-center gap-1">
             <span class="text-[11px] font-medium ${text} leading-tight">${code}</span>
             ${badges}
+            ${nstBadge}
           </div>
           <div class="text-[9px] text-white/30 truncate leading-tight">${u?.title || '—'}</div>
         </div>
