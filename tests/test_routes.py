@@ -4,7 +4,7 @@ import pytest
 import yaml
 from markupsafe import escape
 
-from app.models import NotificationPreference, User
+from app.models import User
 from app.routes import build_search_index
 
 
@@ -48,42 +48,7 @@ def test_onboarding_data_contains_catalogue(client):
     assert payload['degrees']
 
 
-def test_notification_preferences_require_login(client):
-    response = client.post('/api/notification-prefs', json={'weekly_digest': True})
-
-    assert response.status_code == 401
-
-
-def test_authenticated_user_can_update_notification_preferences(client, db):
-    user = User(
-        email='12345678@student.uwa.edu.au',
-        student_id='12345678',
-        display_name='Route Test',
-    )
-    user.set_password('password123')
-    db.session.add(user)
-    db.session.commit()
-
-    with client.session_transaction() as session:
-        session['_user_id'] = str(user.id)
-        session['_fresh'] = True
-
-    response = client.post('/api/notification-prefs', json={
-        'planner_reminders': False,
-        'weekly_digest': True,
-    })
-
-    assert response.status_code == 200
-    payload = response.get_json()
-    assert payload['prefs']['planner_reminders'] is False
-    assert payload['prefs']['weekly_digest'] is True
-
-    prefs = NotificationPreference.query.filter_by(user_id=user.id).one()
-    assert prefs.planner_reminders is False
-    assert prefs.weekly_digest is True
-
-
-def test_authenticated_settings_page_renders_notification_preferences(client, db):
+def test_authenticated_settings_page_renders_account_section(client, db):
     user = User(
         email='23456789@student.uwa.edu.au',
         student_id='23456789',
@@ -100,8 +65,8 @@ def test_authenticated_settings_page_renders_notification_preferences(client, db
     response = client.get('/settings')
 
     assert response.status_code == 200
-    assert b'Email notifications' in response.data
-    assert b'weekly_digest' in response.data
+    assert b'Account' in response.data
+    assert b'Settings Test' in response.data
 
 
 def test_youtube_search_reports_missing_server_key(client):
