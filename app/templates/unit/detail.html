@@ -446,6 +446,7 @@
           </div>
           <input type="hidden" name="rating" id="rating-input" value="">
           <span id="star-label" class="text-[11px] text-white/30 h-4"></span>
+          <span id="star-err" class="hidden text-[11px] text-rc-red/85">Please select a star rating before submitting.</span>
         </div>
 
         {# ---- Difficulty slider ---- #}
@@ -477,15 +478,19 @@
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-rc-text-secondary">Your review</label>
-          <textarea name="body" rows="3" placeholder="Share what you thought about this unit…"
+          <div class="flex justify-between items-center">
+            <label class="text-xs text-rc-text-secondary">Your review <span class="text-rc-red/70">*</span></label>
+            <span id="body-char-count" class="text-[11px] text-white/25">0 / 1200</span>
+          </div>
+          <textarea id="review-body" name="body" rows="3" placeholder="Share what you thought about this unit… (min 10 characters)"
             class="bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-rc-red transition resize-none"></textarea>
+          <span id="body-err" class="hidden text-[11px] text-rc-red/85">Review must be at least 10 characters.</span>
         </div>
 
         <div id="review-form-error" class="hidden text-xs text-rc-red"></div>
 
-        <button type="submit"
-          class="bg-rc-red text-rc-bg font-medium text-[13px] px-4 py-2 rounded-lg transition hover:bg-rc-red-hover cursor-pointer self-start">
+        <button id="review-submit-btn" type="submit"
+          class="bg-rc-red text-rc-bg font-medium text-[13px] px-4 py-2 rounded-lg transition hover:bg-rc-red-hover cursor-pointer self-start disabled:opacity-40 disabled:cursor-not-allowed">
           Submit review
         </button>
       </form>
@@ -705,13 +710,79 @@ drawRadar('radar-live',
     updateSlider(parseInt(slider.value));
   }
 
+  // ---- Review form validation ----
+  const bodyEl      = document.getElementById('review-body');
+  const bodyCount   = document.getElementById('body-char-count');
+  const bodyErr     = document.getElementById('body-err');
+  const starErr     = document.getElementById('star-err');
+  const submitBtn   = document.getElementById('review-submit-btn');
+
+  function reviewIsValid() {
+    const hasRating = ratingInput && parseInt(ratingInput.value) > 0;
+    const bodyLen   = bodyEl ? bodyEl.value.trim().length : 0;
+    return hasRating && bodyLen >= 10;
+  }
+
+  function updateSubmitBtn() {
+    if (submitBtn) submitBtn.disabled = !reviewIsValid();
+  }
+
+  if (bodyEl) {
+    bodyEl.addEventListener('input', function () {
+      const len = this.value.trim().length;
+      if (bodyCount) {
+        bodyCount.textContent = `${len} / 1200`;
+        bodyCount.style.color = len < 10 ? 'rgba(255,99,99,0.7)' : len > 1100 ? '#D4A340' : '';
+      }
+      if (!bodyErr.classList.contains('hidden')) {
+        // re-validate once user starts fixing
+        if (len >= 10) { bodyErr.classList.add('hidden'); bodyEl.style.borderColor = ''; }
+      }
+      updateSubmitBtn();
+    });
+    bodyEl.addEventListener('blur', function () {
+      const len = this.value.trim().length;
+      if (len > 0 && len < 10) {
+        bodyErr.classList.remove('hidden');
+        bodyEl.style.borderColor = 'rgba(255,99,99,0.6)';
+      }
+    });
+  }
+
+  // Watch star rating to toggle star error
+  starBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      starErr.classList.add('hidden');
+      updateSubmitBtn();
+    });
+  });
+
+  // Initialise button state (disabled until valid)
+  updateSubmitBtn();
+
   // ---- Submit ----
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+
+      // Client-side gate
+      const hasRating = parseInt(ratingInput.value) > 0;
+      const bodyLen   = bodyEl ? bodyEl.value.trim().length : 0;
+      let clientOk = true;
+
+      if (!hasRating) {
+        starErr.classList.remove('hidden');
+        clientOk = false;
+      }
+      if (bodyLen < 10) {
+        bodyErr.classList.remove('hidden');
+        if (bodyEl) bodyEl.style.borderColor = 'rgba(255,99,99,0.6)';
+        clientOk = false;
+      }
+      if (!clientOk) return;
+
       formError.classList.add('hidden');
       const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-      const submitBtn = form.querySelector('button[type="submit"]');
       const data = new FormData();
       data.append('csrf_token',     csrfToken);
       data.append('rating',         form.elements['rating'].value);
@@ -736,20 +807,25 @@ drawRadar('radar-live',
             form.reset();
             setStars(0);
             updateSlider(5);
+            if (bodyCount) bodyCount.textContent = '0 / 1200';
             submitBtn.textContent = '✓ Submitted!';
-            setTimeout(() => { submitBtn.textContent = 'Submit review'; }, 2000);
+            setTimeout(() => {
+              submitBtn.textContent = 'Submit review';
+              updateSubmitBtn();
+            }, 2000);
           } else {
             formError.textContent = body.error || 'Something went wrong.';
             formError.classList.remove('hidden');
             submitBtn.textContent = 'Submit review';
+            updateSubmitBtn();
           }
         })
         .catch(() => {
           formError.textContent = 'Network error — please try again.';
           formError.classList.remove('hidden');
           submitBtn.textContent = 'Submit review';
-        })
-        .finally(() => { submitBtn.disabled = false; });
+          updateSubmitBtn();
+        });
     });
   }
 })();
