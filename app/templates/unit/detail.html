@@ -653,11 +653,17 @@ drawRadar('radar-live',
     });
   }
 
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s ?? '';
+    return d.innerHTML;
+  }
+
   function buildCard(r) {
     const starCount = Math.round(r.rating / 2);
     const starsHtml = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
-    const semester  = r.semester_taken ? `<span class="text-[11px] text-white/30">${r.semester_taken}</span>` : '';
-    const workload  = r.workload_hours  ? `<span class="text-[11px] text-white/30">~${r.workload_hours}h/wk</span>` : '';
+    const semester  = r.semester_taken ? `<span class="text-[11px] text-white/30">${esc(r.semester_taken)}</span>` : '';
+    const workload  = r.workload_hours  ? `<span class="text-[11px] text-white/30">~${esc(r.workload_hours)}h/wk</span>` : '';
     const diffPct   = (r.difficulty - 1) / 9;
     const diffColor = diffPct < 0.4 ? '#2ECC71' : diffPct < 0.7 ? '#D4A340' : '#FF6363';
     const diffLabels = ['','Very easy','Easy','Fairly easy','Manageable','Moderate','Challenging','Hard','Very hard','Brutal','Extreme'];
@@ -666,11 +672,11 @@ drawRadar('radar-live',
     card.className = 'bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-2.5';
     card.innerHTML = `
       <div class="flex items-center gap-2.5">
-        <div class="w-7 h-7 rounded-full bg-rc-red-muted flex items-center justify-center text-[11px] font-semibold text-rc-red shrink-0">${r.initials}</div>
+        <div class="w-7 h-7 rounded-full bg-rc-red-muted flex items-center justify-center text-[11px] font-semibold text-rc-red shrink-0">${esc(r.initials)}</div>
         <div class="flex flex-col">
-          <span class="text-sm font-medium text-white/80">${r.display_name}</span>
+          <span class="text-sm font-medium text-white/80">${esc(r.display_name)}</span>
           <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="text-[11px] text-white/30">${r.created_at}</span>
+            <span class="text-[11px] text-white/30">${esc(r.created_at)}</span>
             ${semester}${workload}
           </div>
         </div>
@@ -679,7 +685,7 @@ drawRadar('radar-live',
           <span class="text-[11px] font-medium" style="color:${diffColor}">${diffLabels[r.difficulty]} difficulty</span>
         </div>
       </div>
-      <p class="text-sm text-white/60 leading-relaxed">${r.body}</p>
+      <p class="text-sm text-white/60 leading-relaxed">${esc(r.body)}</p>
     `;
     return card;
   }
