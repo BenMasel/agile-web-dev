@@ -21,7 +21,7 @@ Rather than storing information in a database that only maintainers can edit, al
 
 ### No framework lock-in on the frontend
 
-The frontend is plain HTML and CSS with [Tailwind CSS](https://tailwindcss.com/) loaded from a CDN. JavaScript is used where interactivity genuinely adds value: Fuse.js search, planner drag/drop, localStorage persistence, account sync, and share-link controls. There is no JavaScript build step.
+The frontend is plain HTML and CSS with [Tailwind CSS](https://tailwindcss.com/) loaded from a CDN. JavaScript is used where interactivity genuinely adds value: AJAX search, planner drag/drop, localStorage persistence, account sync, and share-link controls. There is no JavaScript build step.
 
 ### Lightweight by default
 
@@ -56,7 +56,7 @@ The planner is client-side first. It keeps a local browser draft in `localStorag
 | Authentication | Flask-Login + Flask-WTF |
 | Templating | Jinja2 |
 | Styling | Tailwind CSS (browser build v4) |
-| Search | Fuse.js (client-side) |
+| Search | Flask JSON endpoint + AJAX |
 | Content | YAML files |
 | Package manager | uv |
 
