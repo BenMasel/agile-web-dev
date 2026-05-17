@@ -404,134 +404,98 @@
   </div>
   {% endif %}{# /community #}
 
-  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
-    <div class="flex items-center justify-between gap-3">
-      <div>
-        <div class="text-sm font-medium text-white/85">Student reviews</div>
-        <div class="text-[12px] text-rc-text-faint">{{ reviews | length }} review{{ 's' if reviews | length != 1 }}</div>
+  {# ========== READ REVIEWS BUTTON ========== #}
+  <div class="flex gap-2">
+    <button id="btn-read-reviews"
+      class="flex-1 bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">
+      Read reviews
+    </button>
+  </div>
+
+  {# ========== REVIEWS SECTION (toggled by button above) ========== #}
+  <div id="reviews-section" class="hidden flex flex-col gap-4">
+
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded-[7px] bg-rc-red-muted flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 3.5C2 2.67 2.67 2 3.5 2h7C11.33 2 12 2.67 12 3.5v5c0 .83-.67 1.5-1.5 1.5H8l-2 2-2-2H3.5C2.67 10 2 9.33 2 8.5v-5z" stroke="#FF6363" stroke-width="1.1" stroke-linejoin="round"/>
+        </svg>
       </div>
-      {% if not current_user.is_authenticated %}
-      <a href="{{ url_for('main.auth', next=url_for('main.unit_detail', code=unit.code)) }}"
-         class="text-[11px] text-white bg-rc-red/90 hover:bg-rc-red transition px-3 py-1.5 rounded-[7px]">
-        Sign in to review
-      </a>
-      {% endif %}
+      <span class="text-sm font-medium text-white/85">Student reviews</span>
+      <span id="reviews-count-badge" class="text-[11px] text-rc-text-tertiary ml-auto"></span>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
-      <div class="bg-rc-surface p-3">
-        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Average rating</div>
-        <div class="text-[15px] font-semibold text-white/80 mt-1">
-          {{ review_stats.average_rating if review_stats.average_rating is not none else '—' }}
-        </div>
-      </div>
-      <div class="bg-rc-surface p-3">
-        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Difficulty</div>
-        <div class="text-[15px] font-semibold text-white/80 mt-1">
-          {{ review_stats.average_difficulty if review_stats.average_difficulty is not none else '—' }}
-        </div>
-      </div>
-      <div class="bg-rc-surface p-3">
-        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Review count</div>
-        <div class="text-[15px] font-semibold text-white/80 mt-1">{{ review_stats.count }}</div>
-      </div>
-      <div class="bg-rc-surface p-3">
-        <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Workload range</div>
-        <div class="text-[15px] font-semibold text-white/80 mt-1">
-          {% if review_stats.workload_range %}
-            {{ review_stats.workload_range.min }}-{{ review_stats.workload_range.max }} hrs/wk
-          {% else %}
-            —
-          {% endif %}
-        </div>
-      </div>
+    <div id="reviews-list" class="flex flex-col gap-3">
+      <div id="reviews-loading" class="text-sm text-rc-text-faint py-4 text-center">Loading reviews…</div>
     </div>
 
-    {% if current_user.is_authenticated %}
-    <form method="post" action="{{ url_for('main.create_review', code=unit.code) }}" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-rc-fill-subtle rounded-lg p-3.5">
-      {{ review_form.hidden_tag() }}
-      {# ---- Required ratings ---- #}
-      <label class="flex flex-col gap-1">
-        {{ review_form.rating.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.rating(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20") }}
-      </label>
-      <label class="flex flex-col gap-1">
-        {{ review_form.difficulty.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.difficulty(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20") }}
-      </label>
-      <label class="flex flex-col gap-1">
-        {{ review_form.workload_hours.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.workload_hours(min="0", max="80", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
-      </label>
-      {# ---- Optional radar dimensions ---- #}
-      <label class="flex flex-col gap-1">
-        {{ review_form.exam_difficulty.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.exam_difficulty(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
-      </label>
-      <label class="flex flex-col gap-1">
-        {{ review_form.group_work.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.group_work(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
-      </label>
-      <label class="flex flex-col gap-1">
-        {{ review_form.time_commitment.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.time_commitment(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
-      </label>
-      <label class="flex flex-col gap-1">
-        {{ review_form.rote_learning.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.rote_learning(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
-      </label>
-      <label class="flex flex-col gap-1">
-        {{ review_form.semester_taken.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.semester_taken(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="e.g. Sem 1 2025") }}
-      </label>
-      <label class="flex items-center gap-2 self-end pb-2">
-        {{ review_form.would_recommend(class_="rounded border border-rc-border bg-rc-fill w-4 h-4 accent-rc-green cursor-pointer") }}
-        <span class="text-[12px] text-rc-text-tertiary">{{ review_form.would_recommend.label.text }}</span>
-      </label>
-      <label class="flex flex-col gap-1 md:col-span-3">
-        {{ review_form.body.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
-        {{ review_form.body(rows="4", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Share what helped, workload, assessments, and advice.") }}
-      </label>
-      <div class="md:col-span-3 flex justify-end">
+    <div id="review-form-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+      <span class="text-sm font-medium text-white/85">Write a review</span>
+      <meta name="csrf-token" content="{{ csrf_token() }}">
+      <form id="review-form" class="flex flex-col gap-4" novalidate>
+
+        {# ---- Star rating ---- #}
+        <div class="flex flex-col gap-2">
+          <label class="text-xs text-rc-text-secondary">Overall rating</label>
+          <div id="star-rating" class="flex gap-1.5" role="radiogroup" aria-label="Rating">
+            {% for i in range(1, 6) %}
+            <button type="button" data-value="{{ i }}"
+              class="star-btn text-2xl leading-none text-white/20 transition-colors duration-100 cursor-pointer hover:text-yellow-400"
+              aria-label="{{ i }} star{{ 's' if i > 1 }}">★</button>
+            {% endfor %}
+          </div>
+          <input type="hidden" name="rating" id="rating-input" value="">
+          <span id="star-label" class="text-[11px] text-white/30 h-4"></span>
+        </div>
+
+        {# ---- Difficulty slider ---- #}
+        <div class="flex flex-col gap-2">
+          <div class="flex justify-between items-center">
+            <label class="text-xs text-rc-text-secondary">Difficulty</label>
+            <span id="difficulty-label" class="text-xs font-medium text-white/60">5 — Moderate</span>
+          </div>
+          <input type="range" name="difficulty" id="difficulty-slider"
+            min="1" max="10" value="5"
+            class="w-full h-2 rounded-full appearance-none cursor-pointer outline-none"
+            style="background: linear-gradient(90deg, #2ECC71 0%, #D4A340 50%, #FF6363 100%);">
+          <div class="flex justify-between text-[11px] text-white/25">
+            <span>Easy</span><span>Hard</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-rc-text-secondary">Hours/week <span class="text-white/25">(optional)</span></label>
+            <input type="number" name="workload_hours" min="0" max="100" placeholder="e.g. 8"
+              class="bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-rc-red transition">
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-rc-text-secondary">Semester taken <span class="text-white/25">(optional)</span></label>
+            <input type="text" name="semester_taken" maxlength="32" placeholder="e.g. S1 2024"
+              class="bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-rc-red transition">
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-rc-text-secondary">Your review</label>
+          <textarea name="body" rows="3" placeholder="Share what you thought about this unit…"
+            class="bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-rc-red transition resize-none"></textarea>
+        </div>
+
+        <div id="review-form-error" class="hidden text-xs text-rc-red"></div>
+
         <button type="submit"
-                class="text-[12px] px-3 py-1.5 rounded-[7px] bg-rc-fill border border-rc-border text-white/60 hover:text-white/85 hover:border-white/15 transition cursor-pointer">
-          Post review
+          class="bg-rc-red text-rc-bg font-medium text-[13px] px-4 py-2 rounded-lg transition hover:bg-rc-red-hover cursor-pointer self-start">
+          Submit review
         </button>
-      </div>
-    </form>
-    {% endif %}
-
-    <div class="flex flex-col gap-2">
-      {% for review in reviews %}
-      <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex flex-col gap-2">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-[12px] font-medium text-white/70">{{ review.user.display_name }}</span>
-          <span class="text-[11px] text-rc-text-faint">Rating {{ review.rating }}/5</span>
-          <span class="text-[11px] text-rc-text-faint">Difficulty {{ review.difficulty }}/5</span>
-          {% if review.workload_hours is not none %}
-          <span class="text-[11px] text-rc-text-faint">{{ review.workload_hours }} hrs/wk</span>
-          {% endif %}
-          {% if review.semester_taken %}
-          <span class="text-[11px] text-rc-text-faint">{{ review.semester_taken }}</span>
-          {% endif %}
-          {% if current_user.is_authenticated and review.user_id == current_user.id %}
-          <form method="post" action="{{ url_for('main.delete_review', review_id=review.id) }}" class="ml-auto">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-            <button type="submit"
-                    class="text-[11px] text-rc-red/70 hover:text-rc-red transition cursor-pointer">
-              Delete
-            </button>
-          </form>
-          {% endif %}
-        </div>
-        <p class="text-[13px] text-white/55 leading-relaxed">{{ review.body }}</p>
-      </div>
-      {% else %}
-      <div class="text-[12px] text-rc-text-faint bg-rc-fill-subtle rounded-lg p-3.5">
-        No student reviews yet.
-      </div>
-      {% endfor %}
+      </form>
     </div>
+
+    <div id="review-login-prompt" class="hidden bg-rc-fill-subtle border border-rc-border rounded-[10px] p-4 text-center">
+      <p class="text-sm text-rc-text-secondary mb-2">Sign in to leave a review</p>
+      <a href="/auth" class="text-sm font-medium text-rc-red hover:underline">Sign in or create account →</a>
+    </div>
+
   </div>
 
 {% endblock %}
@@ -539,100 +503,256 @@
 
 {% block scripts %}
 <script>
-  // Draws a radar chart onto a canvas element.
-  // canvasId  — the element id
-  // labels    — array of axis labels
-  // values    — array of 0–1 normalised values
-  // strokeColor / fillColor — colour strings for the data polygon
-  function drawRadar(canvasId, labels, values, strokeColor, fillColor) {
-    const c = document.getElementById(canvasId);
-    if (!c) return;
-    const ctx = c.getContext('2d');
-    const w = 200, h = 200, cx = w / 2, cy = h / 2;
-    const maxR = 74, levels = 5, n = labels.length;
+// ============================================================
+// Radar chart helper
+// ============================================================
+function drawRadar(canvasId, labels, values, strokeColor, fillColor) {
+  const c = document.getElementById(canvasId);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  const w = 200, h = 200, cx = w / 2, cy = h / 2;
+  const maxR = 74, levels = 5, n = labels.length;
 
-    const angle = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
-    const px    = (i, r) => cx + Math.cos(angle(i)) * r;
-    const py    = (i, r) => cy + Math.sin(angle(i)) * r;
+  const angle = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
+  const px    = (i, r) => cx + Math.cos(angle(i)) * r;
+  const py    = (i, r) => cy + Math.sin(angle(i)) * r;
 
-    // Grid rings
-    for (let lv = 1; lv <= levels; lv++) {
-      const r = (maxR / levels) * lv;
-      ctx.beginPath();
-      for (let i = 0; i <= n; i++) {
-        const idx = i % n;
-        i === 0 ? ctx.moveTo(px(idx, r), py(idx, r)) : ctx.lineTo(px(idx, r), py(idx, r));
-      }
-      ctx.closePath();
-      ctx.strokeStyle = lv === levels ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)';
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    }
-
-    // Spokes
-    for (let i = 0; i < n; i++) {
-      ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(px(i, maxR), py(i, maxR));
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-    }
-
-    // Data polygon
+  for (let lv = 1; lv <= levels; lv++) {
+    const r = (maxR / levels) * lv;
     ctx.beginPath();
     for (let i = 0; i <= n; i++) {
       const idx = i % n;
-      const r = values[idx] * maxR;
       i === 0 ? ctx.moveTo(px(idx, r), py(idx, r)) : ctx.lineTo(px(idx, r), py(idx, r));
     }
     ctx.closePath();
-    ctx.fillStyle = fillColor;
-    ctx.fill();
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = lv === levels ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 0.5;
     ctx.stroke();
-
-    // Data points
-    for (let i = 0; i < n; i++) {
-      const r = values[i] * maxR;
-      ctx.beginPath();
-      ctx.arc(px(i, r), py(i, r), 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = strokeColor;
-      ctx.fill();
-    }
-
-    // Labels
-    ctx.font = "500 10px 'Inter', system-ui, sans-serif";
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    for (let i = 0; i < n; i++) {
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.fillText(labels[i], px(i, maxR + 16), py(i, maxR + 16));
-    }
   }
 
-  {% if unit.community_static %}
-  // Curated / pre-existing data radar (amber)
-  drawRadar(
-    'radar-static',
-    {{ unit.community_static.radar_labels | tojson }},
-    {{ unit.community_static.radar_values | tojson }},
-    '#F59E0B',
-    'rgba(245,158,11,0.12)'
-  );
-  {% endif %}
+  for (let i = 0; i < n; i++) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(px(i, maxR), py(i, maxR));
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+  }
 
-  {% if unit.community %}
-  // Live student review radar (red)
-  drawRadar(
-    'radar-live',
-    {{ unit.community.radar_labels | tojson }},
-    {{ unit.community.radar_values | tojson }},
-    '#FF6363',
-    'rgba(255,99,99,0.12)'
-  );
-  {% endif %}
+  ctx.beginPath();
+  for (let i = 0; i <= n; i++) {
+    const idx = i % n;
+    const r = values[idx] * maxR;
+    i === 0 ? ctx.moveTo(px(idx, r), py(idx, r)) : ctx.lineTo(px(idx, r), py(idx, r));
+  }
+  ctx.closePath();
+  ctx.fillStyle = fillColor;
+  ctx.fill();
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  for (let i = 0; i < n; i++) {
+    const r = values[i] * maxR;
+    ctx.beginPath();
+    ctx.arc(px(i, r), py(i, r), 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = strokeColor;
+    ctx.fill();
+  }
+
+  ctx.font = "500 10px 'Inter', system-ui, sans-serif";
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (let i = 0; i < n; i++) {
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.fillText(labels[i], px(i, maxR + 16), py(i, maxR + 16));
+  }
+}
+
+{% if unit.community_static %}
+drawRadar('radar-static',
+  {{ unit.community_static.radar_labels | tojson }},
+  {{ unit.community_static.radar_values | tojson }},
+  '#F59E0B', 'rgba(245,158,11,0.12)');
+{% endif %}
+
+{% if unit.community %}
+drawRadar('radar-live',
+  {{ unit.community.radar_labels | tojson }},
+  {{ unit.community.radar_values | tojson }},
+  '#FF6363', 'rgba(255,99,99,0.12)');
+{% endif %}
+
+// ============================================================
+// Unit Reviews — AJAX load + submit
+// ============================================================
+(function () {
+  const UNIT_CODE    = {{ unit.code | tojson }};
+  const IS_LOGGED_IN = {{ (current_user.is_authenticated) | tojson }};
+
+  const btnRead     = document.getElementById('btn-read-reviews');
+  const section     = document.getElementById('reviews-section');
+  const list        = document.getElementById('reviews-list');
+  const loadingEl   = document.getElementById('reviews-loading');
+  const countBadge  = document.getElementById('reviews-count-badge');
+  const formWrap    = document.getElementById('review-form-wrap');
+  const loginPrompt = document.getElementById('review-login-prompt');
+  const form        = document.getElementById('review-form');
+  const formError   = document.getElementById('review-form-error');
+
+  let reviewsLoaded = false;
+  let isOpen = false;
+
+  if (btnRead) {
+    btnRead.addEventListener('click', function () {
+      isOpen = !isOpen;
+      section.classList.toggle('hidden', !isOpen);
+      btnRead.textContent = isOpen ? 'Hide reviews' : 'Read reviews';
+      if (isOpen && !reviewsLoaded) loadReviews();
+    });
+  }
+
+  function buildCard(r) {
+    const starCount = Math.round(r.rating / 2);
+    const starsHtml = '★'.repeat(starCount) + '☆'.repeat(5 - starCount);
+    const semester  = r.semester_taken ? `<span class="text-[11px] text-white/30">${r.semester_taken}</span>` : '';
+    const workload  = r.workload_hours  ? `<span class="text-[11px] text-white/30">~${r.workload_hours}h/wk</span>` : '';
+    const diffPct   = (r.difficulty - 1) / 9;
+    const diffColor = diffPct < 0.4 ? '#2ECC71' : diffPct < 0.7 ? '#D4A340' : '#FF6363';
+    const diffLabels = ['','Very easy','Easy','Fairly easy','Manageable','Moderate','Challenging','Hard','Very hard','Brutal','Extreme'];
+
+    const card = document.createElement('div');
+    card.className = 'bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-2.5';
+    card.innerHTML = `
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-full bg-rc-red-muted flex items-center justify-center text-[11px] font-semibold text-rc-red shrink-0">${r.initials}</div>
+        <div class="flex flex-col">
+          <span class="text-sm font-medium text-white/80">${r.display_name}</span>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[11px] text-white/30">${r.created_at}</span>
+            ${semester}${workload}
+          </div>
+        </div>
+        <div class="ml-auto flex flex-col items-end gap-1">
+          <span class="text-yellow-400 text-sm tracking-tight">${starsHtml}</span>
+          <span class="text-[11px] font-medium" style="color:${diffColor}">${diffLabels[r.difficulty]} difficulty</span>
+        </div>
+      </div>
+      <p class="text-sm text-white/60 leading-relaxed">${r.body}</p>
+    `;
+    return card;
+  }
+
+  function loadReviews() {
+    fetch(`/api/unit/${UNIT_CODE}/reviews`)
+      .then(res => res.json())
+      .then(reviews => {
+        reviewsLoaded = true;
+        loadingEl.remove();
+        if (reviews.length === 0) {
+          const empty = document.createElement('p');
+          empty.className = 'text-sm text-rc-text-faint py-4 text-center';
+          empty.textContent = 'No reviews yet. Be the first!';
+          list.appendChild(empty);
+        } else {
+          reviews.forEach(r => list.appendChild(buildCard(r)));
+        }
+        countBadge.textContent = `${reviews.length} review${reviews.length !== 1 ? 's' : ''}`;
+        if (IS_LOGGED_IN) formWrap.classList.remove('hidden');
+        else loginPrompt.classList.remove('hidden');
+      })
+      .catch(() => { loadingEl.textContent = 'Could not load reviews. Try refreshing.'; });
+  }
+
+  // ---- Star rating ----
+  const starBtns    = document.querySelectorAll('.star-btn');
+  const ratingInput = document.getElementById('rating-input');
+  const starLabel   = document.getElementById('star-label');
+  const starLabels  = ['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
+
+  function setStars(value) {
+    starBtns.forEach(btn => {
+      const v = parseInt(btn.dataset.value);
+      btn.style.color = v <= value ? '#FACC15' : '';
+      btn.classList.toggle('text-yellow-400', v <= value);
+      btn.classList.toggle('text-white/20', v > value);
+    });
+    ratingInput.value = value * 2;
+    starLabel.textContent = value ? `${value} star${value > 1 ? 's' : ''} — ${starLabels[value]}` : '';
+  }
+
+  starBtns.forEach(btn => {
+    btn.addEventListener('click', () => setStars(parseInt(btn.dataset.value)));
+    btn.addEventListener('mouseenter', () => {
+      starBtns.forEach(b => { b.style.color = parseInt(b.dataset.value) <= parseInt(btn.dataset.value) ? '#FACC15' : ''; });
+    });
+    btn.addEventListener('mouseleave', () => setStars(parseInt(ratingInput.value) / 2 || 0));
+  });
+
+  // ---- Difficulty slider ----
+  const slider          = document.getElementById('difficulty-slider');
+  const difficultyLabel = document.getElementById('difficulty-label');
+  const diffLabels      = ['','Very easy','Easy','Fairly easy','Manageable','Moderate','Challenging','Hard','Very hard','Brutal','Extreme'];
+
+  function updateSlider(val) {
+    const pct = (val - 1) / 9;
+    difficultyLabel.textContent = `${val} — ${diffLabels[val]}`;
+    difficultyLabel.style.color = pct < 0.4 ? '#2ECC71' : pct < 0.7 ? '#D4A340' : '#FF6363';
+  }
+
+  if (slider) {
+    slider.addEventListener('input', () => updateSlider(parseInt(slider.value)));
+    updateSlider(parseInt(slider.value));
+  }
+
+  // ---- Submit ----
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      formError.classList.add('hidden');
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const data = new FormData();
+      data.append('csrf_token',     csrfToken);
+      data.append('rating',         form.elements['rating'].value);
+      data.append('difficulty',     form.elements['difficulty'].value);
+      data.append('workload_hours', form.elements['workload_hours'].value);
+      data.append('semester_taken', form.elements['semester_taken'].value);
+      data.append('body',           form.elements['body'].value);
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      fetch(`/api/unit/${UNIT_CODE}/reviews`, { method: 'POST', body: data })
+        .then(res => res.json().then(body => ({ status: res.status, body })))
+        .then(({ status, body }) => {
+          if (status === 201) {
+            const empty = list.querySelector('p');
+            if (empty) empty.remove();
+            list.insertBefore(buildCard(body), list.firstChild);
+            const cur = parseInt(countBadge.textContent) || 0;
+            const n = cur + 1;
+            countBadge.textContent = `${n} review${n !== 1 ? 's' : ''}`;
+            form.reset();
+            setStars(0);
+            updateSlider(5);
+            submitBtn.textContent = '✓ Submitted!';
+            setTimeout(() => { submitBtn.textContent = 'Submit review'; }, 2000);
+          } else {
+            formError.textContent = body.error || 'Something went wrong.';
+            formError.classList.remove('hidden');
+            submitBtn.textContent = 'Submit review';
+          }
+        })
+        .catch(() => {
+          formError.textContent = 'Network error — please try again.';
+          formError.classList.remove('hidden');
+          submitBtn.textContent = 'Submit review';
+        })
+        .finally(() => { submitBtn.disabled = false; });
+    });
+  }
+})();
 </script>
 {% endblock %}
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
