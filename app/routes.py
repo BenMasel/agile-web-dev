@@ -16,7 +16,7 @@ import pyotp
 import qrcode
 from flask import session
 from app.extensions import db
-from app.forms import AccountForm, LoginForm, RegisterForm, TwoFASetupForm, TwoFAVerifyForm, UnitReviewForm
+from app.forms import AccountForm, LoginForm, RegisterForm, ReviewForm, TwoFASetupForm, TwoFAVerifyForm, UnitReviewForm
 from app.models import NotificationPreference, StudyPlan, StudyPlanUnit, UnitReview, User
 
 
@@ -173,7 +173,6 @@ def community_stats_for(unit_code, reviews):
         return None
 
     count = len(reviews)
-
     avg_rating     = round(sum(r.rating for r in reviews) / count, 1)
     avg_difficulty = round(sum(r.difficulty for r in reviews) / count, 1)
     workloads = [r.workload_hours for r in reviews if r.workload_hours is not None]
@@ -218,15 +217,15 @@ def community_stats_for(unit_code, reviews):
     if avg_rote     is not None: bars.append({'label': 'Rote learning',    'value': round(avg_rote  * 2, 1), 'color': bar_color(avg_rote)})
 
     return {
-        'data_quality':        'live',
-        'votes':               count,
-        'reviews_count':       count,
-        'overall_rating':      avg_rating,
+        'data_quality':         'live',
+        'votes':                count,
+        'reviews_count':        count,
+        'overall_rating':       avg_rating,
         'study_hours_per_week': avg_workload,
-        'would_recommend_pct': recommend_pct,
-        'radar_labels':        _RADAR_LABELS,
-        'radar_values':        radar_values,
-        'ratings':             bars,
+        'would_recommend_pct':  recommend_pct,
+        'radar_labels':         _RADAR_LABELS,
+        'radar_values':         radar_values,
+        'ratings':              bars,
     }
 
 
@@ -600,7 +599,6 @@ def public_plan_detail(plan_id):
     units = {u['code']: u for u in load_all_yaml('units')}
     return render_template('plans/detail.html', plan=plan, degrees=degrees, units=units)
 
-
 @bp.route('/api/onboarding-data')
 def onboarding_data():
     units = [
@@ -821,6 +819,91 @@ def update_notification_prefs():
     }})
 
 
+# ---------------------------------------------------------------------------
+# Unit reviews AJAX API
+# ---------------------------------------------------------------------------
+
+@bp.route('/api/unit/<code>/reviews', methods=['GET'])
+def get_unit_reviews(code):
+    """Return all reviews for a unit as JSON, newest first."""
+    reviews = (
+        UnitReview.query
+        .filter_by(unit_code=code.upper())
+        .order_by(UnitReview.created_at.desc())
+        .all()
+    )
+    return jsonify([{
+        'id': r.id,
+        'display_name': r.user.display_name or r.user.email.split('@')[0],
+        'initials': r.user.initials,
+        'rating': r.rating,
+        'difficulty': r.difficulty,
+        'workload_hours': r.workload_hours,
+        'semester_taken': r.semester_taken,
+        'body': r.body,
+        'created_at': r.created_at.strftime('%b %Y'),
+    } for r in reviews])
+
+
+@bp.route('/api/unit/<code>/reviews', methods=['POST'])
+def post_unit_review(code):
+    """Submit a review for a unit via AJAX. Requires login."""
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'You must be logged in to submit a review.'}), 401
+
+    unit = load_yaml('units', f'{code}.yaml')
+    if unit is None:
+        return jsonify({'error': 'Unit not found.'}), 404
+
+    form = ReviewForm()
+    if not form.validate_on_submit():
+        errors = {field: msgs[0] for field, msgs in form.errors.items() if msgs}
+        return jsonify({'error': 'Validation failed.', 'fields': errors}), 422
+
+    body = form.body.data.strip()
+    if review_body_is_placeholder(body):
+        return jsonify({'error': 'Please write a specific review that helps other students.'}), 422
+
+    review = UnitReview(
+        user_id=current_user.id,
+        unit_code=code.upper(),
+        rating=form.rating.data,
+        difficulty=form.difficulty.data,
+        workload_hours=form.workload_hours.data,
+        semester_taken=(form.semester_taken.data or '').strip() or None,
+        body=body,
+    )
+    db.session.add(review)
+    db.session.commit()
+
+    return jsonify({
+        'id': review.id,
+        'display_name': current_user.display_name or current_user.email.split('@')[0],
+        'initials': current_user.initials,
+        'rating': review.rating,
+        'difficulty': review.difficulty,
+        'workload_hours': review.workload_hours,
+        'semester_taken': review.semester_taken,
+        'body': review.body,
+        'created_at': review.created_at.strftime('%b %Y'),
+    }), 201
+
+
+@bp.route('/api/unit/<code>/reviews/<int:review_id>', methods=['DELETE'])
+@login_required
+def delete_unit_review(code, review_id):
+    """Delete a review via AJAX. Only the review owner may delete it."""
+    review = db.session.get(UnitReview, review_id)
+    if review is None or review.unit_code != code.upper():
+        return jsonify({'error': 'Review not found.'}), 404
+    if review.user_id != current_user.id:
+        return jsonify({'error': 'You can only delete your own reviews.'}), 403
+
+    db.session.delete(review)
+    db.session.commit()
+    return jsonify({'deleted': review_id})
+
+
 @bp.route('/unit/<code>/reviews', methods=['POST'])
 @login_required
 def create_review(code):
@@ -923,25 +1006,10 @@ def verify_2fa():
 def setup_2fa():
     """
     Step 1 of enabling 2FA: generate a secret and show the QR code.
-
-    A fresh secret is generated on every GET so that if the user
-    abandons the setup and comes back later they always get a clean one.
-    The secret is held in the server session — NOT saved to the DB yet.
-    It only gets written to the DB in enable_2fa() once the user proves
-    their authenticator app actually scanned it correctly.
-
-    QR code pipeline:
-      secret (base32 string)
-        → otpauth:// URI  (pyotp.TOTP.provisioning_uri)
-        → QR code image   (qrcode.make → PIL Image)
-        → PNG bytes       (img.save to BytesIO buffer)
-        → base64 string   (embedded directly in the <img> src tag)
-    This avoids writing any files to disk.
     """
     secret = pyotp.random_base32()
     session['2fa_pending_secret'] = secret
 
-    # Build the provisioning URI and render as a QR code PNG → base64
     uri = pyotp.TOTP(secret).provisioning_uri(
         name=current_user.email,
         issuer_name='stUwa',
@@ -960,12 +1028,6 @@ def setup_2fa():
 def enable_2fa():
     """
     Step 2 of enabling 2FA: validate the first code, then persist the secret.
-
-    We verify against the session-stored secret (not the DB, since it hasn't
-    been saved yet). Only if the code is correct do we write the secret to
-    the DB and set two_fa_enabled = True. This ensures we never enable 2FA
-    with a secret the user's app didn't successfully import — which would
-    lock them out of their account.
     """
     secret = session.get('2fa_pending_secret')
     if not secret:

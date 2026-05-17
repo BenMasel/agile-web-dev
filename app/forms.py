@@ -65,6 +65,24 @@ class UnitReviewForm(FlaskForm):
     submit          = SubmitField('Post review')
 
 
+class ReviewForm(FlaskForm):
+    rating = IntegerField(
+        'Overall rating',
+        validators=[DataRequired(), NumberRange(min=1, max=10, message='Rating must be between 1 and 10.')],
+    )
+    difficulty = IntegerField(
+        'Difficulty',
+        validators=[DataRequired(), NumberRange(min=1, max=10, message='Difficulty must be between 1 and 10.')],
+    )
+    workload_hours = IntegerField('Hours per week', validators=[Optional(), NumberRange(min=0, max=100)])
+    semester_taken = StringField('Semester taken', validators=[Optional(), Length(max=32)])
+    body = TextAreaField(
+        'Review',
+        validators=[DataRequired(), Length(min=10, max=2000, message='Review must be between 10 and 2000 characters.')],
+    )
+    submit = SubmitField('Submit review')
+
+
 class TwoFAVerifyForm(FlaskForm):
     """Used on the login 2FA verification step."""
     code = StringField(
