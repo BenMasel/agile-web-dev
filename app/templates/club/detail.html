@@ -3,9 +3,8 @@
 {% set club_description = club.description | default('Student club at the University of Western Australia.', true) %}
 {% set club_categories = club.categories | default([], true) %}
 {% set club_abbreviation = club.abbreviation | default('', true) %}
-{% set club_accent_bg = club.accent_bg | default('rgba(108,160,240,0.12)', true) %}
 {% set club_accent_color = club.accent_color | default('#6CA0F0', true) %}
-{% set club_icon_svg = club.icon_svg | default('<circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.2" fill="none"/>', true) %}
+{% set club_display_initials = (club.display_initials or club.abbreviation or club.name or '??' )[:2] | upper %}
 {% set club_room = club.room | default('Location TBC', true) %}
 {% set club_study_units = club.study_units | default([], true) %}
 {% set club_events = club.events | default([], true) %}
@@ -30,11 +29,8 @@
   <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
     <div class="flex items-start gap-3.5">
       <div class="w-[52px] h-[52px] rounded-[12px] flex items-center justify-center shrink-0"
-           style="background: {{ club_accent_bg }}">
-        <svg width="26" height="26" viewBox="0 0 18 18" fill="none"
-             style="color: {{ club_accent_color }}">
-          {{ club_icon_svg | safe }}
-        </svg>
+           style="background: {{ club_accent_color }}">
+        <span class="text-[18px] font-bold text-white leading-none select-none">{{ club_display_initials }}</span>
       </div>
 
       <div class="flex-1 min-w-0">
