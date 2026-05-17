@@ -5,13 +5,34 @@
 {% block content %}
 
   {# ========== SEARCH BAR ========== #}
-  <div class="flex items-center gap-2 bg-rc-surface border border-rc-border rounded-[10px] px-3.5 py-2.5">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="shrink-0">
-      <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.3)" stroke-width="1.2"/>
-      <line x1="11" y1="11" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.2" stroke-linecap="round"/>
-    </svg>
-    <span class="text-sm text-rc-text flex-1">{{ unit.code }}</span>
-    <span class="text-[11px] text-rc-text-faint whitespace-nowrap">unit search</span>
+  <div class="relative z-10">
+    <div class="flex items-center gap-2.5 bg-rc-surface border border-rc-border rounded-[10px] px-4 py-3 focus-within:border-[rgba(255,255,255,0.16)] transition"
+         id="search-bar">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="shrink-0">
+        <circle cx="7" cy="7" r="5.5" stroke="rgba(255,255,255,0.3)" stroke-width="1.3"/>
+        <line x1="11.2" y1="11.2" x2="14" y2="14" stroke="rgba(255,255,255,0.3)" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <input
+        id="search-input"
+        type="text"
+        value="{{ unit.code }}"
+        placeholder="Search units, degrees, clubs…"
+        autocomplete="off"
+        spellcheck="false"
+        class="flex-1 bg-transparent text-sm text-rc-text placeholder-rc-text-tertiary outline-none"
+      />
+      <button id="clear-btn"
+              class="w-5 h-5 rounded-md bg-rc-fill flex items-center justify-center text-rc-text-faint hover:text-white/60 transition shrink-0 cursor-pointer">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    {# ========== RESULTS PANEL — absolute overlay below the search bar ========== #}
+    <div id="results-panel" class="hidden absolute top-full left-0 right-0 mt-1.5 bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden flex flex-col max-h-[60vh] overflow-y-auto shadow-xl">
+      {# Populated by JS #}
+    </div>
   </div>
 
   {# ========== UNIT RESULT CARD ========== #}
@@ -870,6 +891,204 @@ drawRadar('radar-live',
         });
     });
   }
+})();
+
+// ============================================================
+// Search bar
+// ============================================================
+(function () {
+  const input        = document.getElementById('search-input');
+  const clearBtn     = document.getElementById('clear-btn');
+  const resultsPanel = document.getElementById('results-panel');
+
+  let activeIndex = -1;
+  let flatResults = [];
+  let debounceTimer;
+  let currentRequest = null;
+
+  function dotStyle(item) {
+    if (item.type === 'unit')   return 'background:#FF6363';
+    if (item.type === 'degree') return 'background:#A78BFA';
+    if (item.type === 'club')   return `background:${item.accent_color}`;
+    return 'background:#ffffff';
+  }
+
+  function buildRow(item, index) {
+    const a = document.createElement('a');
+    a.href = item.url;
+    a.className = 'result-row flex items-center gap-3 px-4 py-2.5 border border-transparent transition cursor-pointer';
+    a.dataset.index = index;
+
+    const dot = `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="${dotStyle(item)}"></div>`;
+
+    let label, sub, badges = '';
+
+    if (item.type === 'unit') {
+      label  = `<span class="text-[13px] font-medium text-white/85">${item.code}</span>`;
+      sub    = `<span class="text-[11px] text-white/35 truncate">${item.title}</span>`;
+      const avail = item.availability;
+      let availBadge = '';
+      if (avail === 'year_long') {
+        availBadge = `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(167,139,250,0.12)] text-[#A78BFA] shrink-0">Year-long</span>`;
+      } else if (Array.isArray(avail)) {
+        availBadge = avail.map(s => `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(239,159,39,0.1)] text-[#D4A340] shrink-0">Sem ${s}</span>`).join('');
+      }
+      badges = `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(255,99,99,0.12)] text-[#FF6363] shrink-0">${item.credit_points} CP</span>${availBadge}`;
+    } else if (item.type === 'degree') {
+      label  = `<span class="text-[13px] font-medium text-white/85">${item.title}</span>`;
+      sub    = `<span class="text-[11px] text-white/35 truncate">${item.faculty}</span>`;
+      badges = `<span class="text-[10px] px-1.5 py-[2px] rounded bg-[rgba(167,139,250,0.12)] text-[#A78BFA] shrink-0">${item.duration_years} yr</span>`;
+    } else if (item.type === 'club') {
+      label  = `<span class="text-[13px] font-medium text-white/85">${item.abbreviation}</span>`;
+      sub    = `<span class="text-[11px] text-white/35 truncate">${item.name}</span>`;
+    }
+
+    const chevron = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="chevron shrink-0 opacity-0 transition">
+      <path d="M4 2.5L7.5 6L4 9.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+
+    a.innerHTML = `
+      ${dot}
+      <div class="flex items-center gap-2 flex-1 min-w-0">
+        ${label}
+        ${sub}
+      </div>
+      <div class="flex items-center gap-1.5">${badges}</div>
+      ${chevron}
+    `;
+    return a;
+  }
+
+  function buildHeader(label, count) {
+    const div = document.createElement('div');
+    div.className = 'flex items-center justify-between px-4 py-2 bg-rc-fill-subtle';
+    div.innerHTML = `
+      <span class="text-[10px] uppercase tracking-wider text-rc-text-tertiary">${label}</span>
+      <span class="text-[10px] text-rc-text-faint">${count}</span>
+    `;
+    return div;
+  }
+
+  function renderResults(items) {
+    resultsPanel.innerHTML = '';
+    flatResults = items;
+    activeIndex = -1;
+
+    if (items.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'px-4 py-6 text-center text-[13px] text-rc-text-tertiary';
+      empty.textContent = 'No results found.';
+      resultsPanel.appendChild(empty);
+      return;
+    }
+
+    const groups = { unit: [], degree: [], club: [] };
+    items.forEach(item => { if (groups[item.type]) groups[item.type].push(item); });
+
+    const labels = { unit: 'Units', degree: 'Degrees', club: 'Clubs' };
+    let rowIndex = 0;
+
+    Object.entries(groups).forEach(([type, group]) => {
+      if (group.length === 0) return;
+      resultsPanel.appendChild(buildHeader(labels[type], group.length));
+      const section = document.createElement('div');
+      section.className = 'flex flex-col';
+      group.forEach(item => { section.appendChild(buildRow(item, rowIndex++)); });
+      resultsPanel.appendChild(section);
+    });
+  }
+
+  function setActiveRow(index) {
+    document.querySelectorAll('.result-row').forEach(el => {
+      el.classList.remove('bg-rc-fill', 'border-rc-border');
+      el.classList.add('border-transparent');
+      const ch = el.querySelector('.chevron');
+      if (ch) ch.classList.remove('opacity-40');
+    });
+
+    activeIndex = index;
+
+    if (index < 0 || index >= flatResults.length) return;
+
+    const row = document.querySelector(`.result-row[data-index="${index}"]`);
+    if (!row) return;
+    row.classList.add('bg-rc-fill', 'border-rc-border');
+    row.classList.remove('border-transparent');
+    const ch = row.querySelector('.chevron');
+    if (ch) ch.classList.add('opacity-40');
+    row.scrollIntoView({ block: 'nearest' });
+  }
+
+  async function runSearch(query) {
+    const q = query.trim();
+
+    if (q.length < 2) {
+      resultsPanel.classList.add('hidden');
+      resultsPanel.classList.remove('flex');
+      return;
+    }
+
+    resultsPanel.classList.remove('hidden');
+    resultsPanel.classList.add('flex');
+
+    if (currentRequest) currentRequest.abort();
+    const controller = new AbortController();
+    currentRequest = controller;
+
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal });
+      const items = await res.json();
+      currentRequest = null;
+      renderResults(items);
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        currentRequest = null;
+        renderResults([]);
+      }
+    }
+  }
+
+  function clearSearch() {
+    input.value = '';
+    clearBtn.classList.add('hidden');
+    resultsPanel.classList.add('hidden');
+    resultsPanel.classList.remove('flex');
+    flatResults = [];
+    activeIndex = -1;
+  }
+
+  input.addEventListener('input', () => {
+    clearBtn.classList.toggle('hidden', input.value.length === 0);
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => runSearch(input.value), 120);
+  });
+
+  resultsPanel.addEventListener('mouseover', e => {
+    const row = e.target.closest('.result-row');
+    if (row) setActiveRow(Number(row.dataset.index));
+  });
+
+  resultsPanel.addEventListener('mouseleave', () => setActiveRow(-1));
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { clearSearch(); return; }
+    if (flatResults.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveRow((activeIndex + 1) % flatResults.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveRow((activeIndex - 1 + flatResults.length) % flatResults.length);
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault();
+      window.location.href = flatResults[activeIndex].url;
+    }
+  });
+
+  clearBtn.addEventListener('click', clearSearch);
+
+  // Pre-seed results with the current unit code
+  runSearch(input.value);
 })();
 </script>
 {% endblock %}
