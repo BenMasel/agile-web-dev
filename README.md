@@ -126,13 +126,9 @@ uv run python scripts/check_rendered_pages.py
 
 The repository also includes a GitHub Actions workflow at `.github/workflows/tests.yml` that installs dependencies with `uv sync` and runs `uv run pytest` on pushes and pull requests.
 
-Selenium live-browser tests are still a later hardening step. When they are added, they should run against a live development server:
+The repository also includes Selenium live-browser tests for the main user journeys. The tests start their own live Flask server, so they can be run directly:
 
 ```bash
-# Terminal 1
-uv run python run.py
-
-# Terminal 2
 uv run pytest tests/selenium
 ```
 
