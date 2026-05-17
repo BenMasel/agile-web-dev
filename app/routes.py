@@ -17,7 +17,7 @@ import qrcode
 from flask import session
 from app.extensions import db
 from app.forms import AccountForm, LoginForm, RegisterForm, ReviewForm, TwoFASetupForm, TwoFAVerifyForm, UnitReviewForm
-from app.models import NotificationPreference, StudyPlan, StudyPlanUnit, UnitReview, User
+from app.models import StudyPlan, StudyPlanUnit, UnitReview, User
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
@@ -769,54 +769,13 @@ def settings():
             return redirect(url_for('main.settings'))
         flash('Please fix the highlighted account fields.', 'error')
     my_reviews = []
-    prefs = None
     if current_user.is_authenticated:
         my_reviews = UnitReview.query.filter_by(user_id=current_user.id).order_by(UnitReview.updated_at.desc()).all()
-        prefs = NotificationPreference.query.filter_by(user_id=current_user.id).first()
-        if not prefs:
-            prefs = NotificationPreference(user_id=current_user.id)
-            db.session.add(prefs)
-            db.session.commit()
     return render_template(
         'settings.html',
         account_form=account_form,
         my_reviews=my_reviews,
-        notification_prefs=prefs,
     )
-
-
-@bp.route('/api/notification-prefs', methods=['POST'])
-def update_notification_prefs():
-    """Update user's notification preferences."""
-    if not current_user.is_authenticated:
-        return jsonify({'error': 'Unauthorized'}), 401
-
-    prefs = NotificationPreference.query.filter_by(user_id=current_user.id).first()
-    if not prefs:
-        prefs = NotificationPreference(user_id=current_user.id)
-
-    data = request.get_json(silent=True) or {}
-    allowed_keys = (
-        'planner_reminders',
-        'unit_catalogue_updates',
-        'community_replies',
-        'weekly_digest',
-    )
-    for key in allowed_keys:
-        if key in data:
-            if not isinstance(data[key], bool):
-                return jsonify({'error': f'{key} must be true or false'}), 400
-            setattr(prefs, key, data[key])
-
-    db.session.add(prefs)
-    db.session.commit()
-
-    return jsonify({'success': True, 'prefs': {
-        'planner_reminders': prefs.planner_reminders,
-        'unit_catalogue_updates': prefs.unit_catalogue_updates,
-        'community_replies': prefs.community_replies,
-        'weekly_digest': prefs.weekly_digest,
-    }})
 
 
 # ---------------------------------------------------------------------------
