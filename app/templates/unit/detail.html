@@ -279,42 +279,36 @@
         </svg>
       </div>
       <span class="text-sm font-medium text-white/85">Community stats</span>
-      {% if c.data_quality == 'verified' %}
-      <span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">✓ Verified</span>
-      {% else %}
-      <span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber">~ Estimates</span>
-      {% endif %}
+      <span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue">● Live</span>
       <span class="text-[11px] text-rc-text-tertiary ml-auto">{{ c.votes }} votes</span>
     </div>
 
     <hr class="border-rc-border-light" />
 
     {# ---- Sentiment row ---- #}
-    <div class="grid grid-cols-3 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+    <div class="grid grid-cols-2 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
       <div class="bg-rc-surface py-2.5 px-3 flex flex-col items-center gap-[3px]">
         <span class="text-lg font-semibold text-white/85">{{ c.overall_rating }}</span>
         <span class="text-[11px] text-white/30 text-center">overall rating</span>
       </div>
       <div class="bg-rc-surface py-2.5 px-3 flex flex-col items-center gap-[3px]">
-        <span class="text-lg font-semibold text-rc-green">{{ c.pass_rate }}%</span>
-        <span class="text-[11px] text-white/30 text-center">pass rate</span>
-      </div>
-      <div class="bg-rc-surface py-2.5 px-3 flex flex-col items-center gap-[3px]">
+        {% if c.study_hours_per_week is not none %}
         <span class="text-lg font-semibold text-white/85">{{ c.study_hours_per_week }}</span>
+        {% else %}
+        <span class="text-lg font-semibold text-white/30">—</span>
+        {% endif %}
         <span class="text-[11px] text-white/30 text-center">hrs/wk study</span>
       </div>
     </div>
 
-    {# ---- Radar + vote bars ---- #}
+    {# ---- Radar + dimension bars ---- #}
     <div class="grid grid-cols-2 gap-4">
 
-      {# Radar chart — values injected from YAML via tojson #}
       <div class="flex flex-col items-center gap-2">
         <canvas id="radar" width="220" height="220"></canvas>
         <span class="text-[11px] text-rc-text-faint">difficulty profile</span>
       </div>
 
-      {# Vote bars #}
       <div class="flex flex-col gap-2.5 justify-center">
         {% for r in c.ratings %}
         <div class="flex flex-col gap-[5px]">
@@ -323,7 +317,6 @@
             <span class="text-xs font-medium text-white/80">{{ r.value }} / 10</span>
           </div>
           <div class="h-1 bg-rc-fill rounded-full overflow-hidden">
-            {# Bar color driven by the 'color' field in YAML #}
             <div class="h-full rounded-full
               {% if r.color == 'red' %}bg-rc-red
               {% elif r.color == 'amber' %}bg-rc-amber
@@ -336,39 +329,30 @@
       </div>
     </div>
 
-    {# ---- Elective recommendation gauge ---- #}
-    <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex flex-col gap-2.5">
-      <div class="flex justify-between items-center">
-        <span class="text-xs text-white/45">Worth doing as an elective?</span>
-        <span class="text-[13px] font-medium text-rc-amber">{{ c.elective_label }}</span>
-      </div>
-      <div class="relative h-1.5 rounded-full bg-rc-fill overflow-hidden">
-        <div class="h-full rounded-full"
-             style="width: {{ c.elective_pct }}%; background: linear-gradient(90deg,#FF6363,#D4A340,#2ECC71)"></div>
-        <div class="absolute top-[-3px] w-[3px] h-3 bg-rc-text rounded-sm"
-             style="left: {{ c.elective_pct }}%"></div>
-      </div>
-      <div class="flex justify-between">
-        <span class="text-[11px] text-rc-text-faint">Avoid</span>
-        <span class="text-[11px] text-rc-text-faint">Neutral</span>
-        <span class="text-[11px] text-rc-text-faint">Highly recommend</span>
-      </div>
-      <div class="flex gap-4 mt-0.5">
-        <span class="text-[11px] text-white/30">{{ c.would_recommend_pct }}% would recommend</span>
-        <span class="text-[11px] text-rc-text-faint">|</span>
-        <span class="text-[11px] text-white/30">Core students rate higher ({{ c.core_rating }})</span>
-      </div>
+    {# ---- Would recommend ---- #}
+    {% if c.would_recommend_pct is not none %}
+    <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex items-center justify-between gap-3">
+      <span class="text-[12px] text-white/45">Would recommend</span>
+      <span class="text-[13px] font-medium text-rc-green">{{ c.would_recommend_pct }}%</span>
     </div>
+    {% endif %}
 
-    {# ---- Community actions ---- #}
-    <div class="flex gap-2">
-      <button class="flex-1 bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">
-        Read {{ c.reviews_count }} reviews
-      </button>
-      <button class="flex-1 bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">
-        Compare with {{ c.compare_unit }}
-      </button>
+  </div>
+  {% else %}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+    <div class="flex items-center gap-2.5">
+      <div class="w-7 h-7 rounded-[7px] bg-rc-blue-muted flex items-center justify-center">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="5" cy="4" r="2.5" stroke="#6CA0F0" stroke-width="1.1"/>
+          <circle cx="10" cy="4" r="2" stroke="#6CA0F0" stroke-width="1.1"/>
+          <path d="M1 12.5c0-2.5 2-4 4-4s4 1.5 4 4" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round"/>
+          <path d="M10 8.5c1.5 0 3 1 3 3" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="text-sm font-medium text-white/85">Community stats</span>
+      <span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-fill text-rc-text-faint">No data yet</span>
     </div>
+    <p class="text-[13px] text-rc-text-faint">No community data yet — be the first to review this unit below.</p>
   </div>
   {% endif %}{# /community #}
 
@@ -418,6 +402,7 @@
     {% if current_user.is_authenticated %}
     <form method="post" action="{{ url_for('main.create_review', code=unit.code) }}" class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-rc-fill-subtle rounded-lg p-3.5">
       {{ review_form.hidden_tag() }}
+      {# ---- Required ratings ---- #}
       <label class="flex flex-col gap-1">
         {{ review_form.rating.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
         {{ review_form.rating(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20") }}
@@ -430,9 +415,30 @@
         {{ review_form.workload_hours.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
         {{ review_form.workload_hours(min="0", max="80", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
       </label>
-      <label class="flex flex-col gap-1 md:col-span-3">
+      {# ---- Optional radar dimensions ---- #}
+      <label class="flex flex-col gap-1">
+        {{ review_form.exam_difficulty.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.exam_difficulty(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
+      </label>
+      <label class="flex flex-col gap-1">
+        {{ review_form.group_work.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.group_work(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
+      </label>
+      <label class="flex flex-col gap-1">
+        {{ review_form.time_commitment.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.time_commitment(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
+      </label>
+      <label class="flex flex-col gap-1">
+        {{ review_form.rote_learning.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
+        {{ review_form.rote_learning(min="1", max="5", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Optional") }}
+      </label>
+      <label class="flex flex-col gap-1">
         {{ review_form.semester_taken.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
         {{ review_form.semester_taken(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="e.g. Sem 1 2025") }}
+      </label>
+      <label class="flex items-center gap-2 self-end pb-2">
+        {{ review_form.would_recommend(class_="rounded border border-rc-border bg-rc-fill w-4 h-4 accent-rc-green cursor-pointer") }}
+        <span class="text-[12px] text-rc-text-tertiary">{{ review_form.would_recommend.label.text }}</span>
       </label>
       <label class="flex flex-col gap-1 md:col-span-3">
         {{ review_form.body.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
@@ -488,7 +494,7 @@
 </script>
 {% if unit.community %}
 <script>
-  // Radar chart — values come from YAML via tojson
+  // Radar chart — values computed live from DB reviews
   (function () {
     const c = document.getElementById('radar');
     if (!c) return;

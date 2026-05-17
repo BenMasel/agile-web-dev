@@ -41,7 +41,7 @@ JSON schemas in `data/schemas/` define the required fields. `scripts/validate_da
 
 ## Planner And Search
 
-Global search uses a server-generated JSON search index and Fuse.js in the browser. This keeps searches fast and avoids extra server requests after the page loads.
+Global search uses a Flask JSON endpoint that scores the YAML catalogue server-side and returns AJAX results to the browser. A server-rendered `/search` route remains available as the no-JavaScript fallback.
 
 The planner keeps a local browser draft in `localStorage` so guests can still build a plan. Signed-in users can save, load, delete, and publish a server-side copy through JSON requests to `/api/planner`. Those requests include the CSRF token in the `X-CSRFToken` header.
 

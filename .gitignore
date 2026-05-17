@@ -28,6 +28,9 @@ selenium-screenshots/
 # Virtual environment
 .venv
 
+# Editor settings
+.vscode/
+
 # Obsidian vault
 .obsidian/
 

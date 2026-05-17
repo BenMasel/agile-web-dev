@@ -6,7 +6,7 @@ This page tracks what's planned, in progress, and being considered for future de
 
 ## Near-term
 
-- **Selenium coverage** — add live-browser tests for the main assessed journeys
+- **Selenium stability** — keep the live-browser tests reliable across local machines and CI
 - **Frontend quality sweep** — improve focus states, responsive checks, no-JavaScript empty states, and API key handling
 - **Bookmarking** — let signed-in users save useful benefits and resources
 

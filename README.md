@@ -25,7 +25,7 @@ stUwa provides:
 - **Degree pages** — faculty, duration, and credit point requirements
 - **Club pages** — descriptions, icons, and accent theming per club
 - **Student benefits** — categorised discounts and perks available to UWA students
-- **Global search** — client-side fuzzy search powered by [Fuse.js](https://fusejs.io/) across all units, degrees, and clubs with no round-trips to the server
+- **Global search** — AJAX search backed by a Flask JSON endpoint across all units, degrees, and clubs, with a no-JavaScript fallback page
 - **Study planner** — an interactive planner for mapping units across semesters, tracking degree progress, syncing plans to an account, and sharing public plans
 - **Accounts** — UWA student registration, login/logout, settings, and server-side persistence for planner and review data
 - **Unit reviews** — student advice with rating, difficulty, workload, aggregate stats, owner delete controls, and a personal review list in settings
@@ -126,13 +126,9 @@ uv run python scripts/check_rendered_pages.py
 
 The repository also includes a GitHub Actions workflow at `.github/workflows/tests.yml` that installs dependencies with `uv sync` and runs `uv run pytest` on pushes and pull requests.
 
-Selenium live-browser tests are still a later hardening step. When they are added, they should run against a live development server:
+The repository also includes Selenium live-browser tests for the main user journeys. The tests start their own live Flask server, so they can be run directly:
 
 ```bash
-# Terminal 1
-uv run python run.py
-
-# Terminal 2
 uv run pytest tests/selenium
 ```
 
@@ -192,7 +188,7 @@ agile-web-dev/
 | [jsonschema](https://python-jsonschema.readthedocs.io/) | Validating YAML data against schemas |
 | [Python-Markdown](https://python-markdown.github.io/) | Rendering `docs/*.md` files as HTML at `/docs` |
 | [uv](https://docs.astral.sh/uv/) | Dependency management and virtual environment |
-| [Fuse.js](https://fusejs.io/) | Client-side fuzzy search |
+| AJAX search | Server-scored catalogue search with a no-JavaScript fallback |
 | [Highlight.js](https://highlightjs.org/) | Syntax highlighting for code blocks in docs (CDN) |
 | [SQLite](https://www.sqlite.org/) | Lightweight development database |
 | [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/) | ORM for account, planner, review, and preference models |

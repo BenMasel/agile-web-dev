@@ -28,6 +28,12 @@
         </svg>
       </div>
       <div class="flex-1 min-w-0">
+        {% if degree.degree_family_slug and degree_families and degree.degree_family_slug in degree_families %}
+        {% set family = degree_families[degree.degree_family_slug] %}
+        <div class="text-[11px] text-rc-text-faint mb-1">
+          {{ family.title }} <span class="opacity-40">›</span> {{ degree.major_title }}
+        </div>
+        {% endif %}
         <div class="text-xl font-semibold text-rc-text tracking-tight leading-tight">{{ degree.title }}</div>
         <div class="text-sm text-rc-text-secondary mt-0.5">{{ degree.faculty }}</div>
       </div>
