@@ -28,3 +28,16 @@ learning_outcomes:
   - Explain process scheduling, memory management and interprocess communication
   - Compare key OS services across contemporary operating systems
   - Build programs that interact directly with operating system interfaces
+
+community_static:
+  source: "Collated from student forums and past cohort surveys"
+  data_quality: curated
+  votes: 54
+  overall_rating: 6.4
+  study_hours_per_week: 12
+  radar_labels: ['Content', 'Exams', 'Workload', 'Group work', 'Time commit', 'Rote learning']
+  radar_values: [0.72, 0.65, 0.68, 0.10, 0.70, 0.30]
+  ratings:
+    - {label: 'Content difficulty', value: 7.2, color: red}
+    - {label: 'Exam difficulty', value: 6.5, color: amber}
+    - {label: 'Workload', value: 6.8, color: amber}
