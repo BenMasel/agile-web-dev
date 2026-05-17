@@ -264,11 +264,12 @@
   </div>
 
   {# ========== COMMUNITY STATS CARD ========== #}
-  {% if unit.community %}
-  {% set c = unit.community %}
+  {% set cs = unit.community_static %}
+  {% set cl = unit.community %}
+  {% if cs or cl %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
 
-    {# ---- Community header ---- #}
+    {# ---- Header ---- #}
     <div class="flex items-center gap-2.5">
       <div class="w-7 h-7 rounded-[7px] bg-rc-blue-muted flex items-center justify-center">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -279,64 +280,111 @@
         </svg>
       </div>
       <span class="text-sm font-medium text-white/85">Community stats</span>
-      <span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue">● Live</span>
-      <span class="text-[11px] text-rc-text-tertiary ml-auto">{{ c.votes }} votes</span>
+      {% if cl %}<span class="text-[10px] font-medium px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue">● Live</span>{% endif %}
     </div>
 
     <hr class="border-rc-border-light" />
 
-    {# ---- Sentiment row ---- #}
-    <div class="grid grid-cols-2 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
-      <div class="bg-rc-surface py-2.5 px-3 flex flex-col items-center gap-[3px]">
-        <span class="text-lg font-semibold text-white/85">{{ c.overall_rating }}</span>
-        <span class="text-[11px] text-white/30 text-center">overall rating</span>
-      </div>
-      <div class="bg-rc-surface py-2.5 px-3 flex flex-col items-center gap-[3px]">
-        {% if c.study_hours_per_week is not none %}
-        <span class="text-lg font-semibold text-white/85">{{ c.study_hours_per_week }}</span>
-        {% else %}
-        <span class="text-lg font-semibold text-white/30">—</span>
-        {% endif %}
-        <span class="text-[11px] text-white/30 text-center">hrs/wk study</span>
-      </div>
-    </div>
+    {# ---- Two radars side by side (or one if only one source exists) ---- #}
+    <div class="grid {% if cs and cl %}grid-cols-2{% else %}grid-cols-1{% endif %} gap-4">
 
-    {# ---- Radar + dimension bars ---- #}
-    <div class="grid grid-cols-2 gap-4">
-
-      <div class="flex flex-col items-center gap-2">
-        <canvas id="radar" width="220" height="220"></canvas>
-        <span class="text-[11px] text-rc-text-faint">difficulty profile</span>
-      </div>
-
-      <div class="flex flex-col gap-2.5 justify-center">
-        {% for r in c.ratings %}
-        <div class="flex flex-col gap-[5px]">
-          <div class="flex justify-between items-center">
-            <span class="text-xs text-white/45">{{ r.label }}</span>
-            <span class="text-xs font-medium text-white/80">{{ r.value }} / 10</span>
+      {# --- Curated / pre-existing radar --- #}
+      {% if cs %}
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Curated data</span>
+          <span class="text-[10px] text-rc-text-faint">{{ cs.votes }} responses</span>
+        </div>
+        <div class="grid grid-cols-2 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+          <div class="bg-rc-surface py-2 px-3 flex flex-col items-center gap-[2px]">
+            <span class="text-base font-semibold text-white/85">{{ cs.overall_rating }}</span>
+            <span class="text-[10px] text-white/30">overall</span>
           </div>
-          <div class="h-1 bg-rc-fill rounded-full overflow-hidden">
-            <div class="h-full rounded-full
-              {% if r.color == 'red' %}bg-rc-red
-              {% elif r.color == 'amber' %}bg-rc-amber
-              {% elif r.color == 'green' %}bg-rc-green
-              {% endif %}"
-              style="width: {{ (r.value * 10) | int }}%"></div>
+          <div class="bg-rc-surface py-2 px-3 flex flex-col items-center gap-[2px]">
+            {% if cs.study_hours_per_week is not none %}
+            <span class="text-base font-semibold text-white/85">{{ cs.study_hours_per_week }}</span>
+            {% else %}
+            <span class="text-base font-semibold text-white/30">—</span>
+            {% endif %}
+            <span class="text-[10px] text-white/30">hrs/wk</span>
           </div>
         </div>
-        {% endfor %}
+        <div class="flex flex-col items-center gap-1">
+          <canvas id="radar-static" width="200" height="200"></canvas>
+          <span class="text-[10px] text-rc-text-faint">{{ cs.source }}</span>
+        </div>
+        <div class="flex flex-col gap-2">
+          {% for r in cs.ratings %}
+          <div class="flex flex-col gap-[4px]">
+            <div class="flex justify-between items-center">
+              <span class="text-[11px] text-white/40">{{ r.label }}</span>
+              <span class="text-[11px] font-medium text-white/70">{{ r.value }} / 10</span>
+            </div>
+            <div class="h-[3px] bg-rc-fill rounded-full overflow-hidden">
+              <div class="h-full rounded-full
+                {% if r.color == 'red' %}bg-rc-red
+                {% elif r.color == 'amber' %}bg-rc-amber
+                {% else %}bg-rc-green{% endif %}"
+                style="width: {{ (r.value * 10) | int }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
       </div>
-    </div>
+      {% endif %}
 
-    {# ---- Would recommend ---- #}
-    {% if c.would_recommend_pct is not none %}
-    <div class="bg-rc-fill-subtle rounded-lg p-3.5 flex items-center justify-between gap-3">
-      <span class="text-[12px] text-white/45">Would recommend</span>
-      <span class="text-[13px] font-medium text-rc-green">{{ c.would_recommend_pct }}%</span>
-    </div>
-    {% endif %}
+      {# --- Live / student review radar --- #}
+      {% if cl %}
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Student reviews</span>
+          <span class="text-[10px] text-rc-text-faint">{{ cl.votes }} reviews</span>
+        </div>
+        <div class="grid grid-cols-2 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+          <div class="bg-rc-surface py-2 px-3 flex flex-col items-center gap-[2px]">
+            <span class="text-base font-semibold text-white/85">{{ cl.overall_rating }}</span>
+            <span class="text-[10px] text-white/30">overall</span>
+          </div>
+          <div class="bg-rc-surface py-2 px-3 flex flex-col items-center gap-[2px]">
+            {% if cl.study_hours_per_week is not none %}
+            <span class="text-base font-semibold text-white/85">{{ cl.study_hours_per_week }}</span>
+            {% else %}
+            <span class="text-base font-semibold text-white/30">—</span>
+            {% endif %}
+            <span class="text-[10px] text-white/30">hrs/wk</span>
+          </div>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <canvas id="radar-live" width="200" height="200"></canvas>
+          <span class="text-[10px] text-rc-text-faint">from verified student submissions</span>
+        </div>
+        <div class="flex flex-col gap-2">
+          {% for r in cl.ratings %}
+          <div class="flex flex-col gap-[4px]">
+            <div class="flex justify-between items-center">
+              <span class="text-[11px] text-white/40">{{ r.label }}</span>
+              <span class="text-[11px] font-medium text-white/70">{{ r.value }} / 10</span>
+            </div>
+            <div class="h-[3px] bg-rc-fill rounded-full overflow-hidden">
+              <div class="h-full rounded-full
+                {% if r.color == 'red' %}bg-rc-red
+                {% elif r.color == 'amber' %}bg-rc-amber
+                {% else %}bg-rc-green{% endif %}"
+                style="width: {{ (r.value * 10) | int }}%"></div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if cl.would_recommend_pct is not none %}
+        <div class="bg-rc-fill-subtle rounded-lg px-3 py-2 flex items-center justify-between gap-3">
+          <span class="text-[11px] text-white/45">Would recommend</span>
+          <span class="text-[12px] font-medium text-rc-green">{{ cl.would_recommend_pct }}%</span>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
 
+    </div>{# /grid #}
   </div>
   {% else %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
@@ -491,19 +539,17 @@
 
 {% block scripts %}
 <script>
-</script>
-{% if unit.community %}
-<script>
-  // Radar chart — values computed live from DB reviews
-  (function () {
-    const c = document.getElementById('radar');
+  // Draws a radar chart onto a canvas element.
+  // canvasId  — the element id
+  // labels    — array of axis labels
+  // values    — array of 0–1 normalised values
+  // strokeColor / fillColor — colour strings for the data polygon
+  function drawRadar(canvasId, labels, values, strokeColor, fillColor) {
+    const c = document.getElementById(canvasId);
     if (!c) return;
     const ctx = c.getContext('2d');
-    const w = 220, h = 220, cx = w / 2, cy = h / 2;
-
-    const labels = {{ unit.community.radar_labels | tojson }};
-    const values = {{ unit.community.radar_values | tojson }};
-    const maxR = 80, levels = 5, n = labels.length;
+    const w = 200, h = 200, cx = w / 2, cy = h / 2;
+    const maxR = 74, levels = 5, n = labels.length;
 
     const angle = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
     const px    = (i, r) => cx + Math.cos(angle(i)) * r;
@@ -541,9 +587,9 @@
       i === 0 ? ctx.moveTo(px(idx, r), py(idx, r)) : ctx.lineTo(px(idx, r), py(idx, r));
     }
     ctx.closePath();
-    ctx.fillStyle = 'rgba(255,99,99,0.12)';
+    ctx.fillStyle = fillColor;
     ctx.fill();
-    ctx.strokeStyle = '#FF6363';
+    ctx.strokeStyle = strokeColor;
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
@@ -552,19 +598,41 @@
       const r = values[i] * maxR;
       ctx.beginPath();
       ctx.arc(px(i, r), py(i, r), 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#FF6363';
+      ctx.fillStyle = strokeColor;
       ctx.fill();
     }
 
     // Labels
-    ctx.font = "500 11px 'Inter', system-ui, sans-serif";
+    ctx.font = "500 10px 'Inter', system-ui, sans-serif";
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (let i = 0; i < n; i++) {
       ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.fillText(labels[i], px(i, maxR + 18), py(i, maxR + 18));
+      ctx.fillText(labels[i], px(i, maxR + 16), py(i, maxR + 16));
     }
-  })();
+  }
+
+  {% if unit.community_static %}
+  // Curated / pre-existing data radar (amber)
+  drawRadar(
+    'radar-static',
+    {{ unit.community_static.radar_labels | tojson }},
+    {{ unit.community_static.radar_values | tojson }},
+    '#F59E0B',
+    'rgba(245,158,11,0.12)'
+  );
+  {% endif %}
+
+  {% if unit.community %}
+  // Live student review radar (red)
+  drawRadar(
+    'radar-live',
+    {{ unit.community.radar_labels | tojson }},
+    {{ unit.community.radar_values | tojson }},
+    '#FF6363',
+    'rgba(255,99,99,0.12)'
+  );
+  {% endif %}
 </script>
-{% endif %}{# /community radar #}
 {% endblock %}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
