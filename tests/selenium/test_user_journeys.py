@@ -114,12 +114,19 @@ def test_user_can_search_for_unit_and_open_detail(browser, live_app):
 def test_user_can_submit_review_and_another_session_can_view_it(browser, live_app):
     register(browser, live_app, '21000002')
     browser.get(f'{live_app}/unit/CITS3403')
-    browser.find_element(By.ID, 'rating').send_keys('5')
-    browser.find_element(By.ID, 'difficulty').send_keys('3')
-    browser.find_element(By.ID, 'workload_hours').send_keys('9')
-    browser.find_element(By.ID, 'semester_taken').send_keys('Sem 1 2026')
-    browser.find_element(By.ID, 'body').send_keys('Selenium review with practical project advice.')
-    browser.find_element(By.CSS_SELECTOR, 'form[action$="/reviews"] button[type="submit"]').click()
+    wait = WebDriverWait(browser, 30)
+    browser.find_element(By.ID, 'btn-read-reviews').click()
+    wait.until(EC.visibility_of_element_located((By.ID, 'review-form')))
+    browser.find_element(By.CSS_SELECTOR, '.star-btn[data-value="5"]').click()
+    difficulty = browser.find_element(By.ID, 'difficulty-slider')
+    browser.execute_script(
+        "arguments[0].value = '3'; arguments[0].dispatchEvent(new Event('input', { bubbles: true }));",
+        difficulty,
+    )
+    browser.find_element(By.NAME, 'workload_hours').send_keys('9')
+    browser.find_element(By.NAME, 'semester_taken').send_keys('Sem 1 2026')
+    browser.find_element(By.ID, 'review-body').send_keys('Selenium review with practical project advice.')
+    wait.until(EC.element_to_be_clickable((By.ID, 'review-submit-btn'))).click()
     WebDriverWait(browser, 30).until(
         EC.text_to_be_present_in_element((By.TAG_NAME, 'body'), 'Selenium review with practical project advice.')
     )
