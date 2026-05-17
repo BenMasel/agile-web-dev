@@ -16,7 +16,7 @@ import pyotp
 import qrcode
 from flask import session
 from app.extensions import db
-from app.forms import AccountForm, LoginForm, RegisterForm, ReviewForm, TwoFASetupForm, TwoFAVerifyForm
+from app.forms import AccountForm, LoginForm, RegisterForm, ReviewForm, TwoFASetupForm, TwoFAVerifyForm, UnitReviewForm
 from app.models import NotificationPreference, StudyPlan, StudyPlanUnit, UnitReview, User
 
 
@@ -445,12 +445,15 @@ def unit_detail(code):
 
     reviews = UnitReview.query.filter_by(unit_code=code.upper()).order_by(UnitReview.created_at.desc()).all()
     unit['community'] = community_stats_for(code.upper(), reviews)
+    review_form = UnitReviewForm()
     return render_template(
         'unit/detail.html',
         unit=unit,
         clubs=clubs,
         git_meta=git_meta,
+        reviews=reviews,
         review_stats=review_stats_for(reviews),
+        review_form=review_form,
         user_status=user_status,
     )
 
@@ -595,119 +598,6 @@ def public_plan_detail(plan_id):
     degrees = {d['slug']: d for d in load_all_yaml('degrees')}
     units = {u['code']: u for u in load_all_yaml('units')}
     return render_template('plans/detail.html', plan=plan, degrees=degrees, units=units)
-
-
-def serialize_plan(plan):
-    state = {
-        'degrees': [slug for slug in [plan.primary_degree_slug, plan.secondary_degree_slug] if slug],
-        'startYear': plan.start_year,
-        'startSem': plan.start_semester,
-        'plan': {},
-        'done': [],
-        'substitutions': {},
-        'is_public': plan.is_public,
-        'share_url': url_for('main.public_plan_detail', plan_id=plan.id),
-    }
-    for unit in plan.units:
-        key = f'{unit.year}-{unit.semester}'
-        state['plan'].setdefault(key, []).append(unit.unit_code)
-        if unit.status == 'completed' and unit.unit_code not in state['done']:
-            state['done'].append(unit.unit_code)
-    return state
-
-
-@bp.route('/api/planner', methods=['GET'])
-@login_required
-def planner_saved():
-    plan = StudyPlan.query.filter_by(user_id=current_user.id).order_by(StudyPlan.updated_at.desc()).first()
-    return jsonify({'plan': serialize_plan(plan) if plan else None})
-
-
-@bp.route('/api/planner', methods=['POST'])
-@login_required
-def planner_save():
-    payload = request.get_json(silent=True) or {}
-    state = payload.get('state') or {}
-    degrees = state.get('degrees') or []
-    plan_data = state.get('plan') or {}
-    done = set(state.get('done') or [])
-
-    try:
-        start_year = int(state.get('startYear') or datetime.now().year)
-        start_semester = int(state.get('startSem') or 1)
-    except (TypeError, ValueError):
-        return jsonify({'error': 'Planner start year or semester is invalid.'}), 400
-
-    plan = StudyPlan.query.filter_by(user_id=current_user.id).order_by(StudyPlan.updated_at.desc()).first()
-    if not plan:
-        plan = StudyPlan(user_id=current_user.id, start_year=start_year, start_semester=start_semester)
-        db.session.add(plan)
-
-    plan.name = payload.get('name') or 'My study plan'
-    plan.primary_degree_slug = degrees[0] if len(degrees) >= 1 else None
-    plan.secondary_degree_slug = degrees[1] if len(degrees) >= 2 else None
-    plan.start_year = start_year
-    plan.start_semester = start_semester
-    plan.is_public = bool(payload.get('is_public', False))
-    plan.units.clear()
-
-    position = 0
-    for key, codes in plan_data.items():
-        try:
-            year_text, semester_text = key.split('-', 1)
-            year = int(year_text)
-            semester = int(semester_text)
-        except (AttributeError, ValueError):
-            continue
-        for code in codes or []:
-            if not code:
-                continue
-            plan.units.append(StudyPlanUnit(
-                unit_code=str(code).upper(),
-                year=year,
-                semester=semester,
-                status='completed' if code in done else 'planned',
-                position=position,
-            ))
-            position += 1
-
-    db.session.commit()
-    return jsonify({'message': 'Planner saved to your account.', 'plan': serialize_plan(plan)})
-
-
-@bp.route('/api/planner', methods=['DELETE'])
-@login_required
-def planner_delete():
-    for plan in StudyPlan.query.filter_by(user_id=current_user.id).all():
-        db.session.delete(plan)
-    db.session.commit()
-    return jsonify({'message': 'Saved planner deleted.'})
-
-
-@bp.route('/plans')
-def public_plans():
-    degree = request.args.get('degree')
-    query = StudyPlan.query.filter_by(is_public=True)
-    if degree:
-        query = query.filter(
-            (StudyPlan.primary_degree_slug == degree) | (StudyPlan.secondary_degree_slug == degree)
-        )
-    plans = query.order_by(StudyPlan.updated_at.desc()).all()
-    degrees = {d['slug']: d for d in load_all_yaml('degrees')}
-    units = {u['code']: u for u in load_all_yaml('units')}
-    return render_template('plans/index.html', plans=plans, degrees=degrees, units=units, selected_degree=degree)
-
-
-@bp.route('/plans/<int:plan_id>')
-def public_plan_detail(plan_id):
-    plan = db.session.get(StudyPlan, plan_id)
-    if plan is None or not plan.is_public:
-        return render_template('404.html', category='plan'), 404
-
-    degrees = {d['slug']: d for d in load_all_yaml('degrees')}
-    units = {u['code']: u for u in load_all_yaml('units')}
-    return render_template('plans/detail.html', plan=plan, degrees=degrees, units=units)
-
 
 @bp.route('/api/onboarding-data')
 def onboarding_data():
@@ -929,6 +819,91 @@ def update_notification_prefs():
     }})
 
 
+# ---------------------------------------------------------------------------
+# Unit reviews AJAX API
+# ---------------------------------------------------------------------------
+
+@bp.route('/api/unit/<code>/reviews', methods=['GET'])
+def get_unit_reviews(code):
+    """Return all reviews for a unit as JSON, newest first."""
+    reviews = (
+        UnitReview.query
+        .filter_by(unit_code=code.upper())
+        .order_by(UnitReview.created_at.desc())
+        .all()
+    )
+    return jsonify([{
+        'id': r.id,
+        'display_name': r.user.display_name or r.user.email.split('@')[0],
+        'initials': r.user.initials,
+        'rating': r.rating,
+        'difficulty': r.difficulty,
+        'workload_hours': r.workload_hours,
+        'semester_taken': r.semester_taken,
+        'body': r.body,
+        'created_at': r.created_at.strftime('%b %Y'),
+    } for r in reviews])
+
+
+@bp.route('/api/unit/<code>/reviews', methods=['POST'])
+def post_unit_review(code):
+    """Submit a review for a unit via AJAX. Requires login."""
+    if not current_user.is_authenticated:
+        return jsonify({'error': 'You must be logged in to submit a review.'}), 401
+
+    unit = load_yaml('units', f'{code}.yaml')
+    if unit is None:
+        return jsonify({'error': 'Unit not found.'}), 404
+
+    form = ReviewForm()
+    if not form.validate_on_submit():
+        errors = {field: msgs[0] for field, msgs in form.errors.items() if msgs}
+        return jsonify({'error': 'Validation failed.', 'fields': errors}), 422
+
+    body = form.body.data.strip()
+    if review_body_is_placeholder(body):
+        return jsonify({'error': 'Please write a specific review that helps other students.'}), 422
+
+    review = UnitReview(
+        user_id=current_user.id,
+        unit_code=code.upper(),
+        rating=form.rating.data,
+        difficulty=form.difficulty.data,
+        workload_hours=form.workload_hours.data,
+        semester_taken=(form.semester_taken.data or '').strip() or None,
+        body=body,
+    )
+    db.session.add(review)
+    db.session.commit()
+
+    return jsonify({
+        'id': review.id,
+        'display_name': current_user.display_name or current_user.email.split('@')[0],
+        'initials': current_user.initials,
+        'rating': review.rating,
+        'difficulty': review.difficulty,
+        'workload_hours': review.workload_hours,
+        'semester_taken': review.semester_taken,
+        'body': review.body,
+        'created_at': review.created_at.strftime('%b %Y'),
+    }), 201
+
+
+@bp.route('/api/unit/<code>/reviews/<int:review_id>', methods=['DELETE'])
+@login_required
+def delete_unit_review(code, review_id):
+    """Delete a review via AJAX. Only the review owner may delete it."""
+    review = db.session.get(UnitReview, review_id)
+    if review is None or review.unit_code != code.upper():
+        return jsonify({'error': 'Review not found.'}), 404
+    if review.user_id != current_user.id:
+        return jsonify({'error': 'You can only delete your own reviews.'}), 403
+
+    db.session.delete(review)
+    db.session.commit()
+    return jsonify({'deleted': review_id})
+
+
 @bp.route('/unit/<code>/reviews', methods=['POST'])
 @login_required
 def create_review(code):
@@ -975,4 +950,142 @@ def delete_review(review_id):
         return redirect(url_for('main.unit_detail', code=review.unit_code))
 
     code = review.unit_code
-    db.s
+    db.session.delete(review)
+    db.session.commit()
+    flash('Review deleted.', 'success')
+    return redirect(url_for('main.unit_detail', code=code))
+
+
+@bp.route('/club/<slug>')
+def club_detail(slug):
+    """
+    Club detail page.
+    Loads club data from data/clubs/<slug>.yaml.
+    """
+    club = load_yaml('clubs', f'{slug}.yaml')
+    if club is None:
+        return render_template('404.html', category='club'), 404
+
+    return render_template('club/detail.html', club=club)
+
+
+# ---------------------------------------------------------------------------
+# Two-factor authentication
+# ---------------------------------------------------------------------------
+
+@bp.route('/auth/2fa', methods=['GET', 'POST'])
+def verify_2fa():
+    """
+    Second step of login for users with 2FA enabled.
+    Expects '2fa_pending_user_id' to be in the Flask session.
+    """
+    user_id = session.get('2fa_pending_user_id')
+    if not user_id:
+        return redirect(url_for('main.auth'))
+
+    user = db.session.get(User, user_id)
+    if not user:
+        session.pop('2fa_pending_user_id', None)
+        return redirect(url_for('main.auth'))
+
+    form = TwoFAVerifyForm()
+    if form.validate_on_submit():
+        if user.verify_totp(form.code.data.strip()):
+            session.pop('2fa_pending_user_id', None)
+            next_url = session.pop('2fa_next', url_for('main.settings'))
+            login_user(user)
+            flash('Signed in successfully.', 'success')
+            return redirect(next_url if next_url.startswith('/') else url_for('main.settings'))
+        flash('Incorrect code. Please try again.', 'error')
+
+    return render_template('auth/verify_2fa.html', form=form)
+
+
+@bp.route('/settings/2fa/setup', methods=['GET'])
+@login_required
+def setup_2fa():
+    """
+    Step 1 of enabling 2FA: generate a secret and show the QR code.
+    """
+    secret = pyotp.random_base32()
+    session['2fa_pending_secret'] = secret
+
+    uri = pyotp.TOTP(secret).provisioning_uri(
+        name=current_user.email,
+        issuer_name='stUwa',
+    )
+    img = qrcode.make(uri)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    qr_b64 = base64.b64encode(buf.getvalue()).decode()
+
+    form = TwoFASetupForm()
+    return render_template('auth/setup_2fa.html', form=form, qr_b64=qr_b64, secret=secret)
+
+
+@bp.route('/settings/2fa/enable', methods=['POST'])
+@login_required
+def enable_2fa():
+    """
+    Step 2 of enabling 2FA: validate the first code, then persist the secret.
+    """
+    secret = session.get('2fa_pending_secret')
+    if not secret:
+        flash('Setup session expired. Please try again.', 'error')
+        return redirect(url_for('main.setup_2fa'))
+
+    form = TwoFASetupForm()
+    if form.validate_on_submit():
+        totp = pyotp.TOTP(secret)
+        if totp.verify(form.code.data.strip(), valid_window=1):
+            current_user.totp_secret = secret
+            current_user.two_fa_enabled = True
+            db.session.commit()
+            session.pop('2fa_pending_secret', None)
+            flash('Two-factor authentication is now enabled.', 'success')
+            return redirect(url_for('main.settings'))
+        flash('Incorrect code. Make sure your authenticator app is synced and try again.', 'error')
+        return redirect(url_for('main.setup_2fa'))
+
+    flash('Invalid request.', 'error')
+    return redirect(url_for('main.setup_2fa'))
+
+
+@bp.route('/settings/2fa/disable', methods=['POST'])
+@login_required
+def disable_2fa():
+    """
+    Disable 2FA for the current user and clear their TOTP secret.
+    """
+    current_user.two_fa_enabled = False
+    current_user.totp_secret = None
+    db.session.commit()
+    flash('Two-factor authentication has been disabled.', 'success')
+    return redirect(url_for('main.settings'))
+
+
+# ---------------------------------------------------------------------------
+# Error handlers
+# ---------------------------------------------------------------------------
+
+@bp.app_errorhandler(404)
+def not_found(e):
+    return render_template('404.html'), 404
+
+
+@bp.app_errorhandler(400)
+def bad_request(e):
+    current_app.logger.warning('Bad request: %s', e)
+    return render_template('404.html', category='request'), 400
+
+
+@bp.app_errorhandler(403)
+def forbidden(e):
+    current_app.logger.warning('Forbidden request: %s', e)
+    return render_template('404.html', category='permission'), 403
+
+
+@bp.app_errorhandler(500)
+def server_error(e):
+    current_app.logger.exception('Unhandled server error')
+    return render_template('404.html', category='server'), 500
