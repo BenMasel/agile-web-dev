@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 import subprocess
@@ -17,11 +18,52 @@ import qrcode
 from flask import session
 from app.extensions import db
 from app.forms import AccountForm, LoginForm, RegisterForm, ReviewForm, TwoFASetupForm, TwoFAVerifyForm, UnitReviewForm
-from app.models import NotificationPreference, StudyPlan, StudyPlanUnit, UnitReview, User
+from app.models import StudyPlan, StudyPlanUnit, UnitReview, User
 
 
 # All routes live on this blueprint. It is registered in app/__init__.py.
 bp = Blueprint('main', __name__)
+
+
+# ---------------------------------------------------------------------------
+# Club visual seeding
+# ---------------------------------------------------------------------------
+
+_CLUB_ACCENT_PALETTE = [
+    ('#FF6363', 'rgba(255,99,99,0.12)'),
+    ('#A78BFA', 'rgba(167,139,250,0.12)'),
+    ('#6CA0F0', 'rgba(108,160,240,0.12)'),
+    ('#34D399', 'rgba(52,211,153,0.12)'),
+    ('#F59E0B', 'rgba(245,158,11,0.10)'),
+    ('#F472B6', 'rgba(244,114,182,0.12)'),
+    ('#22D3EE', 'rgba(34,211,238,0.12)'),
+    ('#FB923C', 'rgba(251,146,60,0.12)'),
+]
+
+_CLUB_ICON_SVGS = [
+    '<path d="M5 5L2 9L5 13M13 5L16 9L13 13" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="10.5" y1="3" x2="7.5" y2="15" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>',
+    '<circle cx="9" cy="9" r="7" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M9 2c-2 3-2 10 0 14M2 9h14" stroke="currentColor" stroke-width="1.1"/>',
+    '<path d="M4 2v14M4 2h9l-2.5 4.5L13 11H4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>',
+    '<rect x="3" y="2.5" width="12" height="13" rx="1.5" stroke="currentColor" stroke-width="1.1" fill="none"/><line x1="3" y1="6" x2="15" y2="6" stroke="currentColor" stroke-width="1.1"/><line x1="6" y1="10" x2="12" y2="10" stroke="currentColor" stroke-width="1.1"/><line x1="6" y1="12.5" x2="10" y2="12.5" stroke="currentColor" stroke-width="1.1"/>',
+    '<circle cx="7" cy="6.5" r="3" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M1.5 16c0-3.5 2.5-5.5 5.5-5.5s5.5 2 5.5 5.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" fill="none"/><circle cx="13" cy="5.5" r="2.5" stroke="currentColor" stroke-width="1.1" fill="none"/><path d="M16.5 16c0-3-2-4.5-4-4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>',
+    '<path d="M9 2l1.8 5.4H17l-5 3.6 1.9 5.6L9 13.3l-4.9 3.3 1.9-5.6-5-3.6h6.2z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" fill="none"/>',
+    '<path d="M9 16V9M9 9c0-4 3-7 7-7-.5 5-3.5 8-7 7zM9 9c0-3.5-3-6-7-6 .5 4.5 3.5 7 7 6z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>',
+    '<path d="M10.5 2L5.5 9.5H9L7.5 16l5-7.5H9L10.5 2z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" fill="none"/>',
+]
+
+
+def _seed_club_visuals(club: dict) -> dict:
+    """Deterministically assign accent colour and display initials to a club based on its slug."""
+    key = (club.get('slug') or club.get('name') or '').encode()
+    idx = int(hashlib.md5(key).hexdigest(), 16)
+    color, _ = _CLUB_ACCENT_PALETTE[idx % len(_CLUB_ACCENT_PALETTE)]
+    abbrev = (club.get('abbreviation') or club.get('name') or '??').strip()
+    initials = abbrev[:2].upper()
+    return {
+        **club,
+        'accent_color':     club.get('accent_color') or color,
+        'display_initials': initials,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -127,12 +169,13 @@ def build_search_index():
         })
 
     for c in load_all_yaml('clubs'):
+        c = _seed_club_visuals(c)
         index.append({
             'type':         'club',
             'name':         c.get('name', ''),
             'abbreviation': c.get('abbreviation', ''),
             'description':  str(c.get('description', '')).replace('\n', ' ').strip(),
-            'accent_color': c.get('accent_color', '#ffffff'),
+            'accent_color': c['accent_color'],
             'url':          f'/club/{c["slug"]}',
         })
 
@@ -425,7 +468,7 @@ def unit_detail(code):
     for slug in unit.get('associated_clubs', []):
         club = load_yaml('clubs', f'{slug}.yaml')
         if club:
-            clubs.append(club)
+            clubs.append(_seed_club_visuals(club))
 
     filepath = os.path.join('data', 'units', f'{code}.yaml')
     git_meta = git_last_modified(filepath)
@@ -769,54 +812,13 @@ def settings():
             return redirect(url_for('main.settings'))
         flash('Please fix the highlighted account fields.', 'error')
     my_reviews = []
-    prefs = None
     if current_user.is_authenticated:
         my_reviews = UnitReview.query.filter_by(user_id=current_user.id).order_by(UnitReview.updated_at.desc()).all()
-        prefs = NotificationPreference.query.filter_by(user_id=current_user.id).first()
-        if not prefs:
-            prefs = NotificationPreference(user_id=current_user.id)
-            db.session.add(prefs)
-            db.session.commit()
     return render_template(
         'settings.html',
         account_form=account_form,
         my_reviews=my_reviews,
-        notification_prefs=prefs,
     )
-
-
-@bp.route('/api/notification-prefs', methods=['POST'])
-def update_notification_prefs():
-    """Update user's notification preferences."""
-    if not current_user.is_authenticated:
-        return jsonify({'error': 'Unauthorized'}), 401
-
-    prefs = NotificationPreference.query.filter_by(user_id=current_user.id).first()
-    if not prefs:
-        prefs = NotificationPreference(user_id=current_user.id)
-
-    data = request.get_json(silent=True) or {}
-    allowed_keys = (
-        'planner_reminders',
-        'unit_catalogue_updates',
-        'community_replies',
-        'weekly_digest',
-    )
-    for key in allowed_keys:
-        if key in data:
-            if not isinstance(data[key], bool):
-                return jsonify({'error': f'{key} must be true or false'}), 400
-            setattr(prefs, key, data[key])
-
-    db.session.add(prefs)
-    db.session.commit()
-
-    return jsonify({'success': True, 'prefs': {
-        'planner_reminders': prefs.planner_reminders,
-        'unit_catalogue_updates': prefs.unit_catalogue_updates,
-        'community_replies': prefs.community_replies,
-        'weekly_digest': prefs.weekly_digest,
-    }})
 
 
 # ---------------------------------------------------------------------------
@@ -965,6 +967,7 @@ def club_detail(slug):
     club = load_yaml('clubs', f'{slug}.yaml')
     if club is None:
         return render_template('404.html', category='club'), 404
+    club = _seed_club_visuals(club)
 
     return render_template('club/detail.html', club=club)
 
