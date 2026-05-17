@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-tamil-cultural-society
+name: UWA Tamil Cultural Society
+abbreviation: UWATCS
+categories:
+- Multicultural
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: 'Who We Are: We are a community consisting of those across and beyond
+  the Tamil dia'
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-tamil-cultural-society
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-tamil-cultural-society
+last_verified: '2026-05-09'
+active: true

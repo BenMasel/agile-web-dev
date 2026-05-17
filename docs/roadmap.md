@@ -6,9 +6,9 @@ This page tracks what's planned, in progress, and being considered for future de
 
 ## Near-term
 
-- **Study Plan** — pin units to a personal plan stored in `localStorage`; export as a PDF or shareable link
-- **UWA SSO** — sign in with a UWA student account to persist the study plan server-side
-- **Unit reviews** — authenticated students can leave short reviews and difficulty ratings
+- **Selenium stability** — keep the live-browser tests reliable across local machines and CI
+- **Frontend quality sweep** — improve focus states, responsive checks, no-JavaScript empty states, and API key handling
+- **Bookmarking** — let signed-in users save useful benefits and resources
 
 ---
 

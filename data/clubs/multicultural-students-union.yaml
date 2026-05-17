@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: multicultural-students-union
+name: Multicultural Students Union
+abbreviation: MSU
+categories:
+- International
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: Multicultural Students Union (MSU) is one of the oldest and largest non-faculty
+  clubs a
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/multicultural-students-union
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/multicultural-students-union
+last_verified: '2026-05-09'
+active: true

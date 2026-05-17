@@ -1,5 +1,3 @@
-const YOUTUBE_API_KEY = CONFIG.YOUTUBE_API_KEY;
-
 // ---------------------------------------------------------------------------
 // DOM references
 // ---------------------------------------------------------------------------
@@ -28,25 +26,14 @@ CHANNELS.forEach(ch => {
 // ---------------------------------------------------------------------------
 
 async function searchChannel(channelId, query) {
-  const url = new URL('https://www.googleapis.com/youtube/v3/search');
-  url.searchParams.set('part', 'snippet');
-  url.searchParams.set('type', 'video');
-  url.searchParams.set('maxResults', '12');
+  const url = new URL('/api/youtube/search', window.location.origin);
   url.searchParams.set('channelId', channelId);
   url.searchParams.set('q', query);
-  url.searchParams.set('key', YOUTUBE_API_KEY);
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`YouTube API error ${res.status} for channel ${channelId}`);
-  const data = await res.json();
-
-  return data.items.map(item => ({
-    id:           item.id.videoId,
-    title:        item.snippet.title,
-    thumbnail:    item.snippet.thumbnails.medium.url,
-    channelTitle: item.snippet.channelTitle,
-    publishedAt:  item.snippet.publishedAt,
-  }));
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `YouTube search error ${res.status}`);
+  return data.videos || [];
 }
 
 async function searchVideos(query) {

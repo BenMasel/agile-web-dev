@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: podiatric-medicine-students-society
+name: Podiatric Medicine Students' Society
+abbreviation: PMSS
+categories:
+- Postgraduate
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: The Podiatric Medicine Students Society (PMSS) is a professional, not-for-profit
+  organi
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/podiatric-medicine-students-society
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/podiatric-medicine-students-society
+last_verified: '2026-05-09'
+active: true

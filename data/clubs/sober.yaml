@@ -1,0 +1,22 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: sober
+name: Sober?
+abbreviation: null
+categories:
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: “Here’s to the nights we won’t remember, and the friends we won&rsquo
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/sober
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/sober
+last_verified: '2026-05-09'
+active: true

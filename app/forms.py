@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import IntegerField, PasswordField, StringField, SubmitField, TextAreaField
+from wtforms import BooleanField, IntegerField, PasswordField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange, Optional, Regexp
 
 
@@ -45,26 +45,45 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign in')
 
 
-class ReviewForm(FlaskForm):
-    rating = IntegerField(
-        'Overall rating (1–10)',
-        validators=[DataRequired(), NumberRange(min=1, max=10, message='Rating must be between 1 and 10.')],
-    )
-    difficulty = IntegerField(
-        'Difficulty (1–10)',
-        validators=[DataRequired(), NumberRange(min=1, max=10, message='Difficulty must be between 1 and 10.')],
-    )
-    workload_hours = IntegerField(
-        'Hours per week',
-        validators=[Optional(), NumberRange(min=0, max=100)],
-    )
-    semester_taken = StringField(
-        'Semester taken (e.g. S1 2024)',
-        validators=[Optional(), Length(max=32)],
-    )
-    body = TextAreaField(
-        'Your review',
-        validators=[DataRequired(), Length(min=10, max=2000, message='Review must be between 10 and 2000 characters.')],
-    )
-    submit = SubmitField('Submit review')
+class AccountForm(FlaskForm):
+    display_name = StringField('Display name', validators=[DataRequired(), Length(max=80)])
+    faculty = StringField('Faculty', validators=[Optional(), Length(max=120)])
+    submit = SubmitField('Save account')
 
+
+class UnitReviewForm(FlaskForm):
+    rating          = IntegerField('Overall rating',    validators=[DataRequired(), NumberRange(min=1, max=5)])
+    difficulty      = IntegerField('Content difficulty', validators=[DataRequired(), NumberRange(min=1, max=5)])
+    exam_difficulty = IntegerField('Exam difficulty',   validators=[Optional(), NumberRange(min=1, max=5)])
+    group_work      = IntegerField('Group work load',   validators=[Optional(), NumberRange(min=1, max=5)])
+    time_commitment = IntegerField('Time commitment',   validators=[Optional(), NumberRange(min=1, max=5)])
+    rote_learning   = IntegerField('Rote learning',     validators=[Optional(), NumberRange(min=1, max=5)])
+    would_recommend = BooleanField('Would recommend')
+    workload_hours  = IntegerField('Hours per week',    validators=[Optional(), NumberRange(min=0, max=80)])
+    semester_taken  = StringField('Semester taken',     validators=[Optional(), Length(max=32)])
+    body            = TextAreaField('Review',           validators=[DataRequired(), Length(min=10, max=1200)])
+    submit          = SubmitField('Post review')
+
+
+class TwoFAVerifyForm(FlaskForm):
+    """Used on the login 2FA verification step."""
+    code = StringField(
+        'Authenticator code',
+        validators=[
+            DataRequired(),
+            Regexp(r'^\d{6}$', message='Enter the 6-digit code from your authenticator app.'),
+        ],
+    )
+    submit = SubmitField('Verify')
+
+
+class TwoFASetupForm(FlaskForm):
+    """Used to confirm a valid code before enabling 2FA."""
+    code = StringField(
+        'Authenticator code',
+        validators=[
+            DataRequired(),
+            Regexp(r'^\d{6}$', message='Enter the 6-digit code from your authenticator app.'),
+        ],
+    )
+    submit = SubmitField('Enable two-factor authentication')

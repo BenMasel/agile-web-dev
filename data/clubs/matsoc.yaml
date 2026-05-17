@@ -1,29 +1,6 @@
-# PLACEHOLDER — this data is fictional and used for development/testing only.
-# If you represent this club or have accurate information, please submit a PR.
 slug: matsoc
-name: UWA Materials Society
+name: Mathematics Society
 abbreviation: MatSoc
-accent: amber
-accent_bg: "rgba(212,163,64,0.18)"
-accent_color: "#D4A340"
-icon_svg: '<rect x="3" y="7" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/><path d="M6 7V5.5a3 3 0 0 1 6 0V7" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/><circle cx="9" cy="11" r="1.5" fill="currentColor"/>'
-
 description: >
-  MatSoc supports students in materials engineering and related disciplines.
-  We run peer study sessions for core materials units and facilitate industry
-  connections with mining, manufacturing and sustainable materials sectors.
-
-founded: 2003
-member_count: 210
-room: EZONE 301
+  Mathematics Society placeholder entry used to preserve legacy unit club references.
 active: true
-
-study_units:
-  - code: ENSC1002
-    title: Material behaviour from atoms to bridges
-    days: [Wed]
-  - code: ENSC2001
-    title: Materials Engineering
-    days: [Mon, Thu]
-
-events: []

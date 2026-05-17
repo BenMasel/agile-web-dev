@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-chinese-students-and-scholars-association
+name: UWA Chinese Students and Scholars Association
+abbreviation: UWA CSSA
+categories:
+- International
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: Chinese Student and Scholar Association (CSSA) is open to all Chinese
+  students, scholar
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-chinese-students-and-scholars-association
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-chinese-students-and-scholars-association
+last_verified: '2026-05-09'
+active: true

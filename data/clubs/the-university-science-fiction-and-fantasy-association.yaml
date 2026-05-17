@@ -1,0 +1,24 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: the-university-science-fiction-and-fantasy-association
+name: The University Science Fiction and Fantasy Association
+abbreviation: UniSFA
+categories:
+- Hobby Activities
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: UniSFA is the place to be to discuss your favourite sci-fi/fantasy series,
+  films, games
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/the-university-science-fiction-and-fantasy-association
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/the-university-science-fiction-and-fantasy-association
+last_verified: '2026-05-09'
+active: true

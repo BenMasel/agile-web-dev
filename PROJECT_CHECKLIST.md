@@ -4,26 +4,26 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 
 ## Progress Summary
 
-- Last checked: 8 May 2026.
-- Completion: **130** checked items out of **383** total checklist items (**33.9%**).
-- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, and real account registration/login/logout now works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, and salted Werkzeug password hashes. The main remaining project risk is server-side planner persistence, shared user-generated data, broader model coverage, tests, and README/process evidence.
+- Last checked: 13 May 2026.
+- Completion: **294** checked items out of **395** total checklist items (**74.4%**).
+- Status note: The catalogue/search/planner/resources/benefits/docs frontend is in place, real account registration/login/logout works with SQLAlchemy, Flask-Login, Flask-WTF CSRF, salted Werkzeug password hashes, and optional TOTP 2FA. The current branch includes account-backed planner save/load/delete through `/api/planner`, public plan sharing and browsing, unit reviews, notification preferences, data schemas, CI, migrations, YouTube backend proxy work, rendered-page checks, and five Selenium journey tests. Remaining risk is mostly GitHub/process evidence, final manual/browser verification, saved resource/benefit bookmarks, and code/design polish. Local test execution could not be re-run during this check because `uv` is not installed in the current shell.
 
 ## Brief Requirements Snapshot
 
 - [x] Client-server web application using Flask, HTML, CSS, JavaScript, and an allowed CSS framework.
 - [x] User login and logout.
 - [x] User data persisted between sessions.
-- [ ] Users can view data from other users in some manner.
+- [x] Users can view data from other users in some manner.
 - [x] SQLite database accessed through SQLAlchemy.
 - [x] Good navigation, useful purpose, intuitive UI, and strong visual design.
 - [x] Valid, organised HTML with meaningful Jinja templates.
 - [x] Maintainable responsive CSS using allowed framework/custom classes.
-- [ ] Well formatted JavaScript with validation, DOM manipulation, and AJAX where appropriate.
+- [x] Well formatted JavaScript with validation, DOM manipulation, and AJAX where appropriate.
 - [x] Flask code performs non-trivial request handling, data manipulation, and page generation.
-- [ ] Well considered database schema, authentication, and evidence of migrations.
-- [ ] 5+ unit tests and 5+ Selenium tests against a live server.
+- [x] Well considered database schema, authentication, and evidence of migrations.
+- [x] 5+ unit tests and 5+ Selenium tests against a live server.
 - [x] Salted password hashes, CSRF protection for forms, and environment variable configuration.
-- [ ] Public GitHub repo with README containing app purpose, group member table, launch instructions, and test instructions.
+- [x] Public GitHub repo with README containing app purpose, group member table, launch instructions, and test instructions.
 - [ ] Regular GitHub Issues, Pull Requests, commits, reviews, and checkpoint evidence.
 
 ## Current Repo State
@@ -32,8 +32,8 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Route blueprint in `app/routes.py`.
 - [x] YAML-backed unit, degree, club, benefit, and docs content.
 - [x] Jinja template structure with shared `base.html`, navbar, account menu, context menu, and page templates.
-- [x] Client-side global search using Fuse.js.
-- [x] Study planner UI with localStorage persistence.
+- [x] Client-side global search using Fuse.js plus server-rendered/AJAX search fallback.
+- [x] Study planner UI with localStorage persistence and account sync.
 - [x] Resources page using planner state and YouTube/channel metadata.
 - [x] Benefits page with category filters.
 - [x] Docs section rendered from Markdown.
@@ -42,53 +42,53 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] `run.py` launches the Flask app through the application factory.
 - [x] Real authentication with register, login, logout, Flask-Login sessions, and hashed passwords.
 - [x] SQLAlchemy `User` model and SQLite connection configured through Flask-SQLAlchemy.
-- [ ] Server-side persistence for planner/settings/reviews.
-- [ ] Shared user-visible data. Current content is global YAML, not user-generated/user-owned data.
-- [x] Tests.
+- [x] Server-side persistence for planner/settings/reviews/notification preferences.
+- [x] Shared user-visible data through public plans and unit reviews, plus global YAML catalogue data.
+- [x] Unit, route, data validation, rendered-page, and Selenium tests.
 - [x] CSRF protection.
-- [ ] README group member table and test instructions.
-- [ ] Data schemas referenced by docs but not present in the repo.
+- [x] README group member table and test instructions.
+- [x] Data schemas present under `data/schemas/`.
 
 ## Phase 1: Scope And Team Setup
 
 - [x] Confirm the final product statement: "stUwa helps UWA students plan their degree, save their study progress, and share unit advice with other students."
-- [ ] Decide the minimum viable project features for marking:
+- [x] Decide the minimum viable project features for marking:
   - [x] Search/browse units, degrees, clubs, benefits, and resources.
   - [x] Register, login, logout, and account settings.
-  - [ ] Save a personal study plan to the database.
+  - [x] Save a personal study plan to the database.
   - [x] Mark completed units and persist them between sessions.
-  - [ ] Share a public study plan or profile summary.
-  - [ ] Add unit reviews/comments visible to other users.
+  - [x] Share a public study plan or profile summary.
+  - [x] Add unit reviews/comments visible to other users.
 - [ ] Create GitHub Issues for each checklist section or major feature.
 - [ ] Assign each issue to a group member.
 - [ ] Agree on branch naming, PR review rules, and commit message style.
 - [ ] Make sure every team member has correct Git config:
   - [ ] `git config user.name`
   - [ ] `git config user.email`
-- [ ] Add checkpoint notes to `docs/` or GitHub Issues so process work is visible.
+- [x] Add checkpoint notes to `docs/` or GitHub Issues so process work is visible.
 
 ## Phase 2: Project Structure And Configuration
 
-- [ ] Add a real configuration layer:
+- [x] Add a real configuration layer:
   - [x] `config.py` with development, testing, and production config classes.
   - [x] `SECRET_KEY` loaded from environment variables.
   - [x] `DATABASE_URL` or SQLite path loaded from environment variables.
-  - [ ] YouTube API key loaded from environment variables instead of committed JS config.
+  - [x] YouTube API key loaded from environment variables instead of committed JS config.
 - [x] Add `.env.example` documenting required environment variables.
-- [ ] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
-- [ ] Replace or expand `app/db.py` so database access goes through SQLAlchemy.
-- [ ] Decide whether to use:
+- [x] Add `.gitignore` entries for `.env`, `instance/`, SQLite files, generated coverage, and local browser test output.
+- [ ] Retire legacy `app/db.py` helper or document why it remains; production database access now goes through SQLAlchemy models.
+- [x] Decide whether to use:
   - [x] Flask-SQLAlchemy for models and sessions.
   - [x] Flask-Migrate/Alembic for migrations.
   - [x] Flask-Login for session management.
   - [x] Flask-WTF for CSRF-protected forms.
 - [x] Keep Tailwind as the CSS framework because it is allowed by the brief and already used.
-- [ ] Remove unused placeholder entry points if they cause confusion:
-  - [ ] Either make `main.py` launch the app or document that `run.py` is the app entry point.
+- [x] Remove unused placeholder entry points if they cause confusion:
+  - [x] Either make `main.py` launch the app or document that `run.py` is the app entry point.
 
 ## Phase 3: Database Models
 
-- [ ] Design the SQLite schema using SQLAlchemy models.
+- [x] Design the SQLite schema using SQLAlchemy models.
 - [x] Add `User` model:
   - [x] `id`
   - [x] `email`
@@ -136,9 +136,9 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Unit catalogue updates.
   - [x] Review replies or community replies.
   - [x] Weekly digest preference.
-- [ ] Create initial migration.
+- [x] Create initial migration.
 - [ ] Add seed/demo data for development and testing.
-- [ ] Document migration commands in the README.
+- [x] Document migration commands in the README.
 
 ## Phase 4: Authentication And Account Flow
 
@@ -161,16 +161,20 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [x] Navbar avatar shows initials/display name when signed in.
   - [x] Settings page shows saved account information.
   - [x] Auth page redirects if already logged in.
-- [ ] Add CSRF protection to register, login, settings, review, planner save, and delete forms.
-- [ ] Add password change or account edit if time allows.
-- [ ] Add graceful handling for unauthenticated users:
-  - [ ] Planner can still work locally.
-  - [ ] Prompt users to sign in to sync/save server-side.
+- [x] Add CSRF protection to register, login, settings, review, planner save, and delete forms.
+- [x] Add password change or account edit if time allows.
+- [x] Add graceful handling for unauthenticated users:
+  - [x] Planner can still work locally.
+  - [x] Prompt users to sign in to sync/save server-side.
 
 ## Phase 5: Persist The Planner Server-Side
 
-- [ ] Audit current planner localStorage shape in `app/templates/planner.html`.
-- [ ] Create JSON API endpoints:
+- [x] Audit current planner localStorage shape in `app/templates/planner.html`.
+- [x] Create JSON API endpoints for the implemented single saved planner flow:
+  - [x] `GET /api/planner`
+  - [x] `POST /api/planner`
+  - [x] `DELETE /api/planner`
+- [ ] Add granular multi-plan/unit JSON endpoints if time allows:
   - [ ] `GET /api/plans`
   - [ ] `POST /api/plans`
   - [ ] `GET /api/plans/<id>`
@@ -179,98 +183,98 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] `POST /api/plans/<id>/units`
   - [ ] `PATCH /api/plans/<id>/units/<unit_id>`
   - [ ] `DELETE /api/plans/<id>/units/<unit_id>`
-- [ ] Require login for server-side plan save/update/delete.
-- [ ] Keep localStorage as offline/guest draft storage.
-- [ ] Add "Save to account" button on planner.
-- [ ] Add "Load saved plan" control on planner.
-- [ ] Add "Make public" toggle on planner.
-- [ ] Add "Copy share link" for public plans.
-- [ ] Add public plan page:
-  - [ ] `/plans/<id>` or `/u/<username>/plans/<id>`.
-  - [ ] Shows degree selections, planned units, completed units, and credits.
-  - [ ] Hides private plans.
+- [x] Require login for server-side plan save/update/delete.
+- [x] Keep localStorage as offline/guest draft storage.
+- [x] Add "Save to account" button on planner.
+- [x] Add "Load saved plan" control on planner.
+- [x] Add "Make public" toggle on planner.
+- [x] Add "Copy share link" for public plans.
+- [x] Add public plan page:
+  - [x] `/plans/<id>` or `/u/<username>/plans/<id>`.
+  - [x] Shows degree selections, planned units, completed units, and credits.
+  - [x] Hides private plans.
 - [ ] Add conflict/prerequisite validation server-side so important rules are not only client-side.
-- [ ] Add AJAX fetch calls with loading, success, and error states.
+- [x] Add AJAX fetch calls with loading, success, and error states.
 
 ## Phase 6: Shared User Data And Community Features
 
-- [ ] Add unit reviews to satisfy "users can view data from other users".
-- [ ] Add review form on `app/templates/unit/detail.html`:
-  - [ ] Rating.
-  - [ ] Difficulty.
-  - [ ] Workload estimate.
-  - [ ] Semester taken.
-  - [ ] Short written advice.
-- [ ] Require login to create/edit/delete a review.
-- [ ] Allow anyone to view approved/public reviews on unit pages.
-- [ ] Show aggregate review data on unit pages:
-  - [ ] Average rating.
-  - [ ] Average difficulty.
-  - [ ] Review count.
-  - [ ] Common workload range.
-- [ ] Add "My reviews" section in settings.
-- [ ] Add edit/delete review controls for the review owner.
-- [ ] Add basic moderation guardrails:
-  - [ ] Character limits.
-  - [ ] Empty/abusive placeholder validation.
-  - [ ] Hide emails from public review display.
-- [ ] Add public/shared study plan browsing if time allows:
-  - [ ] "Shared Plans" page.
-  - [ ] Filter by degree.
+- [x] Add unit reviews to satisfy "users can view data from other users".
+- [x] Add review form on `app/templates/unit/detail.html`:
+  - [x] Rating.
+  - [x] Difficulty.
+  - [x] Workload estimate.
+  - [x] Semester taken.
+  - [x] Short written advice.
+- [x] Require login to create/edit/delete a review.
+- [x] Allow anyone to view approved/public reviews on unit pages.
+- [x] Show aggregate review data on unit pages:
+  - [x] Average rating.
+  - [x] Average difficulty.
+  - [x] Review count.
+  - [x] Common workload range.
+- [x] Add "My reviews" section in settings.
+- [x] Add edit/delete review controls for the review owner.
+- [x] Add basic moderation guardrails:
+  - [x] Character limits.
+  - [x] Empty/abusive placeholder validation.
+  - [x] Hide emails from public review display.
+- [x] Add public/shared study plan browsing if time allows:
+  - [x] "Shared Plans" page.
+  - [x] Filter by degree.
   - [ ] Link from unit pages to public plans containing that unit.
 
 ## Phase 7: Existing Feature Hardening
 
-- [ ] Home/search:
+- [x] Home/search:
   - [x] Ensure search result HTML is accessible and keyboard navigation works across browsers.
-  - [ ] Add no-JavaScript fallback or graceful empty state.
-  - [ ] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
-- [ ] Unit pages:
-  - [ ] Add review/community section.
-  - [ ] Show whether current user has planned/completed the unit.
-  - [ ] Add "Add to planner" action for authenticated users.
-- [ ] Degree pages:
-  - [ ] Add call-to-action to create a plan from a degree.
+  - [x] Add no-JavaScript fallback or graceful empty state.
+  - [x] Avoid duplicate Fuse.js script loading in `base.html` and `home.html`.
+- [x] Unit pages:
+  - [x] Add review/community section.
+  - [x] Show whether current user has planned/completed the unit.
+  - [x] Add "Add to planner" action for authenticated users.
+- [x] Degree pages:
+  - [x] Add call-to-action to create a plan from a degree.
   - [x] Show units grouped by year/semester from YAML data.
-  - [ ] Link to public plans for the degree if implemented.
+  - [x] Link to public plans for the degree if implemented.
 - [ ] Club pages:
   - [ ] Link clubs to related units and resources.
-  - [ ] Add richer event/contact fields if available.
+  - [x] Add richer event/contact fields if available.
 - [ ] Resources page:
-  - [ ] Move `CONFIG.YOUTUBE_API_KEY` handling out of client-side committed files.
-  - [ ] Add backend proxy endpoint for YouTube search if API keys must be hidden.
-  - [ ] Show helpful setup message when API key is missing in development.
+  - [x] Move `CONFIG.YOUTUBE_API_KEY` handling out of client-side committed files.
+  - [x] Add backend proxy endpoint for YouTube search if API keys must be hidden.
+  - [x] Show helpful setup message when API key is missing in development.
   - [ ] Persist saved/bookmarked resources for logged-in users if implemented.
 - [ ] Benefits page:
   - [ ] Add "save benefit" for logged-in users if implemented.
-  - [ ] Replace placeholder disclaimer data with verified entries or clearly label demo data.
+  - [x] Replace placeholder disclaimer data with verified entries or clearly label demo data.
 - [ ] Settings page:
-  - [ ] Persist notification preferences to the database.
+  - [x] Persist notification preferences to the database.
   - [x] Add import plan JSON if export remains.
   - [ ] Add account deletion or data clearing for logged-in users if time allows.
-- [ ] Docs:
-  - [ ] Update docs to match implemented database-backed behaviour.
-  - [ ] Add schema docs for SQLAlchemy models.
-  - [ ] Fix data schema docs if `data/schemas/` remains absent, or add the schema files.
+- [x] Docs:
+  - [x] Update docs to match implemented database-backed behaviour.
+  - [x] Add schema docs for SQLAlchemy models.
+  - [x] Fix data schema docs if `data/schemas/` remains absent, or add the schema files.
 
 ## Phase 8: HTML, CSS, And Design Quality
 
-- [ ] Validate rendered HTML for major pages:
-  - [ ] Home.
-  - [ ] Planner.
-  - [ ] Unit detail.
-  - [ ] Degree detail.
-  - [ ] Resources.
-  - [ ] Benefits.
-  - [ ] Auth.
-  - [ ] Settings.
+- [x] Validate rendered HTML for major pages:
+  - [x] Home.
+  - [x] Planner.
+  - [x] Unit detail.
+  - [x] Degree detail.
+  - [x] Resources.
+  - [x] Benefits.
+  - [x] Auth.
+  - [x] Settings.
 - [ ] Review Jinja templates for repeated UI that should become components:
   - [ ] Form field component.
   - [ ] Flash message component.
   - [ ] Review card component.
   - [ ] Plan unit chip/card component.
 - [ ] Ensure responsive layouts work on mobile, tablet, and desktop.
-- [ ] Add visible focus states to interactive controls.
+- [x] Add visible focus states to interactive controls.
 - [ ] Add labels or `aria-label` attributes for icon-only buttons.
 - [ ] Replace inline SVG duplication with reusable components where practical.
 - [ ] Keep Tailwind/custom CSS maintainable and avoid page-specific hacks where reusable utilities/components fit.
@@ -289,10 +293,10 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Planner save/share.
   - [ ] Unit review submission.
   - [ ] Settings updates.
-- [ ] Add AJAX helper for JSON requests with CSRF token support.
-- [ ] Handle API errors consistently with visible page feedback.
-- [ ] Keep server-side validation authoritative for all submitted data.
-- [ ] Avoid exposing secrets in static JavaScript.
+- [x] Add AJAX helper for JSON requests with CSRF token support.
+- [x] Handle API errors consistently with visible page feedback.
+- [x] Keep server-side validation authoritative for all submitted data.
+- [x] Avoid exposing secrets in static JavaScript.
 - [ ] Add debounce/throttle where user input triggers network calls.
 
 ## Phase 10: Flask Code Quality
@@ -311,24 +315,24 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Review aggregation.
   - [ ] YouTube/resource search if proxied.
 - [x] Keep YAML loading cached where safe.
-- [ ] Add error handlers for 400, 403, 404, and 500.
-- [ ] Add flash messages for form actions.
-- [ ] Ensure all route functions return the right status codes.
-- [ ] Add logging for important failures without leaking secrets.
+- [x] Add error handlers for 400, 403, 404, and 500.
+- [x] Add flash messages for form actions.
+- [x] Ensure all route functions return the right status codes.
+- [x] Add logging for important failures without leaking secrets.
 
 ## Phase 11: Data Integrity
 
-- [ ] Add JSON schemas under `data/schemas/` or update docs if schema validation will not be used.
-- [ ] Add validation script for YAML content:
-  - [ ] Units.
-  - [ ] Degrees.
-  - [ ] Clubs.
-  - [ ] Benefits.
-- [ ] Add tests for YAML loader and search index generation.
-- [ ] Check all YAML links, URLs, and unit references.
-- [ ] Ensure planner units referenced by degrees exist in `data/units`.
-- [ ] Ensure associated clubs referenced by units exist in `data/clubs`.
-- [ ] Add official source URLs and last verified dates for unit data.
+- [x] Add JSON schemas under `data/schemas/` or update docs if schema validation will not be used.
+- [x] Add validation script for YAML content:
+  - [x] Units.
+  - [x] Degrees.
+  - [x] Clubs.
+  - [x] Benefits.
+- [x] Add tests for YAML loader and search index generation.
+- [x] Check all YAML links, URLs, and unit references.
+- [x] Ensure planner units referenced by degrees exist in `data/units`.
+- [x] Ensure associated clubs referenced by units exist in `data/clubs`.
+- [x] Add official source URLs and last verified dates for unit data.
 - [ ] Replace any known placeholder/inaccurate benefit data before final submission.
 
 ## Phase 12: Testing
@@ -338,68 +342,68 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [x] Add fixtures for app, client, and database.
 - [x] Unit tests, minimum 5:
   - [x] Home route returns 200 and contains search data.
-  - [ ] Unit detail route returns correct unit page and 404 for missing unit.
+  - [x] Unit detail route returns correct unit page and 404 for missing unit.
   - [x] Registration model support creates a user with a hashed password.
-  - [ ] Login/logout changes session state correctly.
-  - [ ] Planner API saves and reloads a user plan.
-  - [ ] Unit review aggregation calculates average rating/difficulty.
+  - [x] Login/logout changes session state correctly.
+  - [x] Planner API saves and reloads a user plan.
+  - [x] Unit review aggregation calculates average rating/difficulty.
   - [x] Onboarding/catalogue API includes units and degrees.
-- [ ] Selenium tests, minimum 5, running against a live server:
-  - [ ] User can register, log in, and log out.
-  - [ ] User can search for a unit and open its detail page.
+- [x] Selenium tests, minimum 5, running against a live server:
+  - [x] User can register, log in, and log out.
+  - [x] User can search for a unit and open its detail page.
   - [ ] User can create/save a study plan and reload it after login.
-  - [ ] User can submit a unit review and another browser/session can view it.
-  - [ ] User can make a plan public and open the share link.
-  - [ ] Resources/benefits navigation works on mobile viewport.
+  - [x] User can submit a unit review and another browser/session can view it.
+  - [x] User can make a plan public and open the share link.
+  - [x] Resources/benefits navigation works on mobile viewport.
 - [x] Add test command to README.
 - [ ] Add coverage command if time allows.
-- [ ] Add CI workflow if time allows:
-  - [ ] Install with `uv sync`.
+- [x] Add CI workflow if time allows:
+  - [x] Install with `uv sync`.
   - [ ] Run lint/format checks.
-  - [ ] Run unit tests.
+  - [x] Run unit tests.
 
 ## Phase 13: Security
 
 - [x] Store passwords only as salted hashes.
-- [ ] Add CSRF protection to all state-changing forms and AJAX requests.
+- [x] Add CSRF protection to all state-changing forms and AJAX requests.
 - [x] Store secret keys and API keys in environment variables.
 - [x] Never commit `.env`, SQLite production data, or API keys.
-- [ ] Use `login_required` on private routes.
-- [ ] Enforce ownership checks:
-  - [ ] Users can only edit/delete their own plans.
-  - [ ] Users can only edit/delete their own reviews.
-  - [ ] Private plans are not visible to other users.
-- [ ] Escape user-generated content in templates.
-- [ ] Validate all form and JSON input server-side.
+- [x] Use `login_required` on private routes.
+- [x] Enforce ownership checks:
+  - [x] Users can only edit/delete their own plans.
+  - [x] Users can only edit/delete their own reviews.
+  - [x] Private plans are not visible to other users.
+- [x] Escape user-generated content in templates.
+- [x] Validate all form and JSON input server-side.
 - [ ] Rate-limit or add basic protection to login if time allows.
-- [ ] Use secure session config for non-debug deployment notes.
+- [x] Use secure session config for non-debug deployment notes.
 
 ## Phase 14: README And Documentation
 
 - [x] Update README purpose section to match final app.
 - [x] Add required group member table:
-  - [ ] UWA ID.
-  - [ ] Name.
-  - [ ] GitHub username.
-- [ ] Keep launch instructions current:
+  - [x] UWA ID.
+  - [x] Name.
+  - [x] GitHub username.
+- [x] Keep launch instructions current:
   - [x] Install `uv`.
   - [x] Copy `.env.example` to `.env`.
-  - [ ] Run migrations.
-  - [ ] Seed database if needed.
+  - [x] Run migrations.
+  - [ ] Seed database if needed; no seed script exists yet.
   - [x] Start with `uv run python run.py`.
-- [ ] Add test instructions:
+- [x] Add test instructions:
   - [x] Unit tests.
   - [x] Selenium tests.
-  - [ ] Any required browser driver setup.
-- [ ] Add migration instructions.
+  - [x] Any required browser driver setup.
+- [x] Add migration instructions.
 - [ ] Add screenshots or short usage walkthrough if time allows.
-- [ ] Update `docs/overview.md` with final implemented features.
-- [ ] Update `docs/roadmap.md` so completed features are not described as future work.
-- [ ] Add architecture notes:
-  - [ ] Flask blueprints.
+- [x] Update `docs/overview.md` with final implemented features.
+- [x] Update `docs/roadmap.md` so completed features are not described as future work.
+- [x] Add architecture notes:
+  - [x] Flask blueprints.
   - [x] SQLAlchemy models.
-  - [ ] YAML catalogue content.
-  - [ ] Client-side planner/search behaviour.
+  - [x] YAML catalogue content.
+  - [x] Client-side planner/search behaviour.
 
 ## Phase 15: GitHub Agile Evidence
 
@@ -414,7 +418,7 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Respond to review comments before merging.
 - [ ] Keep commits regular and scoped.
 - [ ] Avoid one giant final commit.
-- [ ] Track checkpoint meeting outcomes in Issues, PRs, or docs.
+- [x] Track checkpoint meeting outcomes in Issues, PRs, or docs.
 
 ## Phase 16: Final Polish And Submission Readiness
 
@@ -423,15 +427,15 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
 - [ ] Manually test the main user journeys:
   - [x] Browse/search catalogue.
   - [x] Register/login/logout.
-  - [ ] Save and reload planner.
+  - [x] Save and reload planner.
   - [ ] Share public plan.
-  - [ ] Submit/view unit review.
-  - [ ] Update settings.
+  - [x] Submit/view unit review.
+  - [x] Update settings.
   - [x] Browse resources and benefits.
 - [ ] Test on desktop and mobile widths.
 - [ ] Check all external links.
 - [ ] Check empty/error/loading states.
-- [ ] Check database migration from a clean checkout.
+- [x] Check database migration from a clean checkout.
 - [ ] Confirm no secrets are committed.
 - [ ] Confirm README launch and test commands work from a fresh clone.
 - [ ] Tag or mark the final submission commit.
@@ -442,16 +446,16 @@ This checklist maps the CITS3403 group project brief against the current stUwa F
   - [ ] Search a unit.
   - [ ] Build/save a study plan.
   - [ ] Share public plan.
-  - [ ] Add/view a unit review from another user.
+  - [x] Add/view a unit review from another user.
   - [ ] Show tests and GitHub collaboration evidence.
 
 ## Recommended MVP Order
 
-1. [ ] SQLAlchemy setup, migrations, config, and test database.
-2. [ ] Real registration/login/logout with CSRF and password hashing.
-3. [ ] Persist planner to the database for logged-in users.
-4. [ ] Public plan sharing.
-5. [ ] Unit reviews visible to other users.
-6. [ ] Tests: at least 5 unit tests and 5 Selenium tests.
+1. [x] SQLAlchemy setup, migrations, config, and test database.
+2. [x] Real registration/login/logout with CSRF and password hashing.
+3. [x] Persist planner to the database for logged-in users.
+4. [x] Public plan sharing.
+5. [x] Unit reviews visible to other users.
+6. [x] Tests: at least 5 unit tests and 5 Selenium tests.
 7. [ ] README and GitHub process cleanup.
 8. [ ] UI polish, accessibility, and final presentation flow.

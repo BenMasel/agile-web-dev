@@ -2,10 +2,6 @@
 
 {% block title %}stUwa — Search units, degrees & clubs{% endblock %}
 
-{% block head %}
-<script src="https://cdn.jsdelivr.net/npm/fuse.js@7/dist/fuse.min.js"></script>
-{% endblock %}
-
 {% block content %}
 
   {# ========== BRANDING ========== #}
@@ -19,6 +15,27 @@
     <h1 class="text-[22px] font-semibold text-rc-text tracking-tight">stUwa</h1>
     <p class="text-[13px] text-rc-text-tertiary">Search units, degrees and clubs</p>
   </div>
+
+  {# ========== NO-JAVASCRIPT FALLBACK ========== #}
+  <noscript>
+    <div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 mb-4">
+      <p class="text-[13px] text-white/70 mb-3">
+        <strong>JavaScript is disabled.</strong> Using basic search instead. Enable JavaScript for better search functionality.
+      </p>
+      <form method="get" action="/search" class="flex gap-2">
+        <input
+          type="text"
+          name="q"
+          placeholder="Search units, degrees, clubs…"
+          class="flex-1 bg-rc-fill border border-rc-border rounded-lg px-3 py-2 text-[13px] text-rc-text placeholder-rc-text-tertiary outline-none"
+          autocomplete="off"
+        />
+        <button type="submit" class="bg-rc-red-muted text-rc-red px-4 py-2 rounded-lg text-[13px] font-medium hover:bg-rc-red hover:text-white transition">
+          Search
+        </button>
+      </form>
+    </div>
+  </noscript>
 
   {# ========== SEARCH BAR ========== #}
   <div class="relative">
@@ -109,33 +126,7 @@
 
 
 {% block scripts %}
-{#
-  search_data is a JSON-serialised list of all units, degrees, and clubs.
-  Fuse.js searches this entirely client-side — no round-trips needed.
-#}
 <script>
-const SEARCH_DATA = {{ search_data | tojson }};
-
-// ---------------------------------------------------------------------------
-// Fuse.js setup
-// ---------------------------------------------------------------------------
-const fuse = new Fuse(SEARCH_DATA, {
-  // Weighted keys: code/abbreviation weighted highest so that typing
-  // "ENSC1002" or "ESS" gives an exact match immediately.
-  keys: [
-    { name: 'code',         weight: 4 },
-    { name: 'abbreviation', weight: 4 },
-    { name: 'title',        weight: 2 },
-    { name: 'name',         weight: 2 },
-    { name: 'faculty',      weight: 0.5 },
-    { name: 'description',  weight: 0.3 },
-  ],
-  threshold: 0.35,      // lower = stricter matching
-  includeScore: true,
-  minMatchCharLength: 2,
-  ignoreLocation: true, // don't penalise matches that aren't at string start
-});
-
 // ---------------------------------------------------------------------------
 // DOM references
 // ---------------------------------------------------------------------------
@@ -154,7 +145,6 @@ let flatResults = [];   // flat ordered list of result items for keyboard nav
 // Rendering helpers
 // ---------------------------------------------------------------------------
 
-// Dot colour per type/accent
 function dotStyle(item) {
   if (item.type === 'unit')   return 'background:#FF6363';
   if (item.type === 'degree') return 'background:#A78BFA';
@@ -162,17 +152,14 @@ function dotStyle(item) {
   return 'background:#ffffff';
 }
 
-// Build a single result row <a> element
 function buildRow(item, index) {
   const a = document.createElement('a');
   a.href = item.url;
   a.className = 'result-row flex items-center gap-3 px-4 py-2.5 border border-transparent transition cursor-pointer';
   a.dataset.index = index;
 
-  // Dot
   const dot = `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="${dotStyle(item)}"></div>`;
 
-  // Main label + subtitle vary by type
   let label, sub, badges = '';
 
   if (item.type === 'unit') {
@@ -195,7 +182,6 @@ function buildRow(item, index) {
     sub    = `<span class="text-[11px] text-white/35 truncate">${item.name}</span>`;
   }
 
-  // Chevron (visible on hover/active)
   const chevron = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none" class="chevron shrink-0 opacity-0 transition">
     <path d="M4 2.5L7.5 6L4 9.5" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
@@ -212,7 +198,6 @@ function buildRow(item, index) {
   return a;
 }
 
-// Build a section header element
 function buildHeader(label, count) {
   const div = document.createElement('div');
   div.className = 'flex items-center justify-between px-4 py-2 bg-rc-fill-subtle';
@@ -223,13 +208,12 @@ function buildHeader(label, count) {
   return div;
 }
 
-// Render all results into the panel, grouped by type
-function renderResults(results) {
+function renderResults(items) {
   resultsPanel.innerHTML = '';
-  flatResults = results.map(r => r.item);
+  flatResults = items;
   activeIndex = -1;
 
-  if (results.length === 0) {
+  if (items.length === 0) {
     const empty = document.createElement('div');
     empty.className = 'px-4 py-6 text-center text-[13px] text-rc-text-tertiary';
     empty.textContent = 'No results found.';
@@ -237,9 +221,8 @@ function renderResults(results) {
     return;
   }
 
-  // Group by type preserving score order within each group
   const groups = { unit: [], degree: [], club: [] };
-  results.forEach(r => { if (groups[r.item.type]) groups[r.item.type].push(r); });
+  items.forEach(item => { if (groups[item.type]) groups[item.type].push(item); });
 
   const labels = { unit: 'Units', degree: 'Degrees', club: 'Clubs' };
   let rowIndex = 0;
@@ -252,18 +235,15 @@ function renderResults(results) {
     const section = document.createElement('div');
     section.className = 'flex flex-col';
 
-    group.forEach(r => {
-      const row = buildRow(r.item, rowIndex++);
-      section.appendChild(row);
+    group.forEach(item => {
+      section.appendChild(buildRow(item, rowIndex++));
     });
 
     resultsPanel.appendChild(section);
   });
 }
 
-// Apply/remove the active highlight style to a row by index
 function setActiveRow(index) {
-  // Clear previous
   document.querySelectorAll('.result-row').forEach(el => {
     el.classList.remove('bg-rc-fill', 'border-rc-border');
     el.classList.add('border-transparent');
@@ -285,11 +265,12 @@ function setActiveRow(index) {
 }
 
 // ---------------------------------------------------------------------------
-// Search logic
+// AJAX search
 // ---------------------------------------------------------------------------
 let debounceTimer;
+let currentRequest = null;
 
-function runSearch(query) {
+async function runSearch(query) {
   const q = query.trim();
 
   if (q.length < 2) {
@@ -299,12 +280,25 @@ function runSearch(query) {
     return;
   }
 
-  const results = fuse.search(q, { limit: 15 });
-
   hintPanel.classList.add('hidden');
   resultsPanel.classList.remove('hidden');
   resultsPanel.classList.add('flex');
-  renderResults(results);
+
+  if (currentRequest) currentRequest.abort();
+  const controller = new AbortController();
+  currentRequest = controller;
+
+  try {
+    const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal });
+    const items = await res.json();
+    currentRequest = null;
+    renderResults(items);
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      currentRequest = null;
+      renderResults([]);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -319,7 +313,6 @@ input.addEventListener('input', () => {
   debounceTimer = setTimeout(() => runSearch(input.value), 120);
 });
 
-// Hover highlight
 resultsPanel.addEventListener('mouseover', e => {
   const row = e.target.closest('.result-row');
   if (row) setActiveRow(Number(row.dataset.index));
@@ -327,7 +320,6 @@ resultsPanel.addEventListener('mouseover', e => {
 
 resultsPanel.addEventListener('mouseleave', () => setActiveRow(-1));
 
-// Keyboard navigation
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     clearSearch();
@@ -348,7 +340,6 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// Clear button
 clearBtn.addEventListener('click', clearSearch);
 
 function clearSearch() {
@@ -362,7 +353,6 @@ function clearSearch() {
   input.focus();
 }
 
-// Programmatic query — used by the hint panel buttons
 function setQuery(term) {
   input.value = term;
   clearBtn.classList.remove('hidden');
@@ -370,7 +360,6 @@ function setQuery(term) {
   runSearch(term);
 }
 
-// Auto-focus the input on page load
 input.focus();
 </script>
 {% endblock %}

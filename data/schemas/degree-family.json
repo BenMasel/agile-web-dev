@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "stUwa degree family",
+  "type": "object",
+  "required": ["slug", "title", "short_title", "faculty", "duration_years", "credit_points"],
+  "properties": {
+    "slug":          { "type": "string", "minLength": 1 },
+    "title":         { "type": "string", "minLength": 1 },
+    "short_title":   { "type": "string", "minLength": 1 },
+    "faculty":       { "type": "string", "minLength": 1 },
+    "duration_years":{ "type": "integer", "minimum": 1 },
+    "credit_points": { "type": "integer", "minimum": 0 }
+  },
+  "additionalProperties": false
+}

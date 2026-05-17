@@ -1,0 +1,28 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: palestinian-cultural-society-uwa
+name: Palestinian Cultural Society UWA
+abbreviation: PCS
+categories:
+- Arts
+- Guild
+- Multicultural
+- Music And Performance
+- Political
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: The Palestinian Cultural Society of UWA aims to create a Palestinian
+  identity within th
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/palestinian-cultural-society-uwa
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/palestinian-cultural-society-uwa
+last_verified: '2026-05-09'
+active: true

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ plan.name }} — stUwa{% endblock %}
+
+{% block content %}
+<div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex flex-col gap-4">
+  <div class="flex items-start gap-3">
+    <div class="w-10 h-10 rounded-[10px] bg-rc-blue-muted border border-rc-blue/20 flex items-center justify-center shrink-0">
+      <span class="text-[13px] font-semibold text-rc-blue">{{ plan.user.initials }}</span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <h1 class="text-xl font-semibold text-rc-text tracking-tight">{{ plan.name }}</h1>
+      <p class="text-sm text-rc-text-secondary mt-0.5">Shared by {{ plan.user.display_name }}</p>
+    </div>
+    <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Public</span>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-rc-fill-light rounded-lg overflow-hidden">
+    <div class="bg-rc-surface p-3">
+      <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Start</div>
+      <div class="text-[13px] font-medium text-white/80 mt-1">Sem {{ plan.start_semester }} {{ plan.start_year }}</div>
+    </div>
+    <div class="bg-rc-surface p-3">
+      <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Planned units</div>
+      <div class="text-[13px] font-medium text-white/80 mt-1">{{ plan.units | length }}</div>
+    </div>
+    <div class="bg-rc-surface p-3">
+      <div class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Completed</div>
+      <div class="text-[13px] font-medium text-white/80 mt-1">{{ plan.units | selectattr('status', 'equalto', 'completed') | list | length }}</div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-1.5">
+    {% for slug in [plan.primary_degree_slug, plan.secondary_degree_slug] if slug %}
+    <a href="{{ url_for('main.degree_detail', slug=slug) }}"
+       class="text-xs font-medium text-rc-blue bg-rc-blue-muted border border-rc-blue/15 rounded-md px-2.5 py-1 transition hover:border-rc-blue/30">
+      {{ degrees.get(slug, {}).get('title', slug) }}
+    </a>
+    {% endfor %}
+  </div>
+</div>
+
+{% set grouped = {} %}
+{% for unit in plan.units %}
+  {% set key = unit.year ~ '-' ~ unit.semester %}
+  {% set _ = grouped.setdefault(key, []).append(unit) %}
+{% endfor %}
+
+<div class="flex flex-col gap-3">
+  {% for key, plan_units in grouped | dictsort %}
+  {% set year, semester = key.split('-') %}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3">
+    <div class="flex items-center justify-between">
+      <div class="text-[12px] font-medium text-white/70">Sem {{ semester }} {{ year }}</div>
+      <div class="text-[11px] text-rc-text-faint">{{ plan_units | length }} unit{{ 's' if plan_units | length != 1 }}</div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+      {% for plan_unit in plan_units %}
+      {% set unit = units.get(plan_unit.unit_code) %}
+      <a href="{{ url_for('main.unit_detail', code=plan_unit.unit_code) }}"
+         class="rounded-lg border border-rc-border bg-rc-fill-subtle px-3 py-2 flex items-center gap-2 hover:border-white/15 transition">
+        <span class="w-1.5 h-1.5 rounded-full {{ 'bg-rc-green' if plan_unit.status == 'completed' else 'bg-rc-blue' }} shrink-0"></span>
+        <div class="flex-1 min-w-0">
+          <div class="text-[12px] font-medium text-white/75">{{ plan_unit.unit_code }}</div>
+          <div class="text-[10px] text-white/35 truncate">{{ unit.title if unit else 'Unknown unit' }}</div>
+        </div>
+        {% if plan_unit.status == 'completed' %}
+        <span class="text-[10px] text-rc-green">Done</span>
+        {% endif %}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

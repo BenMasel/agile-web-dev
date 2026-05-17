@@ -11,13 +11,17 @@ All site content is stored as YAML files under `data/`. Each subdirectory has a 
 ```yaml
 code: CITS1001
 title: Software Engineering with Java
-faculty: Faculty of Engineering and Mathematical Sciences
-credit_points: 6
 level: 1
-semester: 1          # 1, 2, or 12 (both)
+credit_points: 6
+availability: [1]
+faculty: Science
+school: Computer Science and Software Engineering
+source_url: "https://www.handbooks.uwa.edu.au/unitdetails?code=CITS1001"
+handbook_year: 2026
+last_verified: "2026-04-18"
 
 associated_clubs:
-  - uwa-computing-students-association
+  - physsoc
 
 resources:
   youtube_channels:
@@ -31,7 +35,7 @@ resources:
       author: "Daniel Liang"
 ```
 
-**Required fields:** `code`, `title`, `faculty`, `credit_points`, `level`, `semester`
+**Required fields:** `code`, `title`, `level`, `credit_points`, `availability`, `faculty`, `school`, `source_url`, `handbook_year`, `last_verified`
 
 ---
 
@@ -45,9 +49,23 @@ title: Bachelor of Engineering (Honours)
 faculty: Faculty of Engineering and Mathematical Sciences
 duration_years: 4
 credit_points: 192
+source_url: "https://www.handbooks.uwa.edu.au/majordetails?code=MJD-ESOFT"
+handbook_year: 2026
+last_verified: "2026-04-18"
+
+years:
+  - year: 1
+    semesters:
+      - number: 1
+        label: Semester 1
+        units:
+          - code: GENG1000
+            title: Introduction to engineering
+            credit_points: 6
+            type: core
 ```
 
-**Required fields:** `slug`, `title`, `faculty`, `duration_years`, `credit_points`
+**Required fields:** `slug`, `title`, `faculty`, `duration_years`, `credit_points`, `source_url`, `handbook_year`, `last_verified`, `years`
 
 ---
 
@@ -71,40 +89,28 @@ accent_color: "#6CA0F0"
 
 ## Benefits
 
-**Path:** `data/benefits/benefits.yaml`
+**Path:** `data/benefits/<category>/<benefit>.yaml`
 
-Benefits are grouped into categories. Each category contains a list of benefit objects.
+Benefits are grouped into category folders. Each category has `_category.yaml` metadata and one YAML file per benefit.
 
 ```yaml
-categories:
-  - id: software
-    label: Software
-    accent_color: "#6CA0F0"
-    accent_bg: "rgba(100, 160, 255, 0.1)"
-    description: Free and discounted software for students
-    icon_svg: "<path ... />"
-    benefits:
-      - name: GitHub Student Developer Pack
-        value: Free
-        url: "https://education.github.com/pack"
-        description: Free access to developer tools via GitHub Education.
-        tags:
-          - github
-          - dev-tools
+name: GitHub Student Developer Pack
+value: Free
+url: "https://education.github.com/pack"
+description: Free access to developer tools via GitHub Education.
+tags:
+  - github
+  - dev-tools
 ```
 
 ---
 
 ## Schemas
 
-JSON Schemas for each content type live in `data/schemas/`. They are used to validate YAML files during development. To validate a file manually:
+JSON Schemas for each content type live in `data/schemas/`. They are used by the data validation script during development:
 
 ```bash
-uv run python -c "
-import yaml, json, jsonschema
-data = yaml.safe_load(open('data/units/CITS1001.yaml'))
-schema = json.load(open('data/schemas/unit.json'))
-jsonschema.validate(data, schema)
-print('valid')
-"
+uv run python scripts/validate_data.py
 ```
+
+The validator checks units, degrees, clubs, benefit categories, and benefits against their schemas. It also checks that real-looking unit codes referenced by degrees or prerequisites exist in `data/units`, and that unit `associated_clubs` references exist in `data/clubs`.

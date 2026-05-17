@@ -1,0 +1,24 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: western-australian-golf-association-of-uwa
+name: Western Australian Golf Association of UWA
+abbreviation: WAGA
+categories:
+- Business
+- Sports And Fitness
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: WAGA creates a relaxed space for students to connect through golf, build
+  professional n
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/western-australian-golf-association-of-uwa
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/western-australian-golf-association-of-uwa
+last_verified: '2026-05-09'
+active: true

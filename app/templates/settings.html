@@ -51,19 +51,37 @@
       <span class="text-[12px] font-medium text-white/70">Account information</span>
       <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Signed in</span>
     </div>
-    <div class="divide-y divide-rc-border-light">
-      {% for row in [
-        ('Email', current_user.email),
-        ('Display name', current_user.display_name),
-        ('Student ID', current_user.student_id),
-        ('Faculty', current_user.faculty or 'Not set')
-      ] %}
+    <form method="post" action="{{ url_for('main.settings') }}" class="divide-y divide-rc-border-light">
+      {{ account_form.hidden_tag() }}
       <div class="flex items-center justify-between px-4 py-3">
-        <span class="text-[12px] text-rc-text-tertiary">{{ row[0] }}</span>
-        <span class="text-[12px] text-white/55">{{ row[1] }}</span>
+        <span class="text-[12px] text-rc-text-tertiary">Email</span>
+        <span class="text-[12px] text-white/55">{{ current_user.email }}</span>
       </div>
-      {% endfor %}
-    </div>
+      <div class="flex items-center justify-between px-4 py-3">
+        <span class="text-[12px] text-rc-text-tertiary">Student ID</span>
+        <span class="text-[12px] text-white/55">{{ current_user.student_id }}</span>
+      </div>
+      <label class="flex flex-col gap-1 px-4 py-3">
+        {{ account_form.display_name.label(class_="text-[12px] text-rc-text-tertiary") }}
+        {{ account_form.display_name(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20") }}
+        {% for error in account_form.display_name.errors %}
+        <span class="text-[11px] text-rc-red">{{ error }}</span>
+        {% endfor %}
+      </label>
+      <label class="flex flex-col gap-1 px-4 py-3">
+        {{ account_form.faculty.label(class_="text-[12px] text-rc-text-tertiary") }}
+        {{ account_form.faculty(class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2 text-[13px] text-rc-text outline-none focus:border-white/20", placeholder="Faculty") }}
+        {% for error in account_form.faculty.errors %}
+        <span class="text-[11px] text-rc-red">{{ error }}</span>
+        {% endfor %}
+      </label>
+      <div class="flex justify-end px-4 py-3">
+        <button type="submit"
+                class="text-[11px] px-3 py-1.5 rounded-[6px] bg-rc-fill border border-rc-border text-white/55 hover:text-white/80 hover:border-white/15 transition cursor-pointer">
+          Save account
+        </button>
+      </div>
+    </form>
   </div>
   {% else %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 flex items-center gap-4">
@@ -104,6 +122,93 @@
   {% endif %}
 </div>
 
+{% if current_user.is_authenticated %}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">My reviews</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+    <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-fill text-white/35">{{ my_reviews | length }}</span>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden">
+    {% if my_reviews %}
+    <div class="divide-y divide-rc-border-light">
+      {% for review in my_reviews %}
+      <div class="px-4 py-3 flex items-start gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <a href="{{ url_for('main.unit_detail', code=review.unit_code) }}"
+               class="text-[12px] font-medium text-rc-blue/80 hover:text-rc-blue transition">
+              {{ review.unit_code }}
+            </a>
+            <span class="text-[11px] text-rc-text-faint">Rating {{ review.rating }}/5</span>
+            <span class="text-[11px] text-rc-text-faint">Difficulty {{ review.difficulty }}/5</span>
+          </div>
+          <p class="text-[12px] text-white/50 leading-relaxed mt-1 line-clamp-2">{{ review.body }}</p>
+        </div>
+        <form method="post" action="{{ url_for('main.delete_review', review_id=review.id) }}" class="shrink-0">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="submit"
+                  class="text-[11px] px-2.5 py-1 rounded-[6px] bg-rc-red-muted border border-rc-red/20 text-rc-red/70 hover:text-rc-red hover:border-rc-red/35 transition cursor-pointer">
+            Delete
+          </button>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="px-4 py-3 text-[12px] text-rc-text-faint">Reviews you write on unit pages will appear here.</div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{# ══════════════════════════════════════════════════════ #}
+{# TWO-FACTOR AUTHENTICATION SECTION                      #}
+{# ══════════════════════════════════════════════════════ #}
+{% if current_user.is_authenticated %}
+<div class="flex flex-col gap-2">
+  <div class="flex items-center gap-2 px-0.5">
+    <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">Security</span>
+    <div class="flex-1 h-px bg-rc-border-light"></div>
+  </div>
+
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-3">
+    <div class="flex items-center justify-between gap-3">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-[13px] font-medium text-white/80">Two-factor authentication</span>
+        <span class="text-[11px] text-rc-text-faint">
+          {% if current_user.two_fa_enabled %}
+            <span class="text-rc-green">Enabled</span> — your account is protected with an authenticator app.
+          {% else %}
+            <span class="text-rc-amber">Disabled</span> — add an extra layer of security to your account.
+          {% endif %}
+        </span>
+      </div>
+
+      {% if current_user.two_fa_enabled %}
+      {# Disable button #}
+      <form method="POST" action="{{ url_for('main.disable_2fa') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit"
+          class="text-[12px] px-3 py-1.5 rounded-[7px] bg-rc-red-muted border border-rc-red/20
+                 text-rc-red/70 hover:text-rc-red hover:border-rc-red/35 transition cursor-pointer shrink-0">
+          Disable 2FA
+        </button>
+      </form>
+      {% else %}
+      {# Enable button #}
+      <a href="{{ url_for('main.setup_2fa') }}"
+        class="text-[12px] px-3 py-1.5 rounded-[7px] bg-rc-blue-muted border border-rc-blue/20
+               text-rc-blue/70 hover:text-rc-blue hover:border-rc-blue/35 transition shrink-0">
+        Enable 2FA
+      </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
 {# ══════════════════════════════════════════════════════ #}
 {# NOTIFICATIONS SECTION                                  #}
 {# ══════════════════════════════════════════════════════ #}
@@ -111,9 +216,25 @@
   <div class="flex items-center gap-2 px-0.5">
     <span class="text-[10px] uppercase tracking-wider font-semibold text-rc-text-faint">Notifications</span>
     <div class="flex-1 h-px bg-rc-border-light"></div>
+    {% if current_user.is_authenticated %}
+    <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green">Synced</span>
+    {% else %}
     <span class="text-[10px] px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber">Coming soon</span>
+    {% endif %}
   </div>
 
+  {% if not current_user.is_authenticated %}
+  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-5 text-center">
+    <div class="text-[13px] text-rc-text-tertiary mb-2">Sign in to manage notification preferences</div>
+    <div class="text-[12px] text-white/35 mb-4">
+      Your notification settings will be saved and synced across all your devices.
+    </div>
+    <a href="{{ url_for('main.auth') }}"
+       class="inline-block px-4 py-2 rounded-lg bg-rc-red/90 hover:bg-rc-red text-white text-[12px] font-medium transition">
+      Sign in to your account
+    </a>
+  </div>
+  {% else %}
   <div class="bg-rc-surface border border-rc-border rounded-[10px] overflow-hidden">
 
     <div class="px-4 py-3 border-b border-rc-border-light">
@@ -124,27 +245,25 @@
     <div class="divide-y divide-rc-border-light">
 
       {% set notif_items = [
-        ('notif-planner',  'Planner reminders',    'Reminders before semester enrolment deadlines',     True),
-        ('notif-updates',  'Unit catalogue updates','When unit info, prerequisites, or availability changes', False),
-        ('notif-replies',  'Community replies',     'When someone replies to your unit comments',         False),
-        ('notif-digest',   'Weekly digest',         'A summary of new resources added for your units',   False),
+        ('planner_reminders', 'Planner reminders', 'Reminders before semester enrolment deadlines', notification_prefs.planner_reminders if notification_prefs else True),
+        ('unit_catalogue_updates', 'Unit catalogue updates', 'When unit info, prerequisites, or availability changes', notification_prefs.unit_catalogue_updates if notification_prefs else False),
+        ('community_replies', 'Community replies', 'When someone replies to your unit comments', notification_prefs.community_replies if notification_prefs else False),
+        ('weekly_digest', 'Weekly digest', 'A summary of new resources added for your units', notification_prefs.weekly_digest if notification_prefs else False),
       ] %}
 
-      {% for id, label, desc, default in notif_items %}
+      {% for key, label, desc, current_value in notif_items %}
       <div class="flex items-center gap-4 px-4 py-3.5">
         <div class="flex-1 min-w-0">
           <div class="text-[12px] font-medium text-white/60">{{ label }}</div>
           <div class="text-[11px] text-rc-text-faint mt-0.5">{{ desc }}</div>
         </div>
-        <button id="{{ id }}-toggle"
+        <button class="notif-toggle shrink-0 w-9 h-5 rounded-full border transition cursor-pointer relative {% if current_value %}bg-rc-green border-rc-green/40{% else %}bg-rc-fill border-rc-border{% endif %}"
                 role="switch"
-                aria-checked="{{ 'true' if default else 'false' }}"
-                data-notif="{{ id }}"
-                onclick="toggleNotif(this)"
-                class="notif-toggle shrink-0 w-9 h-5 rounded-full border transition cursor-pointer relative
-                  {{ 'bg-rc-green border-rc-green/40' if default else 'bg-rc-fill border-rc-border' }}">
-          <span class="absolute top-[3px] w-3.5 h-3.5 rounded-full transition-all
-            {{ 'left-[18px] bg-white' if default else 'left-[3px] bg-white/30' }}"></span>
+                aria-checked="{{ 'true' if current_value else 'false' }}"
+                data-key="{{ key }}"
+                data-state="{{ 'on' if current_value else 'off' }}"
+                onclick="toggleNotification(this)">
+          <span class="absolute top-[3px] w-3.5 h-3.5 rounded-full transition-all {% if current_value %}left-[18px] bg-white{% else %}left-[3px] bg-white/30{% endif %}"></span>
         </button>
       </div>
       {% endfor %}
@@ -156,8 +275,10 @@
         <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.1"/>
         <path d="M5.5 4v2.5M5.5 7.5h.01" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
-      <span class="text-[11px] text-rc-text-faint">Preferences saved locally — linked to your account once you sign in</span>
+      <span class="text-[11px] text-rc-text-faint">Changes are saved automatically to your account</span>
     </div>
+  </div>
+  {% endif %}
 
   </div>
 </div>
@@ -262,7 +383,7 @@ function loadNotifPrefs() {
   try {
     const saved = JSON.parse(localStorage.getItem(NOTIF_KEY)) || {};
     document.querySelectorAll('.notif-toggle').forEach(btn => {
-      const id = btn.dataset.notif;
+      const id = btn.dataset.key;
       if (id in saved) applyToggle(btn, saved[id]);
     });
   } catch {}
@@ -271,6 +392,7 @@ function loadNotifPrefs() {
 function applyToggle(btn, on) {
   const knob = btn.querySelector('span');
   btn.setAttribute('aria-checked', on ? 'true' : 'false');
+  btn.dataset.state = on ? 'on' : 'off';
   if (on) {
     btn.classList.add('bg-rc-green', 'border-rc-green/40');
     btn.classList.remove('bg-rc-fill', 'border-rc-border');
@@ -289,9 +411,35 @@ function toggleNotif(btn) {
   applyToggle(btn, !isOn);
   try {
     const saved = JSON.parse(localStorage.getItem(NOTIF_KEY)) || {};
-    saved[btn.dataset.notif] = !isOn;
+    saved[btn.dataset.key] = !isOn;
     localStorage.setItem(NOTIF_KEY, JSON.stringify(saved));
   } catch {}
+}
+
+async function toggleNotification(btn) {
+  const wasOn = btn.getAttribute('aria-checked') === 'true';
+  const nextValue = !wasOn;
+  applyToggle(btn, nextValue);
+
+  try {
+    const response = await fetch('{{ url_for("main.update_notification_prefs") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token() }}'
+      },
+      body: JSON.stringify({ [btn.dataset.key]: nextValue })
+    });
+
+    if (!response.ok) throw new Error('Preference update failed');
+    const payload = await response.json();
+    if (payload.prefs && btn.dataset.key in payload.prefs) {
+      applyToggle(btn, payload.prefs[btn.dataset.key]);
+    }
+  } catch {
+    applyToggle(btn, wasOn);
+    alert('Could not save that preference. Please try again.');
+  }
 }
 
 // ── Planner data size ────────────────────────────────────

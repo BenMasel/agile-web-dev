@@ -28,6 +28,12 @@
         </svg>
       </div>
       <div class="flex-1 min-w-0">
+        {% if degree.degree_family_slug and degree_families and degree.degree_family_slug in degree_families %}
+        {% set family = degree_families[degree.degree_family_slug] %}
+        <div class="text-[11px] text-rc-text-faint mb-1">
+          {{ family.title }} <span class="opacity-40">›</span> {{ degree.major_title }}
+        </div>
+        {% endif %}
         <div class="text-xl font-semibold text-rc-text tracking-tight leading-tight">{{ degree.title }}</div>
         <div class="text-sm text-rc-text-secondary mt-0.5">{{ degree.faculty }}</div>
       </div>
@@ -128,6 +134,14 @@
     {# ---- Actions ---- #}
     <div class="flex gap-2">
       <button class="bg-rc-purple text-rc-bg font-medium text-[13px] px-4 py-2 rounded-lg transition hover:opacity-90 cursor-pointer">Apply now</button>
+      <a href="{{ url_for('main.planner') }}"
+         class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80">
+        Create plan
+      </a>
+      <a href="{{ url_for('main.public_plans', degree=degree.slug) }}"
+         class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80">
+        Shared plans
+      </a>
       <button class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">Compare degrees</button>
       <button class="bg-rc-fill text-white/60 font-medium text-[13px] px-4 py-2 rounded-lg border border-rc-border transition hover:bg-white/10 hover:text-white/80 cursor-pointer">Download handbook</button>
     </div>

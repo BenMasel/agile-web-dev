@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-leisure-club-inc
+name: UWA Leisure Social Club Inc
+abbreviation: Leisure
+categories:
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: Leisure Social Club is one of the biggest, oldest and boldest clubs on
+  campus. Through
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-leisure-club-inc
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-leisure-club-inc
+last_verified: '2026-05-09'
+active: true

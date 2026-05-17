@@ -1,0 +1,26 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: university-computer-club-the
+name: University Computer Club, The
+abbreviation: UCC
+categories:
+- Academic
+- Engineering
+- Science
+- Social
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: The University Computer Club Inc. (est. 1974) is an association of UWA
+  students and sup
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/university-computer-club-the
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/university-computer-club-the
+last_verified: '2026-05-09'
+active: true

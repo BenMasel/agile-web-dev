@@ -15,4 +15,6 @@ sections:
 
   - title: Development
     pages:
+      - architecture
+      - checkpoints
       - roadmap

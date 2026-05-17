@@ -1,1369 +1,2228 @@
-{% extends "base.html" %}
-
-{% block title %}Study Planner — stUwa{% endblock %}
-
+{% extends "base.html" %} {% block title %}Study Planner — stUwa{% endblock %}
 {% block content_width %}w-full max-w-[92rem]{% endblock %}
-
+{% block outer_padding %}p-0 h-[calc(100vh-2.75rem)]{% endblock %}
+{% block content_col_class %}flex flex-col h-full{% endblock %}
+{% block footer_bar %}{% endblock %}
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>
 <style>
-  .unit-draggable { cursor: grab; }
-  .unit-draggable:active { cursor: grabbing; }
-  .unit-draggable.unit-done { cursor: no-drop !important; }
-  .unit-draggable.dragging { opacity: 0.35; }
-  .slot-box { transition: background 0.1s, border-color 0.1s; }
-  .slot-box.drop-hover { background: rgba(108,160,240,0.08) !important; border-color: rgba(108,160,240,0.45) !important; border-style: solid !important; }
-  .tray-drag-over { border-color: rgba(108,160,240,0.3) !important; }
+    .unit-draggable {
+        cursor: grab;
+    }
+    .unit-draggable:active {
+        cursor: grabbing;
+    }
+    .unit-draggable.unit-done {
+        cursor: no-drop !important;
+    }
+    .unit-draggable.dragging {
+        opacity: 0.35;
+    }
+    .slot-box {
+        transition:
+            background 0.1s,
+            border-color 0.1s;
+    }
+    .slot-box.drop-hover {
+        background: rgba(108, 160, 240, 0.08) !important;
+        border-color: rgba(108, 160, 240, 0.45) !important;
+        border-style: solid !important;
+    }
+    .tray-drag-over {
+        border-color: rgba(108, 160, 240, 0.3) !important;
+    }
+
+    /* Prerequisite highlight — glows on cards the hovered unit depends on */
+    .prereq-highlight {
+      box-shadow: 0 0 0 1.5px rgba(212,163,64,0.5), 0 0 10px rgba(212,163,64,0.18) !important;
+      transition: box-shadow 0.15s;
+    }
+
+    /* NST drag-and-drop feedback */
+    .nst-drag-over {
+        box-shadow: inset 0 0 0 1px rgba(108,160,240,0.28), 0 0 0 1px rgba(108,160,240,0.12);
+        transition: box-shadow 0.12s;
+    }
+    .nst-drop-active {
+        border-color: rgba(108,160,240,0.55) !important;
+        background: rgba(108,160,240,0.08) !important;
+        color: rgba(108,160,240,0.7) !important;
+    }
+
+    /* Degree display pills */
+    .degree-pill {
+        display: inline;
+        padding: 0.15rem 0.4rem;
+        border-radius: 4px;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .degree-pill:hover {
+        filter: brightness(1.1);
+        transform: translateY(-0.5px);
+    }
+
+    /* Sidebar nav buttons */
+    .sidebar-nav-btn {
+        width: 2.25rem; height: 2.25rem;
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 8px; color: rgba(255,255,255,0.3);
+        transition: background 0.15s, color 0.15s;
+        cursor: pointer; border: none; background: transparent;
+    }
+    .sidebar-nav-btn:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.6); }
+    .sidebar-nav-btn.active { background: rgba(108,160,240,0.15); color: #6CA0F0; }
 </style>
-{% endblock %}
+{% endblock %} {% block content %}
 
-{% block content %}
+<div class="flex items-start h-full overflow-hidden">
+    {# ══════════════════════════════════════════════════════════════ SIDEBAR NAV
+    ══════════════════════════════════════════════════════════════ #}
+    <nav id="sidebar-nav"
+         class="w-12 shrink-0 h-full flex flex-col items-center pt-3 gap-1.5 border-r border-rc-border bg-rc-surface">
 
-<div class="flex gap-4 items-start">
+        {# Unit Tray button #}
+        <button id="nav-btn-tray" class="sidebar-nav-btn" title="Unit Tray"
+                onclick="openPanel('tray')">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <rect x="1.5" y="8" width="12" height="5" rx="1.2" stroke="currentColor" stroke-width="1.15"/>
+                <path d="M4.5 8V5.5a3 3 0 0 1 6 0V8" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+            </svg>
+        </button>
 
-{# ══════════════════════════════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════════════════════════════ #}
-<aside class="w-[17rem] shrink-0 flex flex-col gap-3 sticky top-[2.75rem] max-h-[calc(100vh-3.25rem)] overflow-y-auto pb-6">
+        {# Degree Overview button #}
+        <button id="nav-btn-degree" class="sidebar-nav-btn" title="Degree Overview"
+                onclick="openPanel('degree')">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                <path d="M7.5 2L1 5.5l6.5 3.5L14 5.5 7.5 2Z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/>
+                <path d="M4 7.2V10.5c0 1.1 1.567 2 3.5 2s3.5-.9 3.5-2V7.2" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+                <line x1="14" y1="5.5" x2="14" y2="9" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+            </svg>
+        </button>
 
-  {# ── Config card ── #}
-  <div class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-4">
+    </nav>
 
-    {# Brand #}
-    <div class="flex items-center gap-2">
-      <div class="w-6 h-6 rounded-[6px] bg-rc-blue-muted flex items-center justify-center shrink-0">
-        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-          <rect x="1.5" y="1.5" width="10" height="10" rx="2" stroke="#6CA0F0" stroke-width="1.1"/>
-          <path d="M3.5 5l1.5 1.5L8.5 3.5" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M3.5 8.5h6" stroke="#6CA0F0" stroke-width="1.1" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <span class="text-sm font-semibold text-rc-text">Study Planner</span>
-      <span class="text-[9px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue leading-none ml-auto">BETA</span>
-    </div>
+    {# ══════════════════════════════════════════════════════════════ PANEL: DEGREE OVERVIEW
+    ══════════════════════════════════════════════════════════════ #}
+    <div id="panel-degree"
+         class="hidden w-[17rem] shrink-0 h-full overflow-y-auto flex flex-col gap-3 p-3 pb-6 border-r border-rc-border">
 
-    <div class="h-px bg-rc-border-light -mx-4"></div>
+        {# ── Config card ── #}
+        <div
+            class="bg-rc-surface border border-rc-border rounded-[10px] p-4 flex flex-col gap-4"
+        >
+            {# Brand #}
+            <div class="flex items-center gap-2">
+                <div
+                    class="w-6 h-6 rounded-[6px] bg-rc-blue-muted flex items-center justify-center shrink-0"
+                >
+                    <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                        <rect
+                            x="1.5"
+                            y="1.5"
+                            width="10"
+                            height="10"
+                            rx="2"
+                            stroke="#6CA0F0"
+                            stroke-width="1.1"
+                        />
+                        <path
+                            d="M3.5 5l1.5 1.5L8.5 3.5"
+                            stroke="#6CA0F0"
+                            stroke-width="1.1"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <path
+                            d="M3.5 8.5h6"
+                            stroke="#6CA0F0"
+                            stroke-width="1.1"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                </div>
+                <span class="text-sm font-semibold text-rc-text"
+                    >Study Planner</span
+                >
+                <span
+                    class="text-[9px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue leading-none ml-auto"
+                    >BETA</span
+                >
+            </div>
 
-    {# Primary degree #}
-    <div class="flex flex-col gap-1.5">
-      <div class="flex items-center gap-1.5">
-        <div class="w-1.5 h-1.5 rounded-full bg-rc-blue shrink-0"></div>
-        <label class="text-[11px] text-rc-text-tertiary">Primary degree</label>
-      </div>
-      <select id="degree1-select"
-              class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
-        <option value="">— select degree —</option>
-        {% for deg in degrees %}
-        <option value="{{ deg.slug }}">{{ deg.title }}</option>
-        {% endfor %}
-      </select>
-    </div>
+            <div class="h-px bg-rc-border-light -mx-4"></div>
 
-    {# Second degree #}
-    <div class="flex flex-col gap-1.5">
-      <div class="flex items-center gap-1.5">
-        <div class="w-1.5 h-1.5 rounded-full bg-rc-purple shrink-0"></div>
-        <label class="text-[11px] text-rc-text-tertiary">Second degree</label>
-      </div>
-      <select id="degree2-select"
-              class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-purple/40 cursor-pointer transition">
-        <option value="">— none —</option>
-        {% for deg in degrees %}
-        <option value="{{ deg.slug }}">{{ deg.title }}</option>
-        {% endfor %}
-      </select>
-    </div>
+            {# Degree display — static read-only; JS populates from state #}
+            <div id="degree-display-area" class="flex flex-col gap-2"></div>
 
-    {# Starting year / sem #}
-    <div class="flex flex-col gap-1.5">
-      <label class="text-[11px] text-rc-text-tertiary">Starting</label>
-      <div class="flex gap-2">
-        <select id="start-year"
-                class="flex-1 bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
-          {% for y in range(2020, 2030) %}
-          <option value="{{ y }}" {% if y == 2024 %}selected{% endif %}>{{ y }}</option>
-          {% endfor %}
-        </select>
-        <select id="start-sem"
-                class="bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition">
-          <option value="1" selected>Sem 1</option>
-          <option value="2">Sem 2</option>
-        </select>
-      </div>
-    </div>
+            {# Stats #}
+            <div id="planner-stats" class="hidden flex-col gap-1.5 pt-0.5">
+                <div class="h-px bg-rc-border-light -mx-4"></div>
+                <div
+                    class="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 text-[11px] text-rc-text-faint"
+                >
+                    <div class="flex items-center gap-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-rc-blue"></div>
+                        <span
+                            ><span
+                                id="stat-d1"
+                                class="text-white/60 font-medium"
+                                >0</span
+                            >
+                            D1</span
+                        >
+                    </div>
+                    <div id="stat-d2-wrap" class="hidden items-center gap-1">
+                        <div
+                            class="w-1.5 h-1.5 rounded-full bg-rc-purple"
+                        ></div>
+                        <span
+                            ><span
+                                id="stat-d2"
+                                class="text-white/60 font-medium"
+                                >0</span
+                            >
+                            D2</span
+                        >
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-rc-green"></div>
+                        <span
+                            ><span
+                                id="stat-done"
+                                class="text-rc-green font-medium"
+                                >0</span
+                            >
+                            CP done</span
+                        >
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <div class="w-1.5 h-1.5 rounded-full bg-rc-amber"></div>
+                        <span
+                            ><span
+                                id="stat-rem"
+                                class="text-rc-amber font-medium"
+                                >0</span
+                            >
+                            CP left</span
+                        >
+                    </div>
+                </div>
+            </div>
 
-    {# Stats #}
-    <div id="planner-stats" class="hidden flex-col gap-1.5 pt-0.5">
-      <div class="h-px bg-rc-border-light -mx-4"></div>
-      <div class="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 text-[11px] text-rc-text-faint">
-        <div class="flex items-center gap-1">
-          <div class="w-1.5 h-1.5 rounded-full bg-rc-blue"></div>
-          <span><span id="stat-d1" class="text-white/60 font-medium">0</span> D1</span>
+            <div class="h-px bg-rc-border-light -mx-4"></div>
+
+            {# Action buttons #}
+            <div class="flex gap-2">
+                <button
+                    id="auto-btn"
+                    class="flex-1 text-[11px] text-white/50 hover:text-white/80 bg-rc-fill border border-rc-border transition px-3 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer"
+                >
+                    Auto-fill
+                </button>
+                <button
+                    id="reset-btn"
+                    class="text-[11px] font-medium text-rc-red/70 hover:text-rc-red bg-rc-red-muted border border-rc-red/15 hover:border-rc-red/30 transition px-3 py-1.5 rounded-[7px] cursor-pointer"
+                >
+                    Clear
+                </button>
+            </div>
         </div>
-        <div id="stat-d2-wrap" class="hidden items-center gap-1">
-          <div class="w-1.5 h-1.5 rounded-full bg-rc-purple"></div>
-          <span><span id="stat-d2" class="text-white/60 font-medium">0</span> D2</span>
+
+        {# ── Conflict warnings ── #}
+        <div
+            id="conflict-wrap"
+            class="bg-rc-surface border border-[rgba(212,163,64,0.15)] rounded-[10px] p-3 flex flex-col gap-2.5"
+            style="display: none"
+        >
+            <div class="flex items-center gap-2">
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 2L13 12H1L7 2Z" stroke="#D4A340" stroke-width="1.2" stroke-linejoin="round"/>
+                    <path d="M7 6v3" stroke="#D4A340" stroke-width="1.2" stroke-linecap="round"/>
+                    <circle cx="7" cy="10.5" r="0.6" fill="#D4A340"/>
+                </svg>
+                <span class="text-[11px] font-medium text-rc-amber/80">Conflicts</span>
+                <span class="text-[10px] text-white/25 ml-auto">double degree</span>
+            </div>
+            <div id="conflict-list" class="flex flex-col gap-1.5"></div>
         </div>
-        <div class="flex items-center gap-1">
-          <div class="w-1.5 h-1.5 rounded-full bg-rc-green"></div>
-          <span><span id="stat-done" class="text-rc-green font-medium">0</span> CP done</span>
+
+        {# ── Account sync ── #}
+        <div
+            class="bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2"
+        >
+            <div class="flex items-center justify-between gap-2">
+                <span
+                    class="text-[11px] uppercase tracking-wider text-rc-text-tertiary"
+                    >Account sync</span
+                >
+                {% if current_user.is_authenticated %}
+                <span
+                    class="text-[10px] px-1.5 py-[2px] rounded bg-rc-green-muted text-rc-green"
+                    >Signed in</span
+                >
+                {% else %}
+                <span
+                    class="text-[10px] px-1.5 py-[2px] rounded bg-rc-amber-muted text-rc-amber"
+                    >Local only</span
+                >
+                {% endif %}
+            </div>
+            <div
+                id="sync-message"
+                class="text-[11px] text-rc-text-faint leading-4"
+            >
+                {% if current_user.is_authenticated %} Save this browser plan to
+                your account, or load your saved plan. {% else %} Planner works
+                locally in this browser. Sign in to sync and save server-side.
+                {% endif %}
+            </div>
+            <div class="flex gap-2">
+                {% if current_user.is_authenticated %}
+                <button
+                    id="save-account-btn"
+                    class="flex-1 text-[11px] text-white/55 hover:text-white/80 bg-rc-fill border border-rc-border transition px-2.5 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer"
+                >
+                    Save to account
+                </button>
+                <button
+                    id="load-account-btn"
+                    class="text-[11px] text-white/45 hover:text-white/75 bg-rc-fill border border-rc-border transition px-2.5 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer"
+                >
+                    Load
+                </button>
+                <button
+                    id="delete-account-btn"
+                    class="text-[11px] text-rc-red/70 hover:text-rc-red bg-rc-red-muted border border-rc-red/15 hover:border-rc-red/30 transition px-2.5 py-1.5 rounded-[7px] cursor-pointer"
+                >
+                    Delete
+                </button>
+                {% else %}
+                <a
+                    href="{{ url_for('main.auth', next=url_for('main.planner')) }}"
+                    class="flex-1 text-center text-[11px] text-white bg-rc-red/90 hover:bg-rc-red transition px-2.5 py-1.5 rounded-[7px]"
+                >
+                    Sign in to sync
+                </a>
+                {% endif %}
+            </div>
+            {% if current_user.is_authenticated %}
+            <label
+                class="flex items-center gap-2 rounded-[7px] bg-rc-fill-subtle border border-rc-border-light px-2.5 py-2"
+            >
+                <input
+                    id="public-plan-toggle"
+                    type="checkbox"
+                    class="h-3.5 w-3.5 rounded border-rc-border bg-rc-fill text-rc-blue focus:ring-rc-blue/40"
+                />
+                <span class="text-[11px] text-white/55"
+                    >Make saved plan public</span
+                >
+            </label>
+            <button
+                id="copy-share-link-btn"
+                class="hidden text-[11px] text-white/45 hover:text-white/75 bg-rc-fill border border-rc-border transition px-2.5 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer"
+            >
+                Copy share link
+            </button>
+            {% endif %}
         </div>
-        <div class="flex items-center gap-1">
-          <div class="w-1.5 h-1.5 rounded-full bg-rc-amber"></div>
-          <span><span id="stat-rem" class="text-rc-amber font-medium">0</span> CP left</span>
+
+    </div>
+
+    {# ══════════════════════════════════════════════════════════════ PANEL: UNIT TRAY
+    ══════════════════════════════════════════════════════════════ #}
+    <div id="panel-tray"
+         class="hidden w-[17rem] shrink-0 h-full overflow-y-auto flex flex-col gap-3 p-3 pb-6 border-r border-rc-border">
+
+        <div
+            id="tray-wrap"
+            class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2"
+        >
+            <div class="flex items-center gap-2 px-1">
+                <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 13 13"
+                    fill="none"
+                    class="text-rc-text-tertiary shrink-0"
+                >
+                    <rect
+                        x="1.5"
+                        y="7.5"
+                        width="10"
+                        height="4"
+                        rx="1"
+                        stroke="currentColor"
+                        stroke-width="1.1"
+                    />
+                    <path
+                        d="M4 7.5V5a2.5 2.5 0 0 1 5 0v2.5"
+                        stroke="currentColor"
+                        stroke-width="1.1"
+                        stroke-linecap="round"
+                    />
+                </svg>
+                <span
+                    class="text-[11px] uppercase tracking-wider text-rc-text-tertiary"
+                    >Unit tray</span
+                >
+                <span
+                    id="tray-count"
+                    class="text-[11px] text-rc-text-faint ml-auto"
+                ></span>
+            </div>
+            <div
+                id="tray-available"
+                class="flex flex-col gap-1.5 min-h-[2rem]"
+            ></div>
+            <div id="tray-locked-wrap" class="hidden flex-col gap-1.5">
+                <div class="flex items-center gap-2 py-1">
+                    <div class="h-px flex-1 bg-rc-border-light"></div>
+                    <span
+                        class="text-[10px] text-white/20 uppercase tracking-widest"
+                        >prereqs not met</span
+                    >
+                    <div class="h-px flex-1 bg-rc-border-light"></div>
+                </div>
+                <div id="tray-locked" class="flex flex-col gap-1.5"></div>
+            </div>
         </div>
-      </div>
+
     </div>
 
-    <div class="h-px bg-rc-border-light -mx-4"></div>
+    {# ══════════════════════════════════════════════════════════════ MAIN
+    CONTENT ══════════════════════════════════════════════════════════════ #}
+    <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
+        {# Empty state — flex-1 so it fills height and centres content #}
+        <div
+            id="empty-state"
+            class="flex-1 flex items-center justify-center"
+            style="display: flex"
+        >
+            <div class="bg-rc-surface border border-rc-border rounded-[10px] p-12 flex flex-col items-center gap-4 text-center">
+                <div
+                    class="w-12 h-12 rounded-[12px] bg-rc-blue-muted flex items-center justify-center"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <rect
+                            x="3"
+                            y="3"
+                            width="18"
+                            height="18"
+                            rx="3"
+                            stroke="#6CA0F0"
+                            stroke-width="1.3"
+                        />
+                        <path
+                            d="M7 9l3 3L17 7"
+                            stroke="#6CA0F0"
+                            stroke-width="1.3"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
+                        <path
+                            d="M7 15h10"
+                            stroke="#6CA0F0"
+                            stroke-width="1.3"
+                            stroke-linecap="round"
+                        />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-white/70 mb-1">
+                        Select a degree to get started
+                    </div>
+                    <div class="text-xs text-white/30">
+                        Open the degree panel on the left and pick your primary
+                        degree to begin
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    {# Action buttons #}
-    <div class="flex gap-2">
-      <button id="auto-btn"
-              class="flex-1 text-[11px] text-white/50 hover:text-white/80 bg-rc-fill border border-rc-border transition px-3 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer">
-        Auto-fill
-      </button>
-      <button id="reset-btn"
-              class="text-[11px] font-medium text-rc-red/70 hover:text-rc-red bg-rc-red-muted border border-rc-red/15 hover:border-rc-red/30 transition px-3 py-1.5 rounded-[7px] cursor-pointer">
-        Clear
-      </button>
+        {# Semester timeline #}
+        <div id="timeline-wrap" class="flex flex-1 flex-col min-h-0" style="display: none">
+            <div class="flex-1 min-h-0 overflow-x-auto overflow-y-hidden flex flex-col">
+                <div
+                    id="semester-grid"
+                    class="flex gap-3 flex-1 min-h-0"
+                    style="min-width: max-content; align-items: stretch; padding: 1rem 1rem 0.5rem"
+                ></div>
+            </div>
+            <div class="shrink-0 flex items-center gap-4 px-4 py-3 border-t border-rc-border-light flex-wrap">
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-rc-green"></div>
+                    <span class="text-[11px] text-white/30">Completed</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-rc-blue"></div>
+                    <span class="text-[11px] text-white/30">D1</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-rc-purple"></div>
+                    <span class="text-[11px] text-white/30">D2</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div
+                        class="w-2 h-2 rounded-full"
+                        style="
+                            background: linear-gradient(
+                                135deg,
+                                #6ca0f0 50%,
+                                #a78bfa 50%
+                            );
+                        "
+                    ></div>
+                    <span class="text-[11px] text-white/30">Shared</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div class="w-2 h-2 rounded-full bg-rc-red"></div>
+                    <span class="text-[11px] text-white/30"
+                        >Prereqs missing</span
+                    >
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <div
+                        class="w-2 h-6 rounded-sm border border-dashed border-rc-border-light bg-rc-fill-subtle"
+                    ></div>
+                    <span class="text-[11px] text-white/30">Year-long</span>
+                </div>
+                <div class="ml-auto text-[11px] text-rc-text-faint">
+                    Right-click units to mark complete ·
+                    <span class="text-white/35">×</span> to remove
+                </div>
+            </div>
+        </div>
     </div>
-
-  </div>
-
-  {# ── Unit tray ── #}
-  <div id="tray-wrap" class="hidden bg-rc-surface border border-rc-border rounded-[10px] p-3 flex flex-col gap-2">
-    <div class="flex items-center gap-2 px-1">
-      <svg width="12" height="12" viewBox="0 0 13 13" fill="none" class="text-rc-text-tertiary shrink-0">
-        <rect x="1.5" y="7.5" width="10" height="4" rx="1" stroke="currentColor" stroke-width="1.1"/>
-        <path d="M4 7.5V5a2.5 2.5 0 0 1 5 0v2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-      </svg>
-      <span class="text-[11px] uppercase tracking-wider text-rc-text-tertiary">Unit tray</span>
-      <span id="tray-count" class="text-[11px] text-rc-text-faint ml-auto"></span>
+    {# end main #}
+</div>
+{# end flex wrapper #} {# ── Prereq tooltip (fixed) ── #}
+<div
+    id="planner-tooltip"
+    class="hidden fixed z-[300] pointer-events-none flex-col gap-2 bg-rc-surface border border-rc-border rounded-[8px] shadow-[0_8px_28px_rgba(0,0,0,0.55)] p-2.5"
+    style="max-width: 200px"
+>
+    <div
+        id="planner-tooltip-header"
+        class="text-[9px] uppercase tracking-wider text-rc-text-tertiary"
+    >
+        Missing prerequisites
     </div>
-    <div id="tray-available" class="flex flex-col gap-1.5 min-h-[2rem]"></div>
-    <div id="tray-locked-wrap" class="hidden flex-col gap-1.5">
-      <div class="flex items-center gap-2 py-1">
-        <div class="h-px flex-1 bg-rc-border-light"></div>
-        <span class="text-[10px] text-white/20 uppercase tracking-widest">prereqs not met</span>
-        <div class="h-px flex-1 bg-rc-border-light"></div>
-      </div>
-      <div id="tray-locked" class="flex flex-col gap-1.5"></div>
-    </div>
-  </div>
-
-</aside>
-
-{# ══════════════════════════════════════════════════════════════
-   MAIN CONTENT
-══════════════════════════════════════════════════════════════ #}
-<div class="flex-1 min-w-0 flex flex-col gap-3">
-
-  {# Conflict warnings #}
-  <div id="conflict-wrap" class="hidden bg-rc-surface border border-[rgba(212,163,64,0.25)] rounded-[10px] p-4 flex flex-col gap-3">
-    <div class="flex items-center gap-2">
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-        <path d="M7 2L13 12H1L7 2Z" stroke="#D4A340" stroke-width="1.1" stroke-linejoin="round"/>
-        <path d="M7 6v3" stroke="#D4A340" stroke-width="1.1" stroke-linecap="round"/>
-        <circle cx="7" cy="10.5" r="0.6" fill="#D4A340"/>
-      </svg>
-      <span class="text-[11px] font-medium text-rc-amber">Double degree conflicts</span>
-      <span class="text-[11px] text-rc-text-faint ml-1">— units incompatible between your two degrees</span>
-    </div>
-    <div id="conflict-list" class="flex flex-col gap-2"></div>
-  </div>
-
-  {# Empty state #}
-  <div id="empty-state" class="bg-rc-surface border border-rc-border rounded-[10px] p-12 flex flex-col items-center gap-4 text-center">
-    <div class="w-12 h-12 rounded-[12px] bg-rc-blue-muted flex items-center justify-center">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <rect x="3" y="3" width="18" height="18" rx="3" stroke="#6CA0F0" stroke-width="1.3"/>
-        <path d="M7 9l3 3L17 7" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M7 15h10" stroke="#6CA0F0" stroke-width="1.3" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div>
-      <div class="text-sm font-medium text-white/70 mb-1">Select a degree to get started</div>
-      <div class="text-xs text-white/30">Pick a primary degree from the sidebar, optionally add a second for a double degree plan</div>
-    </div>
-  </div>
-
-  {# Semester timeline #}
-  <div id="timeline-wrap" class="hidden flex-col gap-3">
-    <div class="overflow-x-auto pb-2">
-      <div id="semester-grid" class="flex gap-3" style="min-width: max-content; align-items: flex-start"></div>
-    </div>
-    <div class="flex items-center gap-4 px-1 flex-wrap">
-      <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-green"></div><span class="text-[11px] text-white/30">Completed</span></div>
-      <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-blue"></div><span class="text-[11px] text-white/30">D1</span></div>
-      <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-purple"></div><span class="text-[11px] text-white/30">D2</span></div>
-      <div class="flex items-center gap-1.5">
-        <div class="w-2 h-2 rounded-full" style="background: linear-gradient(135deg, #6CA0F0 50%, #A78BFA 50%)"></div>
-        <span class="text-[11px] text-white/30">Shared</span>
-      </div>
-      <div class="flex items-center gap-1.5"><div class="w-2 h-2 rounded-full bg-rc-red"></div><span class="text-[11px] text-white/30">Prereqs missing</span></div>
-      <div class="flex items-center gap-1.5">
-        <div class="w-2 h-6 rounded-sm border border-dashed border-rc-border-light bg-rc-fill-subtle"></div>
-        <span class="text-[11px] text-white/30">Year-long</span>
-      </div>
-      <div class="ml-auto text-[11px] text-rc-text-faint">Right-click units to mark complete · <span class="text-white/35">×</span> to remove</div>
-    </div>
-  </div>
-
-</div>{# end main #}
-
-</div>{# end flex wrapper #}
-
-{# ── Prereq tooltip (fixed) ── #}
-<div id="planner-tooltip"
-     class="hidden fixed z-[300] pointer-events-none flex-col gap-2 bg-rc-surface border border-rc-border rounded-[8px] shadow-[0_8px_28px_rgba(0,0,0,0.55)] p-2.5"
-     style="max-width:200px">
-  <div class="text-[9px] uppercase tracking-wider text-rc-text-tertiary">Missing prerequisites</div>
-  <div id="planner-tooltip-list" class="flex flex-wrap gap-1"></div>
+    <div id="planner-tooltip-list" class="flex flex-wrap gap-1"></div>
 </div>
 
 {# ── Unit picker modal (fixed) ── #}
-<div id="picker-modal" class="hidden fixed inset-0 z-40 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0">
-  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closePicker()"></div>
-  <div class="relative bg-rc-surface border border-rc-border rounded-[12px] p-4 w-full max-w-md flex flex-col gap-3 shadow-2xl z-50">
-    <div class="flex items-center justify-between">
-      <span class="text-sm font-medium text-white/85" id="picker-title">Add unit</span>
-      <button onclick="closePicker()" class="text-white/30 hover:text-white/60 transition cursor-pointer text-lg leading-none">×</button>
+<div
+    id="picker-modal"
+    class="hidden fixed inset-0 z-40 flex items-end sm:items-center justify-center px-4 pb-4 sm:pb-0"
+>
+    <div
+        class="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onclick="closePicker()"
+    ></div>
+    <div
+        class="relative bg-rc-surface border border-rc-border rounded-[12px] p-4 w-full max-w-md flex flex-col gap-3 shadow-2xl z-50"
+    >
+        <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-white/85" id="picker-title"
+                >Add unit</span
+            >
+            <button
+                onclick="closePicker()"
+                class="text-white/30 hover:text-white/60 transition cursor-pointer text-lg leading-none"
+            >
+                ×
+            </button>
+        </div>
+        <input
+            id="picker-search"
+            type="text"
+            placeholder="Filter by code or name…"
+            class="bg-rc-fill border border-rc-border rounded-md px-3 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 placeholder:text-white/20 w-full"
+        />
+        <div
+            id="picker-list"
+            class="flex flex-col gap-0.5 max-h-80 overflow-y-auto"
+        ></div>
     </div>
-    <input id="picker-search" type="text" placeholder="Filter by code or name…"
-           class="bg-rc-fill border border-rc-border rounded-md px-3 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 placeholder:text-white/20 w-full"/>
-    <div id="picker-list" class="flex flex-col gap-0.5 max-h-80 overflow-y-auto"></div>
-  </div>
 </div>
 
-{% endblock %}
+{# ── Degree change modal ── #}
+<div
+    id="degree-modal"
+    class="hidden fixed inset-0 z-50 items-center justify-center px-4"
+>
+    <div
+        class="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        id="degree-modal-backdrop"
+    ></div>
+    <div
+        class="relative bg-rc-surface border border-rc-border rounded-[12px] p-5 w-full max-w-sm flex flex-col gap-4 shadow-2xl z-10"
+    >
+        <div class="flex items-center justify-between">
+            <span class="text-[13px] font-semibold text-rc-text"
+                >Change Degree Details</span
+            >
+            <button
+                id="degree-modal-close"
+                class="text-white/30 hover:text-white/70 transition cursor-pointer text-lg leading-none"
+            >
+                ×
+            </button>
+        </div>
 
+        {# Primary degree cascade #}
+        <div class="flex flex-col gap-1.5">
+            <div class="flex items-center gap-1.5">
+                <div class="w-1.5 h-1.5 rounded-full bg-rc-blue shrink-0"></div>
+                <label class="text-[11px] text-rc-text-tertiary"
+                    >Primary degree</label
+                >
+            </div>
+            <select
+                id="degree1-family"
+                class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition"
+            >
+                <option value="">— select degree —</option>
+                {% for fam in degree_families %}
+                <option value="{{ fam.slug }}">{{ fam.title }}</option>
+                {% endfor %}
+            </select>
+            <select
+                id="degree1-select"
+                class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition disabled:opacity-40"
+                disabled
+            >
+                <option value="">— select major —</option>
+                {% for deg in degrees %}
+                <option
+                    value="{{ deg.slug }}"
+                    data-family="{{ deg.degree_family_slug }}"
+                >
+                    {{ deg.major_title }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
 
-{% block scripts %}
+        {# Second degree cascade #}
+        <div class="flex flex-col gap-1.5">
+            <div class="flex items-center gap-1.5">
+                <div
+                    class="w-1.5 h-1.5 rounded-full bg-rc-purple shrink-0"
+                ></div>
+                <label class="text-[11px] text-rc-text-tertiary"
+                    >Second degree
+                    <span class="text-rc-text-faint">(optional)</span></label
+                >
+            </div>
+            <select
+                id="degree2-family"
+                class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-purple/40 cursor-pointer transition"
+            >
+                <option value="">— none —</option>
+                {% for fam in degree_families %}
+                <option value="{{ fam.slug }}">{{ fam.title }}</option>
+                {% endfor %}
+            </select>
+            <select
+                id="degree2-select"
+                class="w-full bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-purple/40 cursor-pointer transition disabled:opacity-40"
+                disabled
+            >
+                <option value="">— select major —</option>
+                {% for deg in degrees %}
+                <option
+                    value="{{ deg.slug }}"
+                    data-family="{{ deg.degree_family_slug }}"
+                >
+                    {{ deg.major_title }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {# Starting semester #}
+        <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] text-rc-text-tertiary"
+                >Starting semester</label
+            >
+            <div class="flex gap-2">
+                <select
+                    id="start-year"
+                    class="flex-1 bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition"
+                >
+                    {% for y in range(2020, 2030) %}
+                    <option
+                        value="{{ y }}"
+                        {% if y == 2024 %}selected{% endif %}
+                    >
+                        {{ y }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <select
+                    id="start-sem"
+                    class="bg-rc-fill border border-rc-border rounded-[7px] px-2.5 py-1.5 text-[12px] text-white/70 outline-none focus:border-rc-blue/40 cursor-pointer transition"
+                >
+                    <option value="1" selected>Sem 1</option>
+                    <option value="2">Sem 2</option>
+                </select>
+            </div>
+        </div>
+
+        {# Confirm warning — shown when user clicks the switch button #}
+        <div
+            id="degree-confirm-box"
+            class="hidden flex-col gap-2 bg-rc-red-muted border border-rc-red/20 rounded-[8px] p-3"
+        >
+            <p class="text-[11px] text-white/60 leading-relaxed">
+                This will reset your current plan layout. This cannot be undone.
+            </p>
+            <div class="flex gap-2">
+                <button
+                    id="degree-confirm-yes"
+                    class="flex-1 text-[11px] font-medium text-white bg-rc-red hover:bg-rc-red/80 transition px-3 py-1.5 rounded-[6px] cursor-pointer"
+                >
+                    Confirm switch
+                </button>
+                <button
+                    id="degree-confirm-cancel"
+                    class="text-[11px] text-white/50 hover:text-white/80 bg-rc-fill border border-rc-border transition px-3 py-1.5 rounded-[6px] cursor-pointer"
+                >
+                    Cancel
+                </button>
+            </div>
+        </div>
+
+        {# Switch button #}
+        <button
+            id="degree-switch-btn"
+            class="w-full text-[11px] font-medium text-white bg-rc-red/80 hover:bg-rc-red transition px-3 py-2 rounded-[7px] cursor-pointer disabled:opacity-35 disabled:cursor-not-allowed"
+            disabled
+        >
+            Select a degree first
+        </button>
+    </div>
+</div>
+
+{% endblock %} {% block scripts %}
 <script>
-// ─────────────────────────────────────────────────────────
-// DATA
-// ─────────────────────────────────────────────────────────
-const DEGREES_DATA = {{ degrees | tojson }};
-const UNITS_DATA   = {{ units   | tojson }};
-const STORAGE_KEY  = 'stUwa_planner_v3';
+    // ─────────────────────────────────────────────────────────
+    // DATA
+    // ─────────────────────────────────────────────────────────
+    const DEGREES_DATA = {{ degrees | tojson }};
+    const UNITS_DATA   = {{ units   | tojson }};
+    const STORAGE_KEY  = 'stUwa_planner_v3';
+    const IS_AUTHENTICATED = {{ current_user.is_authenticated | tojson }};
+    const CSRF_TOKEN = {{ csrf_token() | tojson }};
 
-// ─────────────────────────────────────────────────────────
-// TOOLTIP
-// ─────────────────────────────────────────────────────────
-const _tt     = document.getElementById('planner-tooltip');
-const _ttList = document.getElementById('planner-tooltip-list');
+    // ─────────────────────────────────────────────────────────
+    // TOOLTIP
+    // ─────────────────────────────────────────────────────────
+    const _tt     = document.getElementById('planner-tooltip');
+    const _ttList = document.getElementById('planner-tooltip-list');
 
-function showTooltip(anchor, missingCodes) {
-  if (!missingCodes.length) return;
+    function showTooltip(anchor, missingCodes, label = "Missing prerequisites") {
+      if (!missingCodes.length) return;
 
-  _ttList.innerHTML = missingCodes.map(c =>
-    `<span class="text-[10px] font-medium text-rc-blue bg-rc-blue-muted border border-[rgba(108,160,240,0.15)] rounded px-1.5 py-[2px]">${c}</span>`
-  ).join('');
+      const header = document.getElementById('planner-tooltip-header');
+      if (header) header.textContent = label;
 
-  // Show first so we can measure it
-  _tt.classList.remove('hidden');
-  _tt.classList.add('flex');
+      _ttList.innerHTML = missingCodes.map(c =>
+        `<span class="text-[10px] font-medium text-rc-blue bg-rc-blue-muted border border-[rgba(108,160,240,0.15)] rounded px-1.5 py-[2px]">${c}</span>`
+      ).join('');
+      // Show first so we can measure it
+      _tt.classList.remove('hidden');
+      _tt.classList.add('flex');
 
-  const ar = anchor.getBoundingClientRect();
-  const tw = _tt.offsetWidth;
-  const th = _tt.offsetHeight;
+      const ar = anchor.getBoundingClientRect();
+      const tw = _tt.offsetWidth;
+      const th = _tt.offsetHeight;
 
-  // Prefer above; fall back to below if clipped
-  const topAbove = ar.top - th - 8;
-  const top = topAbove >= 4 ? topAbove : ar.bottom + 8;
+      // Prefer above; fall back to below if clipped
+      const topAbove = ar.top - th - 8;
+      const top = topAbove >= 4 ? topAbove : ar.bottom + 8;
 
-  // Centre horizontally over the anchor, clamped to viewport
-  let left = ar.left + ar.width / 2 - tw / 2;
-  left = Math.max(6, Math.min(left, window.innerWidth - tw - 6));
+      // Centre horizontally over the anchor, clamped to viewport
+      let left = ar.left + ar.width / 2 - tw / 2;
+      left = Math.max(6, Math.min(left, window.innerWidth - tw - 6));
 
-  _tt.style.top  = top  + 'px';
-  _tt.style.left = left + 'px';
-}
-
-function hideTooltip() {
-  _tt.classList.add('hidden');
-  _tt.classList.remove('flex');
-}
-
-// ─────────────────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────────────────
-let state = {
-  degrees: [],        // [slug1] or [slug1, slug2]
-  startYear: 2024,
-  startSem: 1,
-  plan: {},           // { "2024-1": ["CODE", …] }
-  done: [],           // unit codes marked completed — immovable, persist through degree changes
-  substitutions: {},  // { "CITS1401": "CITS2401" } — treat key as if code is value
-};
-let pickerTargetSem = null;
-let dragState = null; // { code, fromKey: 'tray'|semKey, fromSlot: null|number }
-
-// ─────────────────────────────────────────────────────────
-// PERSISTENCE
-// ─────────────────────────────────────────────────────────
-function save()  { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function load()  {
-  try { const r = localStorage.getItem(STORAGE_KEY); if (r) Object.assign(state, JSON.parse(r)); } catch {}
-}
-
-// ─────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────
-const semKey   = (y, s) => `${y}-${s}`;
-const parseKey = k => { const [y,s] = k.split('-').map(Number); return {year:y,sem:s}; };
-const semLabel = (y, s) => `S${s} ${y}`;
-
-function allSemKeys() {
-  const dur = Math.max(...state.degrees.map(s => {
-    const d = DEGREES_DATA.find(x=>x.slug===s);
-    return d ? d.duration_years : 4;
-  }), 4);
-  // Add an extra year buffer for double degrees
-  const years = state.degrees.length > 1 ? dur + 2 : dur;
-  const keys = [];
-  for (let y = 0; y < years; y++) {
-    for (let s = 1; s <= 2; s++) {
-      if (y === 0 && s < state.startSem) continue;
-      keys.push(semKey(state.startYear + y, s));
+      _tt.style.top  = top  + 'px';
+      _tt.style.left = left + 'px';
     }
-  }
-  return keys;
-}
 
-function unitsBefore(targetKey) {
-  const keys = allSemKeys();
-  const idx = keys.indexOf(targetKey);
-  const earlyKeys = keys.slice(0, idx);
-  const list = [...state.done];
-  for (const k of earlyKeys) for (const c of (state.plan[k]||[])) if (c && !list.includes(c)) list.push(c);
-  // expand substitutions: if X→Y, also add Y when X is present
-  const extras = [];
-  for (const c of list) for (const [from, to] of Object.entries(state.substitutions))
-    if (c === from && !list.includes(to)) extras.push(to);
-  return [...list, ...extras];
-}
+    function hideTooltip() {
+      _tt.classList.add('hidden');
+      _tt.classList.remove('flex');
+    }
 
-function resolve(code) {
-  // If code has a substitute, also consider the substitute as valid in prereq checks
-  const subs = [];
-  for (const [from, to] of Object.entries(state.substitutions)) {
-    if (from === code) subs.push(to);
-    if (to === code)   subs.push(from);
-  }
-  return [code, ...subs];
-}
-
-function prereqsMet(code, targetKey) {
-  const u = UNITS_DATA[code];
-  if (!u?.prerequisites) return true;
-  const p = u.prerequisites;
-  const before = unitsBefore(targetKey);
-  for (const need of (p.all_of||[])) {
-    if (!resolve(need).some(c => before.includes(c))) return false;
-  }
-  for (const grp of (p.any_of||[])) {
-    if (!grp.flatMap(c => resolve(c)).some(c => before.includes(c))) return false;
-  }
-  return true;
-}
-
-function coreqsMet(code, targetKey) {
-  const u = UNITS_DATA[code];
-  if (!u?.corequisites) return true;
-  const before = unitsBefore(targetKey);
-  const inSem  = state.plan[targetKey] || [];
-  return u.corequisites.every(c => resolve(c).some(x => before.includes(x) || inSem.includes(x)));
-}
-
-function isYearLong(code) {
-  return UNITS_DATA[code]?.availability === 'year_long';
-}
-
-function getRegular(key) {
-  return (state.plan[key] || []).filter(c => c && !isYearLong(c));
-}
-
-function setRegular(key, regular) {
-  const yearLong = (state.plan[key] || []).filter(c => c && isYearLong(c));
-  state.plan[key] = [...regular.filter(Boolean), ...yearLong];
-}
-
-// Sparse slot array — index = slot position, value = code or null
-function getSlots(key) {
-  return (state.plan[key] || []).filter(c => !c || !isYearLong(c));
-}
-
-function setSlots(key, slots) {
-  const yearLong = (state.plan[key] || []).filter(c => c && isYearLong(c));
-  let end = slots.length;
-  while (end > 0 && !slots[end - 1]) end--;
-  state.plan[key] = [...slots.slice(0, end), ...yearLong];
-}
-
-function unitSemOk(code, sem) {
-  const u = UNITS_DATA[code];
-  if (!u) return true;
-  const a = u.availability;
-  if (!a || a === 'year_long') return true;
-  if (Array.isArray(a)) return a.includes(Number(sem));
-  return true;
-}
-
-function getDeg(slug)          { return DEGREES_DATA.find(d => d.slug===slug) || null; }
-
-function degreeCodes(slug) {
-  const d = getDeg(slug);
-  if (!d) return [];
-  return (d.years||[]).flatMap(y => (y.semesters||[]).flatMap(s => (s.units||[])
-    .map(u => u.code)
-    .filter(c => c && !/^[A-Z][a-z]/.test(c) && !/^Broad/.test(c) && !/Elective/.test(c))));
-}
-
-function allRequiredCodes() {
-  return [...new Set(state.degrees.flatMap(degreeCodes))];
-}
-
-// Returns Set of slugs each unit belongs to
-function unitDegrees(code) {
-  return state.degrees.filter(s => degreeCodes(s).includes(code));
-}
-
-// Is unit in both degrees?
-function isShared(code) { return state.degrees.length > 1 && unitDegrees(code).length > 1; }
-
-// Cross-degree incompatibility conflicts
-function getCrossConflicts() {
-  if (state.degrees.length < 2) return [];
-  const [d1, d2] = state.degrees;
-  const c1 = new Set(degreeCodes(d1));
-  const c2 = new Set(degreeCodes(d2));
-  const conflicts = [];
-  const seen = new Set();
-  for (const code of c1) {
-    const u = UNITS_DATA[code];
-    for (const inc of (u?.incompatibilities || [])) {
-      if (c2.has(inc.code)) {
-        const key = [code, inc.code].sort().join('|');
-        if (!seen.has(key)) {
-          seen.add(key);
-          conflicts.push({ code1: code, code2: inc.code,
-            title1: u.title || code, title2: inc.title || inc.code,
-            deg1: d1, deg2: d2 });
+    function highlightPrereqs(codes) {
+      for (const code of codes) {
+        for (const el of document.querySelectorAll(`[data-code="${code}"]`)) {
+          el.classList.add('prereq-highlight');
         }
       }
     }
-  }
-  return conflicts;
-}
 
-function isPlaced(code) { return Object.values(state.plan).some(a => a.includes(code)); }
-function isDone(code)   { return state.done.includes(code); }
-function semCP(k)       { return (state.plan[k]||[]).filter(c=>!isYearLong(c)).reduce((s,c) => s+(UNITS_DATA[c]?.credit_points||0),0); }
+    function clearPrereqHighlights() {
+      for (const el of document.querySelectorAll('.prereq-highlight')) {
+        el.classList.remove('prereq-highlight');
+      }
+    }
 
-function semIsPast(k) {
-  const {year,sem} = parseKey(k);
-  const n = new Date(); const cy=n.getFullYear(), cs=n.getMonth()<6?1:2;
-  return year<cy || (year===cy && sem<cs);
-}
+    // ─────────────────────────────────────────────────────────
+    // STATE
+    // ─────────────────────────────────────────────────────────
+    let state = {
+      degrees: [],        // [slug1] or [slug1, slug2]
+      startYear: 2024,
+      startSem: 1,
+      plan: {},           // { "2024-1": ["CODE", …] }
+      done: [],           // unit codes marked completed — immovable, persist through degree changes
+      substitutions: {},  // { "CITS1401": "CITS2401" } — treat key as if code is value
+      is_public: false,
+      share_url: null,
+    };
+    let pickerTargetSem = null;
+    let dragState = null; // { code, fromKey: 'tray'|semKey, fromSlot: null|number }
 
-function getDefaultPlan() {
-  const keys = allSemKeys();
+    // ─────────────────────────────────────────────────────────
+    // PERSISTENCE
+    // ─────────────────────────────────────────────────────────
+    function save()  { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function load()  {
+      try { const r = localStorage.getItem(STORAGE_KEY); if (r) Object.assign(state, JSON.parse(r)); } catch {}
+    }
 
-  // Seed plan with done units locked in their current slots — they are never moved
-  const plan = {};
-  for (const [k, codes] of Object.entries(state.plan)) {
-    const kept = codes.filter(c => state.done.includes(c));
-    if (kept.length) plan[k] = [...kept];
-  }
+    function setSyncMessage(message, isError=false) {
+      const el = document.getElementById('sync-message');
+      if (!el) return;
+      el.textContent = message;
+      el.classList.toggle('text-rc-red', isError);
+      el.classList.toggle('text-rc-text-faint', !isError);
+    }
 
-  // Build a queue of units in degree-structure order, skipping done/duplicate codes
-  const queued = new Set(state.done);
-  const queue  = []; // { code, preferredKey }
+    function syncPublicControls() {
+      const toggle = document.getElementById('public-plan-toggle');
+      const copyBtn = document.getElementById('copy-share-link-btn');
+      if (toggle) toggle.checked = Boolean(state.is_public);
+      if (copyBtn) {
+        copyBtn.classList.toggle('hidden', !(state.is_public && state.share_url));
+      }
+    }
 
-  for (const slug of state.degrees) {
-    const d = getDeg(slug);
-    if (!d) continue;
-    let ki = 0;
-    for (const yr of (d.years || [])) {
-      for (const sm of (yr.semesters || [])) {
-        if (ki >= keys.length) break;
-        const preferredKey = keys[ki++];
-        for (const u of (sm.units || [])) {
-          if (!u.code) continue;
-          if (/^[A-Z][a-z]/.test(u.code) || /^Broad/.test(u.code) || /Elective/.test(u.code)) continue;
-          if (!queued.has(u.code)) {
-            queue.push({ code: u.code, preferredKey });
-            queued.add(u.code);
+    async function syncRequest(url, options={}) {
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': CSRF_TOKEN,
+        ...(options.headers || {}),
+      };
+      const response = await fetch(url, { ...options, headers });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || 'Sync failed. Please try again.');
+      return payload;
+    }
+
+    async function savePlanToAccount() {
+      if (!IS_AUTHENTICATED) {
+        setSyncMessage('Sign in to sync and save server-side.', true);
+        return;
+      }
+      try {
+        const payload = await syncRequest('/api/planner', {
+          method: 'POST',
+          body: JSON.stringify({ state, is_public: Boolean(state.is_public) }),
+        });
+        if (payload.plan) {
+          state = { ...state, ...payload.plan };
+          save();
+          syncPublicControls();
+        }
+        setSyncMessage(payload.message || 'Planner saved to your account.');
+      } catch (error) {
+        setSyncMessage(error.message, true);
+      }
+    }
+
+    async function loadPlanFromAccount() {
+      try {
+        const payload = await syncRequest('/api/planner');
+        if (!payload.plan) {
+          setSyncMessage('No saved account plan yet.');
+          return;
+        }
+        state = { ...state, ...payload.plan };
+        save();
+        render();
+        syncPublicControls();
+        setSyncMessage('Saved account plan loaded into this browser.');
+      } catch (error) {
+        setSyncMessage(error.message, true);
+      }
+    }
+
+    async function deletePlanFromAccount() {
+      if (!confirm('Delete your saved account plan? Your local browser plan will stay here.')) return;
+      try {
+        const payload = await syncRequest('/api/planner', { method: 'DELETE' });
+        state.share_url = null;
+        save();
+        syncPublicControls();
+        setSyncMessage(payload.message || 'Saved planner deleted.');
+      } catch (error) {
+        setSyncMessage(error.message, true);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // HELPERS
+    // ─────────────────────────────────────────────────────────
+    const semKey   = (y, s) => `${y}-${s}`;
+    const parseKey = k => { const [y,s] = k.split('-').map(Number); return {year:y,sem:s}; };
+    const semLabel = (y, s) => `S${s} ${y}`;
+
+    function allSemKeys() {
+      const dur = Math.max(...state.degrees.map(s => {
+        const d = DEGREES_DATA.find(x=>x.slug===s);
+        return d ? d.duration_years : 4;
+      }), 4);
+      // Add an extra year buffer for double degrees
+      const years = state.degrees.length > 1 ? dur + 2 : dur;
+      const keys = [];
+      for (let y = 0; y < years; y++) {
+        for (let s = 1; s <= 2; s++) {
+          if (y === 0 && s < state.startSem) continue;
+          keys.push(semKey(state.startYear + y, s));
+        }
+      }
+      return keys;
+    }
+
+    function unitsBefore(targetKey) {
+      const keys = allSemKeys();
+      const idx = keys.indexOf(targetKey);
+      const earlyKeys = keys.slice(0, idx);
+      const list = [...state.done];
+      for (const k of earlyKeys) for (const c of (state.plan[k]||[])) if (c && !list.includes(c)) list.push(c);
+      // expand substitutions: if X→Y, also add Y when X is present
+      const extras = [];
+      for (const c of list) for (const [from, to] of Object.entries(state.substitutions))
+        if (c === from && !list.includes(to)) extras.push(to);
+      return [...list, ...extras];
+    }
+
+    function resolve(code) {
+      // If code has a substitute, also consider the substitute as valid in prereq checks
+      const subs = [];
+      for (const [from, to] of Object.entries(state.substitutions)) {
+        if (from === code) subs.push(to);
+        if (to === code)   subs.push(from);
+      }
+      return [code, ...subs];
+    }
+
+    function prereqsMet(code, targetKey) {
+      const u = UNITS_DATA[code];
+      if (!u?.prerequisites) return true;
+      const p = u.prerequisites;
+      const before = unitsBefore(targetKey);
+      for (const need of (p.all_of||[])) {
+        if (!resolve(need).some(c => before.includes(c))) return false;
+      }
+      for (const grp of (p.any_of||[])) {
+        if (!grp.flatMap(c => resolve(c)).some(c => before.includes(c))) return false;
+      }
+      return true;
+    }
+
+    function coreqsMet(code, targetKey) {
+      const u = UNITS_DATA[code];
+      if (!u?.corequisites) return true;
+      const before = unitsBefore(targetKey);
+      const inSem  = state.plan[targetKey] || [];
+      return u.corequisites.every(c => resolve(c).some(x => before.includes(x) || inSem.includes(x)));
+    }
+
+    function isYearLong(code) {
+      return UNITS_DATA[code]?.availability === 'year_long';
+    }
+
+    function getRegular(key) {
+      return (state.plan[key] || []).filter(c => c && !isYearLong(c));
+    }
+
+    function setRegular(key, regular) {
+      const yearLong = (state.plan[key] || []).filter(c => c && isYearLong(c));
+      state.plan[key] = [...regular.filter(Boolean), ...yearLong];
+    }
+
+    // Sparse slot array — index = slot position, value = code or null
+    function getSlots(key) {
+      return (state.plan[key] || []).filter(c => !c || !isYearLong(c));
+    }
+
+    function setSlots(key, slots) {
+      const yearLong = (state.plan[key] || []).filter(c => c && isYearLong(c));
+      let end = slots.length;
+      while (end > 0 && !slots[end - 1]) end--;
+      state.plan[key] = [...slots.slice(0, end), ...yearLong];
+    }
+
+    function unitSemOk(code, sem) {
+      const u = UNITS_DATA[code];
+      if (!u) return true;
+      const a = u.availability;
+      if (!a || a === 'year_long') return true;
+      if (Array.isArray(a)) return a.includes(Number(sem));
+      return true;
+    }
+
+    function getDeg(slug)          { return DEGREES_DATA.find(d => d.slug===slug) || null; }
+
+    function degreeCodes(slug) {
+      const d = getDeg(slug);
+      if (!d) return [];
+      return (d.years||[]).flatMap(y => (y.semesters||[]).flatMap(s => (s.units||[])
+        .map(u => u.code)
+        .filter(c => c && !/^[A-Z][a-z]/.test(c) && !/^Broad/.test(c) && !/Elective/.test(c))));
+    }
+
+    function allRequiredCodes() {
+      return [...new Set(state.degrees.flatMap(degreeCodes))];
+    }
+
+    // Returns Set of slugs each unit belongs to
+    function unitDegrees(code) {
+      return state.degrees.filter(s => degreeCodes(s).includes(code));
+    }
+
+    // Is unit in both degrees?
+    function isShared(code) { return state.degrees.length > 1 && unitDegrees(code).length > 1; }
+
+    // Cross-degree incompatibility conflicts
+    function getCrossConflicts() {
+      if (state.degrees.length < 2) return [];
+      const [d1, d2] = state.degrees;
+      const c1 = new Set(degreeCodes(d1));
+      const c2 = new Set(degreeCodes(d2));
+      const conflicts = [];
+      const seen = new Set();
+      for (const code of c1) {
+        const u = UNITS_DATA[code];
+        for (const inc of (u?.incompatibilities || [])) {
+          if (c2.has(inc.code)) {
+            const key = [code, inc.code].sort().join('|');
+            if (!seen.has(key)) {
+              seen.add(key);
+              conflicts.push({ code1: code, code2: inc.code,
+                title1: u.title || code, title2: inc.title || inc.code,
+                deg1: d1, deg2: d2 });
+            }
           }
         }
       }
-    }
-  }
-
-  // Place each unit at its preferred semester if there's room, else spill forward
-  for (const { code, preferredKey } of queue) {
-    const startIdx = Math.max(0, keys.indexOf(preferredKey));
-    for (let ki = startIdx; ki < keys.length; ki++) {
-      const k = keys[ki];
-      const { sem } = parseKey(k);
-      if (!unitSemOk(code, sem)) continue;
-      // Count ALL non-year_long units already in this slot (including done) toward the cap
-      const count = (plan[k] || []).filter(c => c && !isYearLong(c)).length;
-      if (count < 4) {
-        if (!plan[k]) plan[k] = [];
-        if (!plan[k].includes(code)) plan[k].push(code);
-        break;
-      }
-    }
-  }
-
-  return plan;
-}
-
-// ─────────────────────────────────────────────────────────
-// RENDER
-// ─────────────────────────────────────────────────────────
-function render() {
-  const has = state.degrees.length > 0;
-  document.getElementById('empty-state').classList.toggle('hidden', has);
-  document.getElementById('timeline-wrap').classList.toggle('hidden', !has);
-  document.getElementById('timeline-wrap').classList.toggle('flex', has);
-  document.getElementById('tray-wrap').classList.toggle('hidden', !has);
-  document.getElementById('planner-stats').classList.toggle('hidden', !has);
-  document.getElementById('planner-stats').classList.toggle('flex-col', has);
-  if (!has) { document.getElementById('conflict-wrap').classList.add('hidden'); return; }
-
-  renderConflicts();
-  renderGrid();
-  renderTray();
-  renderStats();
-}
-
-// ─── Conflicts ───────────────────────────────────────────
-function renderConflicts() {
-  const conflicts = getCrossConflicts();
-  const wrap = document.getElementById('conflict-wrap');
-  const list = document.getElementById('conflict-list');
-  wrap.classList.toggle('hidden', conflicts.length === 0);
-  if (!conflicts.length) return;
-  wrap.classList.remove('hidden');
-  wrap.classList.add('flex');
-
-  list.innerHTML = '';
-  for (const c of conflicts) {
-    const hasSub = state.substitutions[c.code1] === c.code2 || state.substitutions[c.code2] === c.code1;
-    const row = document.createElement('div');
-    row.className = 'flex items-center gap-3 bg-rc-fill-subtle rounded-lg px-3 py-2';
-    row.innerHTML = `
-      <div class="flex items-center gap-1.5 flex-1 flex-wrap gap-y-1">
-        <span class="text-xs font-medium text-rc-amber px-2 py-[2px] bg-rc-amber-muted border border-rc-amber/15 rounded">${c.code1}</span>
-        <span class="text-[10px] text-white/30">(D1)</span>
-        <span class="text-[11px] text-white/20 mx-1">⊗</span>
-        <span class="text-xs font-medium text-rc-amber px-2 py-[2px] bg-rc-amber-muted border border-rc-amber/15 rounded">${c.code2}</span>
-        <span class="text-[10px] text-white/30">(D2)</span>
-        <span class="text-[10px] text-white/25 ml-1">— these units are incompatible</span>
-      </div>
-      <div class="flex items-center gap-2 shrink-0">
-        ${hasSub
-          ? `<span class="text-[10px] text-rc-green">✓ using ${c.code2} as equivalent</span>
-             <button onclick="clearSub('${c.code1}','${c.code2}')" class="text-[10px] text-white/25 hover:text-white/50 cursor-pointer">undo</button>`
-          : `<button onclick="setSub('${c.code1}','${c.code2}')" class="text-[10px] px-2 py-[3px] rounded bg-rc-fill border border-rc-border text-white/45 hover:border-white/20 hover:text-white/70 cursor-pointer transition whitespace-nowrap">
-               Use ${c.code2} in place of ${c.code1}
-             </button>`
-        }
-      </div>`;
-    list.appendChild(row);
-  }
-}
-
-// ─── Semester grid ────────────────────────────────────────
-function renderGrid() {
-  const container = document.getElementById('semester-grid');
-  container.innerHTML = '';
-  const keys = allSemKeys();
-
-  // Group consecutive keys by calendar year
-  const yearGroups = [];
-  let i = 0;
-  while (i < keys.length) {
-    const { year: y0 } = parseKey(keys[i]);
-    const group = [keys[i]];
-    if (i + 1 < keys.length && parseKey(keys[i + 1]).year === y0) {
-      group.push(keys[i + 1]);
-      i += 2;
-    } else {
-      i += 1;
-    }
-    yearGroups.push(group);
-  }
-
-  const currentCalYear = new Date().getFullYear();
-
-  for (const [yi, yearKeys] of yearGroups.entries()) {
-    const { year: calYear } = parseKey(yearKeys[0]);
-    const isCurrent = calYear === currentCalYear;
-
-    const cluster = document.createElement('div');
-    cluster.className = 'flex flex-col gap-1.5 shrink-0';
-    cluster.style.width = '15rem';
-
-    if (isCurrent) {
-      cluster.style.background   = 'rgba(255,255,255,0.018)';
-      cluster.style.borderRadius = '12px';
-      cluster.style.outline      = '1px solid rgba(255,255,255,0.055)';
-      cluster.style.padding      = '6px';
-      cluster.style.width        = 'calc(15rem + 12px)';
+      return conflicts;
     }
 
-    // Year header
-    const yearHdr = document.createElement('div');
-    yearHdr.className = 'flex items-baseline gap-1.5 px-0.5';
-    yearHdr.innerHTML = `
-      <span class="text-[10px] uppercase tracking-widest font-semibold ${isCurrent ? 'text-white/70' : 'text-white/50'}">Year ${yi + 1}</span>
-      <span class="text-[10px] normal-case tracking-normal font-normal ${isCurrent ? 'text-white/35' : 'text-white/20'}">${calYear}</span>
-      ${isCurrent ? '<span class="text-[9px] font-semibold px-1.5 py-[1px] rounded-full bg-rc-amber-muted text-rc-amber leading-none ml-0.5">now</span>' : ''}`;
-    cluster.appendChild(yearHdr);
+    function isPlaced(code) { return Object.values(state.plan).some(a => a.includes(code)); }
+    function isDone(code)   { return state.done.includes(code); }
+    function semCP(k)       { return (state.plan[k]||[]).filter(c=>!isYearLong(c)).reduce((s,c) => s+(UNITS_DATA[c]?.credit_points||0),0); }
 
-    // Collect year_long units from all semester keys in this calendar year
-    const yearLongCodes = [];
-    for (const k of yearKeys) {
-      for (const code of (state.plan[k] || [])) {
-        if (isYearLong(code) && !yearLongCodes.includes(code)) yearLongCodes.push(code);
-      }
+    function semIsPast(k) {
+      const {year,sem} = parseKey(k);
+      const n = new Date(); const cy=n.getFullYear(), cs=n.getMonth()<6?1:2;
+      return year<cy || (year===cy && sem<cs);
     }
 
-    // Semester sections stacked vertically
-    for (const key of yearKeys) {
-      const { year, sem } = parseKey(key);
-      const units  = (state.plan[key] || []).filter(c => !isYearLong(c));
-      const cp     = semCP(key);
-      const isPast = semIsPast(key);
-
-      const semLbl = document.createElement('div');
-      semLbl.className = `text-[9px] uppercase tracking-widest font-medium px-0.5 ${isPast ? 'text-rc-text-faint' : 'text-white/30'}`;
-      semLbl.innerHTML = `Sem ${sem}<span class="normal-case tracking-normal font-normal ml-1 text-white/20">${cp > 0 ? cp + ' CP' : ''}</span>`;
-      cluster.appendChild(semLbl);
-
-      const card = document.createElement('div');
-      card.className = `sem-card bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 transition
-        ${isPast ? 'border-rc-border/50' : 'border-rc-border'}`;
-      card.dataset.semKey = key;
-
-      // 4 discrete slot drop-targets
-      const slotsContainer = document.createElement('div');
-      slotsContainer.className = 'flex flex-col gap-1.5';
-      for (let i = 0; i < 4; i++) {
-        slotsContainer.appendChild(buildSemSlot(key, i, units[i] || null));
-      }
-      card.appendChild(slotsContainer);
-
-      // 5th slot — hidden unless triggered by drag or already occupied
-      const fifthSlot = buildSemSlot(key, 4, units[4] || null, true);
-      if (!units[4]) fifthSlot.classList.add('hidden');
-      card.appendChild(fifthSlot);
-
-      // Show 5th slot when dragging over a full card; hide when leaving
-      let enterCount = 0;
-      card.addEventListener('dragenter', e => {
-        e.preventDefault();
-        enterCount++;
-        if (units.length >= 4) fifthSlot.classList.remove('hidden');
-      });
-      card.addEventListener('dragleave', () => {
-        enterCount--;
-        if (enterCount <= 0) {
-          enterCount = 0;
-          if (!units[4]) fifthSlot.classList.add('hidden');
-        }
-      });
-      card.addEventListener('dragover', e => e.preventDefault());
-
-      const addBtn = document.createElement('button');
-      addBtn.className = 'mt-1 text-[11px] text-white/20 hover:text-white/50 border border-dashed border-white/10 hover:border-white/20 rounded-lg py-1.5 text-center transition cursor-pointer';
-      addBtn.textContent = '+ add unit';
-      addBtn.onclick = () => openPicker(key);
-      card.appendChild(addBtn);
-
-      cluster.appendChild(card);
-    }
-
-    // Year-long strip — only shown when units are present
-    if (yearLongCodes.length > 0) {
-      const strip = document.createElement('div');
-      strip.className = 'flex items-center gap-2 flex-wrap rounded-lg border border-dashed border-rc-border-light bg-rc-fill-subtle px-3 py-2';
-
-      const lbl = document.createElement('span');
-      lbl.className = 'text-[9px] uppercase tracking-widest text-white/20 shrink-0';
-      lbl.textContent = 'Year-long';
-      strip.appendChild(lbl);
-
-      const div = document.createElement('div');
-      div.className = 'w-px h-3 bg-rc-border-light shrink-0';
-      strip.appendChild(div);
-
-      for (const code of yearLongCodes) strip.appendChild(mkYearLongChip(code, yearKeys[0]));
-      cluster.appendChild(strip);
-    }
-
-    container.appendChild(cluster);
-  }
-}
-
-function mkYearLongChip(code, key) {
-  const u    = UNITS_DATA[code];
-  const done = isDone(code);
-  const ok   = prereqsMet(code, key);
-  const { dot } = dotStyle(code, key);
-
-  const chip = document.createElement('div');
-  chip.className = `group flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-md border transition select-none
-    ${done ? 'border-rc-border/40 text-white/30 opacity-50 cursor-default'
-           : ok  ? 'border-rc-border text-white/50 hover:bg-rc-fill hover:text-white/70 cursor-pointer'
-                 : 'border-[rgba(255,99,99,0.2)] bg-rc-red-muted text-white/40 cursor-pointer'}`;
-
-  chip.innerHTML = `
-    ${dot === 'dot-shared'
-      ? `<div class="w-1 h-1 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
-      : `<div class="w-1 h-1 rounded-full ${dot} shrink-0"></div>`}
-    ${code}
-    ${done ? '' : `<button class="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer text-[12px] leading-none ml-0.5"
-            title="Remove" onclick="event.stopPropagation();removeUnitAnyKey('${code}')">×</button>`}`;
-
-  chip.addEventListener('contextmenu', e => {
-    e.preventDefault();
-    const isDoneNow = isDone(code);
-    ContextMenu.open(e.clientX, e.clientY, [
-      { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
-      { label: 'Slot in…', submenu: buildYearLongSlotSubmenu(code) },
-      { separator: true },
-      { label: isDoneNow ? 'Mark incomplete' : 'Mark complete', action: () => toggleDone(code) },
-      ...(isDoneNow ? [] : [{ separator: true }, { label: 'Remove from slot', action: () => removeUnitAnyKey(code) }]),
-    ]);
-  });
-
-  return chip;
-}
-
-function removeUnitAnyKey(code) {
-  for (const k of Object.keys(state.plan)) {
-    state.plan[k] = state.plan[k].filter(c => c !== code);
-  }
-  save(); render();
-}
-
-function buildSemSlot(semKey, slotIdx, code, isFifth = false) {
-  const slot = document.createElement('div');
-  slot.className = `slot-box rounded-lg border border-dashed ${isFifth ? 'border-white/[0.04]' : 'border-white/[0.07]'} min-h-10 transition`;
-  slot.dataset.slot = slotIdx;
-  slot.dataset.semKey = semKey;
-
-  if (code) {
-    slot.classList.remove('border-dashed');
-    slot.classList.add('border-transparent');
-    slot.appendChild(mkUnitCard(code, semKey, slotIdx));
-  }
-
-  slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drop-hover'); });
-  slot.addEventListener('dragleave', e => {
-    if (!slot.contains(e.relatedTarget)) slot.classList.remove('drop-hover');
-  });
-  slot.addEventListener('drop', e => {
-    e.preventDefault();
-    e.stopPropagation();
-    slot.classList.remove('drop-hover');
-    handleSlotDrop(semKey, slotIdx);
-  });
-
-  return slot;
-}
-
-function dotStyle(code, semKey) {
-  const done = isDone(code);
-  const ok   = prereqsMet(code, semKey) && coreqsMet(code, semKey);
-  if (done) return { dot: 'bg-rc-green', card: 'border-rc-border/40' };
-  if (!ok)  return { dot: 'bg-rc-red',   card: 'border-[rgba(255,99,99,0.18)]  bg-rc-red-muted' };
-  if (isShared(code)) return { dot: 'dot-shared', card: 'border-[rgba(139,172,240,0.22)]' };
-  const degs = unitDegrees(code);
-  if (degs[0] === state.degrees[1]) return { dot: 'bg-rc-purple', card: 'border-[rgba(167,139,250,0.18)]' };
-  return { dot: 'bg-rc-blue', card: 'border-rc-border' };
-}
-
-function mkUnitCard(code, key, slotIdx = 0) {
-  const u    = UNITS_DATA[code];
-  const {dot, card} = dotStyle(code, key);
-  const done = isDone(code);
-
-  const missingPrereqs = [];
-  if (!prereqsMet(code, key) && u?.prerequisites) {
-    const p = u.prerequisites;
-    const before = unitsBefore(key);
-    for (const c of (p.all_of||[])) if (!resolve(c).some(x=>before.includes(x))) missingPrereqs.push(c);
-    for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>before.includes(x))) missingPrereqs.push(`one of [${g.join('/')}]`);
-  }
-
-  // Degree badge(s)
-  const degs = unitDegrees(code);
-  const badges = degs.map(s => {
-    const idx = state.degrees.indexOf(s);
-    const col = idx===0 ? 'text-rc-blue bg-rc-blue-muted' : 'text-rc-purple bg-rc-purple-muted';
-    return `<span class="text-[8px] font-bold ${col} px-1 py-[1px] rounded leading-none">D${idx+1}</span>`;
-  }).join('');
-
-  const el = document.createElement('div');
-  // Done units get unit-done class (blocks drag) and reduced opacity (historical)
-  el.className = `unit-draggable group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${card} transition select-none${done ? ' unit-done opacity-50' : ' hover:brightness-110'}`;
-  el.dataset.code = code;
-
-  if (missingPrereqs.length && !done) {
-    el.addEventListener('mouseenter', () => showTooltip(el, missingPrereqs));
-    el.addEventListener('mouseleave', hideTooltip);
-  }
-
-  el.innerHTML = `
-    ${dot === 'dot-shared'
-      ? `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
-      : `<div class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></div>`}
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-1">
-        <span class="text-[11px] font-medium text-white/80 leading-tight">${code}</span>
-        ${badges}
-      </div>
-      <div class="text-[9px] text-white/30 truncate leading-tight">${u?.title||'—'}</div>
-    </div>
-    <div class="flex items-center gap-0.5 shrink-0">
-      <span class="text-[9px] text-white/20">${u?.credit_points||0}CP</span>
-      ${done ? '' : `<button class="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer px-0.5 text-[13px] leading-none"
-              title="Remove" onclick="event.stopPropagation();removeUnit('${code}','${key}')">×</button>`}
-    </div>`;
-
-  if (!done) {
-    el.draggable = true;
-    el.addEventListener('dragstart', e => {
-      dragState = { code, fromKey: key, fromSlot: slotIdx };
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', code);
-      setTimeout(() => el.classList.add('dragging'), 0);
-      hideTooltip();
-    });
-    el.addEventListener('dragend', () => {
-      el.classList.remove('dragging');
-      dragState = null;
-    });
-  }
-
-  el.addEventListener('contextmenu', e => {
-    e.preventDefault();
-    const isDoneNow = isDone(code);
-    ContextMenu.open(e.clientX, e.clientY, [
-      { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
-      { label: 'Slot in…', submenu: buildSlotSubmenu(code) },
-      { separator: true },
-      { label: isDoneNow ? 'Mark incomplete' : 'Mark complete', action: () => toggleDone(code) },
-      ...(isDoneNow ? [] : [{ separator: true }, { label: 'Remove from slot', action: () => removeUnit(code, key) }]),
-    ]);
-  });
-
-  return el;
-}
-
-// ─── Tray ─────────────────────────────────────────────────
-function renderTray() {
-  const wrap      = document.getElementById('tray-wrap');
-  const avail     = document.getElementById('tray-available');
-  const locked    = document.getElementById('tray-locked');
-  const lockedWrap = document.getElementById('tray-locked-wrap');
-  const countEl   = document.getElementById('tray-count');
-
-  const allCodes = allRequiredCodes();
-  const placed   = Object.values(state.plan).flat();
-  const unplaced = allCodes.filter(c => !placed.includes(c) && !isDone(c));
-
-  wrap.classList.toggle('hidden', false);
-  wrap.classList.add('flex');
-  avail.innerHTML = '';
-  locked.innerHTML = '';
-
-  if (!unplaced.length) {
-    countEl.textContent = 'All placed!';
-    lockedWrap.classList.add('hidden');
-    lockedWrap.classList.remove('flex');
-    avail.innerHTML = '<span class="text-xs text-rc-green">All degree units are placed in your plan.</span>';
-    return;
-  }
-
-  countEl.textContent = `${unplaced.length} remaining`;
-  const allPlaced = [...state.done, ...placed];
-  let hasLocked = false;
-
-  for (const code of unplaced) {
-    const ready = prereqsMetGeneral(code, allPlaced);
-    const card  = mkTrayCard(code, ready);
-    if (ready) {
-      avail.appendChild(card);
-    } else {
-      locked.appendChild(card);
-      hasLocked = true;
-    }
-  }
-
-  if (hasLocked) { lockedWrap.classList.remove('hidden'); lockedWrap.classList.add('flex'); }
-  else           { lockedWrap.classList.add('hidden');    lockedWrap.classList.remove('flex'); }
-}
-
-function mkTrayCard(code, ready = true) {
-  const u    = UNITS_DATA[code];
-  const degs = unitDegrees(code);
-  const shared = degs.length > 1;
-
-  let dotCls, border, text;
-  if (!ready) {
-    dotCls = 'bg-white/15'; border = 'border-rc-border/50'; text = 'text-white/30';
-  } else if (shared) {
-    dotCls = 'dot-shared'; border = 'border-[rgba(139,172,240,0.25)] bg-[rgba(139,172,240,0.05)]'; text = 'text-white/65';
-  } else if (degs[0] === state.degrees[1]) {
-    dotCls = 'bg-rc-purple'; border = 'border-[rgba(167,139,250,0.25)] bg-rc-purple-muted'; text = 'text-rc-purple';
-  } else {
-    dotCls = 'bg-rc-blue'; border = 'border-[rgba(108,160,240,0.25)] bg-rc-blue-muted'; text = 'text-rc-blue';
-  }
-
-  const badges = degs.map(s => {
-    const i = state.degrees.indexOf(s);
-    const cl = i === 0 ? 'text-rc-blue bg-rc-blue-muted' : 'text-rc-purple bg-rc-purple-muted';
-    return `<span class="text-[8px] font-bold ${cl} px-1 py-[1px] rounded leading-none">D${i+1}</span>`;
-  }).join('');
-
-  const dotHtml = dotCls === 'dot-shared'
-    ? `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
-    : `<div class="w-1.5 h-1.5 rounded-full ${dotCls} shrink-0"></div>`;
-
-  const el = document.createElement('div');
-  el.dataset.code = code;
-  el.className = `unit-draggable flex items-center gap-2 rounded-lg px-2.5 py-2 border ${border} transition select-none hover:brightness-110`;
-  el.style.width = '100%';
-
-  if (!ready) {
-    const missing = [];
-    const p = UNITS_DATA[code]?.prerequisites;
-    if (p) {
-      const have = [...state.done, ...Object.values(state.plan).flat()];
-      for (const c of (p.all_of||[])) if (!resolve(c).some(x=>have.includes(x))) missing.push(c);
-      for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>have.includes(x))) missing.push(`one of [${g.join('/')}]`);
-    }
-    if (missing.length) {
-      el.addEventListener('mouseenter', () => showTooltip(el, missing));
-      el.addEventListener('mouseleave', hideTooltip);
-    }
-  }
-  el.innerHTML = `
-    ${dotHtml}
-    <div class="flex-1 min-w-0">
-      <div class="flex items-center gap-1">
-        <span class="text-[11px] font-medium ${text} leading-tight">${code}</span>
-        ${badges}
-      </div>
-      <div class="text-[9px] text-white/30 truncate leading-tight">${u?.title || '—'}</div>
-    </div>
-    <span class="text-[9px] text-white/20 shrink-0">${u?.credit_points || 0}CP</span>`;
-
-  if (ready) {
-    el.draggable = true;
-    el.addEventListener('dragstart', e => {
-      dragState = { code, fromKey: 'tray', fromSlot: null };
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', code);
-      setTimeout(() => el.classList.add('dragging'), 0);
-    });
-    el.addEventListener('dragend', () => {
-      el.classList.remove('dragging');
-      dragState = null;
-    });
-  }
-
-  el.addEventListener('contextmenu', e => {
-    e.preventDefault();
-    ContextMenu.open(e.clientX, e.clientY, [
-      { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
-      { label: 'Slot in…', submenu: buildSlotSubmenu(code) },
-    ]);
-  });
-
-  return el;
-}
-
-function prereqsMetGeneral(code, list) {
-  const u = UNITS_DATA[code];
-  if (!u?.prerequisites) return true;
-  const p = u.prerequisites;
-  // expand substitutions
-  const expanded = [...list];
-  for (const [from,to] of Object.entries(state.substitutions)) {
-    if (list.includes(from) && !expanded.includes(to)) expanded.push(to);
-    if (list.includes(to)   && !expanded.includes(from)) expanded.push(from);
-  }
-  for (const c of (p.all_of||[])) if (!resolve(c).some(x=>expanded.includes(x))) return false;
-  for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>expanded.includes(x))) return false;
-  return true;
-}
-
-function findBestSem(code) {
-  for (const k of allSemKeys()) {
-    const {sem} = parseKey(k);
-    if (unitSemOk(code,sem) && prereqsMet(code,k)) return k;
-  }
-  return null;
-}
-
-function moveToSlot(code, targetKey) {
-  for (const k of Object.keys(state.plan)) {
-    state.plan[k] = (state.plan[k] || []).filter(c => c !== code);
-  }
-  if (!state.plan[targetKey]) state.plan[targetKey] = [];
-  if (!state.plan[targetKey].includes(code)) state.plan[targetKey].push(code);
-  save(); render();
-}
-
-function buildSlotSubmenu(code) {
-  const keys       = allSemKeys();
-  const currentKey = keys.find(k => (state.plan[k] || []).includes(code));
-  const items      = [];
-
-  const years = {};
-  for (const k of keys) {
-    const { year, sem } = parseKey(k);
-    if (!years[year]) years[year] = [];
-    years[year].push({ k, sem });
-  }
-
-  let first = true;
-  for (const [year, sems] of Object.entries(years)) {
-    if (!first) items.push({ separator: true });
-    first = false;
-    items.push({ header: true, label: String(year) });
-    for (const { k, sem } of sems) {
-      const isCurrent = k === currentKey;
-      const semAvail  = unitSemOk(code, sem);
-      items.push({
-        label:    `Sem ${sem}`,
-        checked:  isCurrent,
-        disabled: !semAvail && !isCurrent,
-        action:   isCurrent ? null : () => moveToSlot(code, k),
-      });
-    }
-  }
-  return items;
-}
-
-function buildYearLongSlotSubmenu(code) {
-  const keys = allSemKeys();
-  const yearEntries = [];
-  const seen = new Set();
-  for (const k of keys) {
-    const { year } = parseKey(k);
-    if (!seen.has(year)) { seen.add(year); yearEntries.push({ year, k }); }
-  }
-  const currentKey  = keys.find(k => (state.plan[k] || []).includes(code));
-  const currentYear = currentKey ? parseKey(currentKey).year : null;
-  return yearEntries.map(({ year, k }, i) => ({
-    label:   `Year ${i + 1} · ${year}`,
-    checked: year === currentYear,
-    action:  year === currentYear ? null : () => moveToSlot(code, k),
-  }));
-}
-
-// ─── HTML5 drag-and-drop ─────────────────────────────────
-function handleSlotDrop(targetKey, targetSlot) {
-  if (!dragState) return;
-  const { code, fromKey, fromSlot } = dragState;
-
-  const toSlots = getSlots(targetKey);
-  while (toSlots.length <= targetSlot) toSlots.push(null);
-
-  const displaced = toSlots[targetSlot]; // unit currently in the target slot (may be null)
-
-  // Place dragged unit in the exact target slot
-  toSlots[targetSlot] = code;
-
-  if (fromKey !== 'tray') {
-    if (fromKey === targetKey) {
-      // Same sem: swap — put displaced into the vacated source slot
-      if (fromSlot !== null && fromSlot !== targetSlot) {
-        while (toSlots.length <= fromSlot) toSlots.push(null);
-        toSlots[fromSlot] = displaced || null;
-      }
-    } else {
-      // Different sem: null out source slot; displaced goes to tray
-      const fromSlots = getSlots(fromKey);
-      if (fromSlot !== null) {
-        while (fromSlots.length <= fromSlot) fromSlots.push(null);
-        fromSlots[fromSlot] = null;
-      }
-      setSlots(fromKey, fromSlots);
-    }
-  }
-  // From tray: displaced (if any) is removed from plan → reappears in tray automatically
-
-  setSlots(targetKey, toSlots);
-
-  const finalIdx = getSlots(targetKey).indexOf(code);
-  const isFifth  = finalIdx >= 4;
-
-  save(); render();
-
-  if (isFifth) {
-    const slot5  = document.querySelector(`.slot-box[data-sem-key="${targetKey}"][data-slot="4"]`);
-    const unitEl = slot5?.querySelector('.unit-draggable');
-    if (unitEl) {
-      const tl = gsap.timeline();
-      tl.to(unitEl, { x: -5, duration: 0.07, ease: 'power1.out' })
-        .to(unitEl, { x:  5, duration: 0.07, ease: 'power1.inOut' })
-        .to(unitEl, { x: -4, duration: 0.07, ease: 'power1.inOut' })
-        .to(unitEl, { x:  4, duration: 0.07, ease: 'power1.inOut' })
-        .to(unitEl, { x: -2, duration: 0.07, ease: 'power1.inOut' })
-        .to(unitEl, { x:  0, duration: 0.07, ease: 'power1.in' });
-    }
-  }
-}
-
-function handleTrayDrop() {
-  if (!dragState) return;
-  const { code, fromKey, fromSlot } = dragState;
-  if (fromKey && fromKey !== 'tray') {
-    const fromSlots = getSlots(fromKey);
-    if (fromSlot !== null && fromSlot < fromSlots.length) {
-      fromSlots[fromSlot] = null;
-    } else {
-      // Fallback: scan and null out
-      for (let i = 0; i < fromSlots.length; i++) {
-        if (fromSlots[i] === code) { fromSlots[i] = null; break; }
-      }
-    }
-    setSlots(fromKey, fromSlots);
-    save(); render();
-  }
-}
-
-function initDragDrop() {
-  const trayWrap = document.getElementById('tray-wrap');
-  if (trayWrap) {
-    trayWrap.addEventListener('dragover',  e => { e.preventDefault(); trayWrap.classList.add('tray-drag-over'); });
-    trayWrap.addEventListener('dragleave', e => { if (!trayWrap.contains(e.relatedTarget)) trayWrap.classList.remove('tray-drag-over'); });
-    trayWrap.addEventListener('drop',      e => { e.preventDefault(); trayWrap.classList.remove('tray-drag-over'); handleTrayDrop(); });
-  }
-}
-
-// ─── Stats ────────────────────────────────────────────────
-function renderStats() {
-  const placed = Object.values(state.plan).flat();
-  let d1CP=0, d2CP=0, donCP=0, remCP=0;
-
-  const allCodes = allRequiredCodes();
-  for (const code of allCodes) {
-    const cp = UNITS_DATA[code]?.credit_points || 0;
-    const inD1 = state.degrees[0] && degreeCodes(state.degrees[0]).includes(code);
-    const inD2 = state.degrees[1] && degreeCodes(state.degrees[1]).includes(code);
-    if (placed.includes(code) || isDone(code)) {
-      if (inD1) d1CP += cp;
-      if (inD2) d2CP += cp;
-      if (isDone(code)) donCP += cp;
-    } else {
-      remCP += cp;
-    }
-  }
-
-  document.getElementById('stat-d1').textContent = d1CP + ' CP';
-  document.getElementById('stat-d2').textContent = d2CP + ' CP';
-  document.getElementById('stat-done').textContent = donCP;
-  document.getElementById('stat-rem').textContent  = remCP;
-
-  const d2wrap = document.getElementById('stat-d2-wrap');
-  if (state.degrees.length > 1) { d2wrap.classList.remove('hidden'); d2wrap.classList.add('flex'); }
-  else                           { d2wrap.classList.add('hidden');    d2wrap.classList.remove('flex'); }
-}
-
-// ─────────────────────────────────────────────────────────
-// ACTIONS
-// ─────────────────────────────────────────────────────────
-function toggleDone(code) {
-  const i = state.done.indexOf(code);
-  if (i === -1) state.done.push(code); else state.done.splice(i,1);
-  save(); render();
-}
-
-function removeUnit(code, key) {
-  if (state.plan[key]) state.plan[key] = state.plan[key].filter(c=>c!==code);
-  save(); render();
-}
-
-function setSub(from, to) {
-  state.substitutions[from] = to;
-  save(); render();
-}
-
-function clearSub(from, to) {
-  delete state.substitutions[from]; delete state.substitutions[to];
-  save(); render();
-}
-
-// ─────────────────────────────────────────────────────────
-// PICKER
-// ─────────────────────────────────────────────────────────
-function openPicker(key, highlight = null) {
-  pickerTargetSem = key;
-  const {year,sem} = parseKey(key);
-  document.getElementById('picker-title').textContent = `Add unit — ${semLabel(year,sem)}`;
-  document.getElementById('picker-search').value = '';
-  buildPickerList('');
-  document.getElementById('picker-modal').classList.remove('hidden');
-  document.getElementById('picker-modal').classList.add('flex');
-  document.getElementById('picker-search').focus();
-}
-
-function buildPickerList(query) {
-  const list     = document.getElementById('picker-list');
-  const key      = pickerTargetSem;
-  const {sem}    = parseKey(key);
-  const allCodes = allRequiredCodes();
-  const placed   = Object.values(state.plan).flat();
-  const avail    = allCodes.filter(c => !placed.includes(c) && !isDone(c));
-  const q        = query.toLowerCase();
-
-  list.innerHTML = '';
-  const filtered = q ? avail.filter(c => c.toLowerCase().includes(q) || (UNITS_DATA[c]?.title||'').toLowerCase().includes(q)) : avail;
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="text-xs text-white/30 py-3 text-center">No unplaced units match.</div>';
-    return;
-  }
-
-  for (const code of filtered) {
-    const u       = UNITS_DATA[code];
-    const semOk   = unitSemOk(code, sem);
-    const pOk     = prereqsMet(code, key);
-    const cOk     = coreqsMet(code, key);
-    const ok      = semOk && pOk && cOk;
-
-    const missing = [];
-    if (!pOk && u?.prerequisites) {
-      const p = u.prerequisites; const before = unitsBefore(key);
-      for (const c of (p.all_of||[])) if (!resolve(c).some(x=>before.includes(x))) missing.push(c);
-      for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>before.includes(x))) missing.push(`one of [${g.join('/')}]`);
-    }
-    if (!semOk) {
-      const a = u?.availability;
-      missing.push(Array.isArray(a) ? `only available S${a.join('/')}` : 'non-standard period');
-    }
-
-    const degs = unitDegrees(code);
-    const badgeHtml = degs.map(s => {
-      const i = state.degrees.indexOf(s);
-      const cl = i===0 ? 'text-rc-blue bg-rc-blue-muted' : 'text-rc-purple bg-rc-purple-muted';
-      return `<span class="text-[8px] font-bold ${cl} px-1 py-[1px] rounded">D${i+1}</span>`;
-    }).join(' ');
-
-    const row = document.createElement('div');
-    row.className = `flex items-center gap-2.5 rounded-lg px-3 py-2 transition
-      ${ok ? 'hover:bg-rc-fill cursor-pointer' : 'opacity-40 cursor-not-allowed'}`;
-    row.innerHTML = `
-      <div class="w-1.5 h-1.5 rounded-full shrink-0 ${ok?'bg-rc-green':'bg-white/20'}"></div>
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-1.5">
-          <span class="text-[12px] font-medium text-white/80">${code}</span>
-          ${badgeHtml}
-        </div>
-        <div class="text-[10px] text-white/30 truncate">${u?.title||''}</div>
-        ${missing.length ? `<div class="text-[10px] text-rc-red/70 mt-0.5">Missing: ${missing.join(', ')}</div>` : ''}
-      </div>
-      <span class="text-[10px] text-white/25 shrink-0">${u?.credit_points||0}CP</span>`;
-    if (ok) row.onclick = () => placeUnit(code, key);
-    list.appendChild(row);
-  }
-}
-
-function closePicker() {
-  pickerTargetSem = null;
-  document.getElementById('picker-modal').classList.add('hidden');
-  document.getElementById('picker-modal').classList.remove('flex');
-}
-
-function placeUnit(code, key) {
-  if (!state.plan[key]) state.plan[key] = [];
-  if (!state.plan[key].includes(code)) state.plan[key].push(code);
-  closePicker(); save(); render();
-}
-
-// ─────────────────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  load();
-  initDragDrop();
-
-  const d1Sel   = document.getElementById('degree1-select');
-  const d2Sel   = document.getElementById('degree2-select');
-  const yearSel = document.getElementById('start-year');
-  const semSel  = document.getElementById('start-sem');
-
-  // Restore selects
-  if (state.degrees[0]) d1Sel.value = state.degrees[0];
-  if (state.degrees[1]) d2Sel.value = state.degrees[1];
-  yearSel.value = String(state.startYear);
-  semSel.value  = String(state.startSem);
-
-  function applyDegrees(resetPlan) {
-    const d1 = d1Sel.value, d2 = d2Sel.value;
-    state.degrees = d2 ? [d1, d2].filter(Boolean) : [d1].filter(Boolean);
-    if (resetPlan) {
-      // Preserve completed units in their historical slots; clear everything else
-      const keptPlan = {};
+    function getDefaultPlan() {
+      const keys = allSemKeys();
+
+      // Seed plan with done units locked in their current slots — they are never moved
+      const plan = {};
       for (const [k, codes] of Object.entries(state.plan)) {
         const kept = codes.filter(c => state.done.includes(c));
-        if (kept.length) keptPlan[k] = kept;
+        if (kept.length) plan[k] = [...kept];
       }
-      state.plan = keptPlan;
-      state.substitutions = {};
+
+      // Build a queue of units in degree-structure order, skipping done/duplicate codes
+      const queued = new Set(state.done);
+      const queue  = []; // { code, preferredKey }
+
+      for (const slug of state.degrees) {
+        const d = getDeg(slug);
+        if (!d) continue;
+        let ki = 0;
+        for (const yr of (d.years || [])) {
+          for (const sm of (yr.semesters || [])) {
+            if (ki >= keys.length) break;
+            const preferredKey = keys[ki++];
+            for (const u of (sm.units || [])) {
+              if (!u.code) continue;
+              if (/^[A-Z][a-z]/.test(u.code) || /^Broad/.test(u.code) || /Elective/.test(u.code)) continue;
+              if (!queued.has(u.code)) {
+                queue.push({ code: u.code, preferredKey });
+                queued.add(u.code);
+              }
+            }
+          }
+        }
+      }
+
+      // Place each unit at its preferred semester if there's room, else spill forward
+      for (const { code, preferredKey } of queue) {
+        const startIdx = Math.max(0, keys.indexOf(preferredKey));
+        for (let ki = startIdx; ki < keys.length; ki++) {
+          const k = keys[ki];
+          const { sem } = parseKey(k);
+          if (!unitSemOk(code, sem)) continue;
+          // Count ALL non-year_long units already in this slot (including done) toward the cap
+          const count = (plan[k] || []).filter(c => c && !isYearLong(c)).length;
+          if (count < 4) {
+            if (!plan[k]) plan[k] = [];
+            if (!plan[k].includes(code)) plan[k].push(code);
+            break;
+          }
+        }
+      }
+
+      return plan;
     }
-    save(); render();
-  }
 
-  d1Sel.addEventListener('change', () => applyDegrees(true));
-  d2Sel.addEventListener('change', () => applyDegrees(false));
+    // ─────────────────────────────────────────────────────────
+    // RENDER
+    // ─────────────────────────────────────────────────────────
+    function render() {
+      const has = state.degrees.length > 0;
+      document.getElementById('empty-state').style.display = has ? 'none' : 'flex';
+      document.getElementById('timeline-wrap').style.display = has ? 'flex' : 'none';
+      document.getElementById('tray-wrap').classList.toggle('hidden', !has);
+      document.getElementById('planner-stats').classList.toggle('hidden', !has);
+      document.getElementById('planner-stats').classList.toggle('flex-col', has);
+      if (!has) { document.getElementById('conflict-wrap').style.display = 'none'; return; }
 
-  yearSel.addEventListener('change', () => {
-    state.startYear = Number(yearSel.value);
-    save(); render();
-  });
-  semSel.addEventListener('change', () => {
-    state.startSem = Number(semSel.value);
-    save(); render();
-  });
-
-  document.getElementById('auto-btn').addEventListener('click', () => {
-    if (!state.degrees.length) return;
-    state.plan = getDefaultPlan();
-    save(); render();
-  });
-
-  document.getElementById('reset-btn').addEventListener('click', () => {
-    if (!state.degrees.length) return;
-    if (!confirm('Clear your plan? Completed units will stay in place.')) return;
-    const keptPlan = {};
-    for (const [k, codes] of Object.entries(state.plan)) {
-      const kept = codes.filter(c => state.done.includes(c));
-      if (kept.length) keptPlan[k] = kept;
+      renderConflicts();
+      renderGrid();
+      renderTray();
+      renderStats();
     }
-    state.plan = keptPlan;
-    state.substitutions = {};
-    save(); render();
-  });
 
-  // Live search in picker
-  document.getElementById('picker-search').addEventListener('input', e => {
-    buildPickerList(e.target.value);
-  });
+    // ─── Panel switching ─────────────────────────────────────
+    function openPanel(name) {
+      const panels = { tray: 'panel-tray', degree: 'panel-degree' };
+      const btns   = { tray: 'nav-btn-tray', degree: 'nav-btn-degree' };
+      const panelEl = document.getElementById(panels[name]);
+      const isOpen  = !panelEl.classList.contains('hidden');
 
-  render();
-});
+      for (const [k, id] of Object.entries(panels)) {
+        document.getElementById(id).classList.add('hidden');
+        document.getElementById(btns[k]).classList.remove('active');
+      }
+
+      if (!isOpen) {
+        panelEl.classList.remove('hidden');
+        document.getElementById(btns[name]).classList.add('active');
+      }
+    }
+
+    // ─── Conflicts ───────────────────────────────────────────
+    function renderConflicts() {
+      const conflicts = getCrossConflicts();
+      const wrap = document.getElementById('conflict-wrap');
+      const list = document.getElementById('conflict-list');
+      wrap.style.display = conflicts.length ? 'flex' : 'none';
+      if (!conflicts.length) return;
+
+      list.innerHTML = '';
+      for (const c of conflicts) {
+        const d1Sel = state.substitutions[c.code2] === c.code1;
+        const d2Sel = state.substitutions[c.code1] === c.code2;
+
+        const card = document.createElement('div');
+        card.className = 'rounded-[8px] border border-rc-border overflow-hidden';
+
+        // Header row — two conflict codes
+        const hdr = document.createElement('div');
+        hdr.className = 'flex items-center gap-1.5 px-3 py-2 bg-rc-fill-subtle border-b border-rc-border-light';
+        hdr.innerHTML = `
+          <span class="text-[10px] font-semibold px-1.5 py-[2px] rounded bg-rc-blue-muted text-rc-blue border border-rc-blue/10">${c.code1}</span>
+          <span class="text-[10px] text-white/20">×</span>
+          <span class="text-[10px] font-semibold px-1.5 py-[2px] rounded bg-rc-purple-muted text-rc-purple border border-rc-purple/10">${c.code2}</span>
+          <span class="text-[9px] text-white/20 ml-auto uppercase tracking-wider">pick one</span>`;
+        card.appendChild(hdr);
+
+        // Option row factory
+        const makeRow = (code, title, isD1, isSelected) => {
+          const choice = isD1 ? 'd1' : 'd2';
+          const nextChoice = isSelected ? 'none' : choice;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors cursor-pointer ${
+            isSelected ? 'bg-rc-amber-muted/70' : 'hover:bg-rc-fill-subtle'
+          }`;
+          btn.onclick = () => pickConflict(c.code1, c.code2, nextChoice);
+
+          const dot = document.createElement('div');
+          dot.className = `w-2.5 h-2.5 rounded-full shrink-0 border transition-colors ${
+            isSelected
+              ? 'bg-rc-amber border-rc-amber/60'
+              : 'bg-transparent border-white/20'
+          }`;
+
+          const info = document.createElement('div');
+          info.className = 'flex-1 min-w-0';
+          info.innerHTML = `
+            <div class="text-[12px] font-medium leading-tight truncate ${isSelected ? 'text-white/80' : 'text-white/45'}">${title}</div>
+            <div class="text-[10px] mt-0.5 ${isSelected ? 'text-rc-amber/60' : 'text-white/20'}">${code}</div>`;
+
+          const badge = document.createElement('span');
+          badge.className = `text-[9px] font-semibold px-1.5 py-[2px] rounded shrink-0 ${
+            isD1 ? 'bg-rc-blue-muted text-rc-blue' : 'bg-rc-purple-muted text-rc-purple'
+          }`;
+          badge.textContent = isD1 ? 'D1' : 'D2';
+
+          btn.append(dot, info, badge);
+          return btn;
+        };
+
+        card.appendChild(makeRow(c.code1, c.title1, true,  d1Sel));
+        const div = document.createElement('div');
+        div.className = 'h-px bg-rc-border-light mx-3';
+        card.appendChild(div);
+        card.appendChild(makeRow(c.code2, c.title2, false, d2Sel));
+
+        list.appendChild(card);
+      }
+    }
+
+    // ─── Semester grid ────────────────────────────────────────
+    function renderGrid() {
+      const container = document.getElementById('semester-grid');
+      container.innerHTML = '';
+      const keys = allSemKeys();
+
+      // Group consecutive keys by calendar year
+      const yearGroups = [];
+      let i = 0;
+      while (i < keys.length) {
+        const { year: y0 } = parseKey(keys[i]);
+        const group = [keys[i]];
+        if (i + 1 < keys.length && parseKey(keys[i + 1]).year === y0) {
+          group.push(keys[i + 1]);
+          i += 2;
+        } else {
+          i += 1;
+        }
+        yearGroups.push(group);
+      }
+
+      const currentCalYear = new Date().getFullYear();
+
+      for (const [yi, yearKeys] of yearGroups.entries()) {
+        const { year: calYear } = parseKey(yearKeys[0]);
+        const isCurrent = calYear === currentCalYear;
+
+        const cluster = document.createElement('div');
+        cluster.className = 'flex flex-col gap-1.5 shrink-0';
+        cluster.style.width = '15rem';
+
+        if (isCurrent) {
+          cluster.style.background   = 'rgba(255,255,255,0.018)';
+          cluster.style.borderRadius = '12px';
+          cluster.style.outline      = '1px solid rgba(255,255,255,0.055)';
+          cluster.style.padding      = '6px';
+          cluster.style.width        = 'calc(15rem + 12px)';
+        }
+
+        // Year header
+        const yearHdr = document.createElement('div');
+        yearHdr.className = 'flex items-baseline gap-1.5 px-0.5';
+        yearHdr.innerHTML = `
+          <span class="text-[10px] uppercase tracking-widest font-semibold ${isCurrent ? 'text-white/70' : 'text-white/50'}">Year ${yi + 1}</span>
+          <span class="text-[10px] normal-case tracking-normal font-normal ${isCurrent ? 'text-white/35' : 'text-white/20'}">${calYear}</span>
+          ${isCurrent ? '<span class="text-[9px] font-semibold px-1.5 py-[1px] rounded-full bg-rc-amber-muted text-rc-amber leading-none ml-0.5">now</span>' : ''}`;
+        cluster.appendChild(yearHdr);
+
+        // Collect year_long units from all semester keys in this calendar year
+        const yearLongCodes = [];
+        for (const k of yearKeys) {
+          for (const code of (state.plan[k] || [])) {
+            if (isYearLong(code) && !yearLongCodes.includes(code)) yearLongCodes.push(code);
+          }
+        }
+
+        // Semester sections stacked vertically
+        for (const key of yearKeys) {
+          const { year, sem } = parseKey(key);
+          const units  = (state.plan[key] || []).filter(c => !isYearLong(c));
+          const cp     = semCP(key);
+          const isPast = semIsPast(key);
+
+          const semLbl = document.createElement('div');
+          semLbl.className = `text-[9px] uppercase tracking-widest font-medium px-0.5 ${isPast ? 'text-rc-text-faint' : 'text-white/30'}`;
+          semLbl.innerHTML = `Sem ${sem}<span class="normal-case tracking-normal font-normal ml-1 text-white/20">${cp > 0 ? cp + ' CP' : ''}</span>`;
+          cluster.appendChild(semLbl);
+
+          const card = document.createElement('div');
+          card.className = `sem-card bg-rc-surface border rounded-[10px] p-2.5 flex flex-col gap-1.5 flex-1 transition
+            ${isPast ? 'border-rc-border/50' : 'border-rc-border'}`;
+          card.dataset.semKey = key;
+
+          // 4 discrete slot drop-targets
+          const slotsContainer = document.createElement('div');
+          slotsContainer.className = 'flex flex-col gap-1.5';
+          for (let i = 0; i < 4; i++) {
+            slotsContainer.appendChild(buildSemSlot(key, i, units[i] || null));
+          }
+          card.appendChild(slotsContainer);
+
+          // 5th slot — hidden unless triggered by drag or already occupied
+          const fifthSlot = buildSemSlot(key, 4, units[4] || null, true);
+          if (!units[4]) fifthSlot.classList.add('hidden');
+          card.appendChild(fifthSlot);
+
+          // Show 5th slot when dragging over a full card; hide when leaving
+          let enterCount = 0;
+          card.addEventListener('dragenter', e => {
+            if (dragState && isYearLong(dragState.code)) return;
+            e.preventDefault();
+            enterCount++;
+            if (units.length >= 4) fifthSlot.classList.remove('hidden');
+          });
+          card.addEventListener('dragleave', () => {
+            if (dragState && isYearLong(dragState.code)) return;
+            enterCount--;
+            if (enterCount <= 0) {
+              enterCount = 0;
+              if (!units[4]) fifthSlot.classList.add('hidden');
+            }
+          });
+          card.addEventListener('dragover', e => {
+            if (dragState && isYearLong(dragState.code)) return;
+            e.preventDefault();
+          });
+
+          const addBtn = document.createElement('button');
+          addBtn.className = 'mt-auto pt-1.5 text-[11px] text-white/20 hover:text-white/50 border border-dashed border-white/10 hover:border-white/20 rounded-lg py-1.5 text-center transition cursor-pointer';
+          addBtn.textContent = '+ add unit';
+          addBtn.onclick = () => openPicker(key);
+          card.appendChild(addBtn);
+
+          cluster.appendChild(card);
+        }
+
+        // NST zone — always present, lights up when a year-long unit is dragged over
+        const nstZone = document.createElement('div');
+        nstZone.className = 'flex items-center gap-2 flex-wrap rounded-lg border border-dashed border-rc-border-light/60 bg-rc-fill-subtle/50 px-3 py-2 transition-colors';
+
+        const nstLbl = document.createElement('span');
+        nstLbl.className = 'text-[9px] uppercase tracking-widest text-white/15 shrink-0';
+        nstLbl.textContent = 'Year-long';
+        nstZone.appendChild(nstLbl);
+
+        if (yearLongCodes.length > 0) {
+          const div = document.createElement('div');
+          div.className = 'w-px h-3 bg-rc-border-light shrink-0';
+          nstZone.appendChild(div);
+          for (const code of yearLongCodes) nstZone.appendChild(mkYearLongChip(code, yearKeys[0]));
+        }
+
+        // Cluster-level drag for year-long units
+        let clusterEnterCount = 0;
+        cluster.addEventListener('dragenter', () => {
+          if (!dragState || !isYearLong(dragState.code)) return;
+          clusterEnterCount++;
+          cluster.classList.add('nst-drag-over');
+          nstZone.classList.add('nst-drop-active');
+        });
+        cluster.addEventListener('dragleave', () => {
+          if (!dragState || !isYearLong(dragState.code)) return;
+          clusterEnterCount--;
+          if (clusterEnterCount <= 0) {
+            clusterEnterCount = 0;
+            cluster.classList.remove('nst-drag-over');
+            nstZone.classList.remove('nst-drop-active');
+          }
+        });
+        cluster.addEventListener('dragover', e => {
+          if (!dragState || !isYearLong(dragState.code)) return;
+          e.preventDefault();
+        });
+        cluster.addEventListener('drop', e => {
+          if (!dragState || !isYearLong(dragState.code)) return;
+          e.preventDefault();
+          clusterEnterCount = 0;
+          cluster.classList.remove('nst-drag-over');
+          nstZone.classList.remove('nst-drop-active');
+          handleYearLongDrop(dragState.code, yearKeys[0]);
+        });
+
+        cluster.appendChild(nstZone);
+        container.appendChild(cluster);
+      }
+    }
+
+    function mkYearLongChip(code, key) {
+      const u    = UNITS_DATA[code];
+      const done = isDone(code);
+      const ok   = prereqsMet(code, key);
+      const { dot } = dotStyle(code, key);
+
+      const chip = document.createElement('div');
+      chip.className = `group flex items-center gap-1.5 text-[10px] font-medium px-2 py-1 rounded-md border transition select-none
+        ${done ? 'border-rc-border/40 text-white/30 opacity-50 cursor-default'
+               : ok  ? 'border-rc-border text-white/50 hover:bg-rc-fill hover:text-white/70 cursor-pointer'
+                     : 'border-[rgba(255,99,99,0.2)] bg-rc-red-muted text-white/40 cursor-pointer'}`;
+
+      chip.innerHTML = `
+        ${dot === 'dot-shared'
+          ? `<div class="w-1 h-1 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
+          : `<div class="w-1 h-1 rounded-full ${dot} shrink-0"></div>`}
+        ${code}
+        <span class="text-[7px] font-bold text-white/25 bg-white/[0.06] px-1 py-[1px] rounded leading-none">NST</span>
+        ${done ? '' : `<button class="opacity-0 group-hover:opacity-50 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer text-[12px] leading-none ml-0.5"
+                title="Remove" onclick="event.stopPropagation();removeUnitAnyKey('${code}')">×</button>`}`;
+
+      chip.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        const isDoneNow = isDone(code);
+        ContextMenu.open(e.clientX, e.clientY, [
+          { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
+          { label: 'Slot in…', submenu: buildYearLongSlotSubmenu(code) },
+          { separator: true },
+          { label: isDoneNow ? 'Mark incomplete' : 'Mark complete', action: () => toggleDone(code) },
+          ...(isDoneNow ? [] : [{ separator: true }, { label: 'Remove from slot', action: () => removeUnitAnyKey(code) }]),
+        ]);
+      });
+
+      return chip;
+    }
+
+    function removeUnitAnyKey(code) {
+      for (const k of Object.keys(state.plan)) {
+        state.plan[k] = state.plan[k].filter(c => c !== code);
+      }
+      save(); render();
+    }
+
+    function handleYearLongDrop(code, targetYearKey) {
+      for (const k of Object.keys(state.plan)) {
+        state.plan[k] = state.plan[k].filter(c => c !== code);
+      }
+      if (!state.plan[targetYearKey]) state.plan[targetYearKey] = [];
+      if (!state.plan[targetYearKey].includes(code)) state.plan[targetYearKey].push(code);
+      dragState = null;
+      save(); render();
+    }
+
+    function buildSemSlot(semKey, slotIdx, code, isFifth = false) {
+      const slot = document.createElement('div');
+      slot.className = `slot-box rounded-lg border border-dashed ${isFifth ? 'border-white/[0.04]' : 'border-white/[0.07]'} min-h-10 transition`;
+      slot.dataset.slot = slotIdx;
+      slot.dataset.semKey = semKey;
+
+      if (code) {
+        slot.classList.remove('border-dashed');
+        slot.classList.add('border-transparent');
+        slot.appendChild(mkUnitCard(code, semKey, slotIdx));
+      }
+
+      slot.addEventListener('dragover', e => {
+        if (dragState && isYearLong(dragState.code)) return;
+        e.preventDefault(); slot.classList.add('drop-hover');
+      });
+      slot.addEventListener('dragleave', e => {
+        if (!slot.contains(e.relatedTarget)) slot.classList.remove('drop-hover');
+      });
+      slot.addEventListener('drop', e => {
+        if (dragState && isYearLong(dragState.code)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        slot.classList.remove('drop-hover');
+        handleSlotDrop(semKey, slotIdx);
+      });
+
+      return slot;
+    }
+
+    function dotStyle(code, semKey) {
+      const done = isDone(code);
+      const ok   = prereqsMet(code, semKey) && coreqsMet(code, semKey);
+      if (done) return { dot: 'bg-rc-green', card: 'border-rc-border/40' };
+      if (!ok)  return { dot: 'bg-rc-red',   card: 'border-[rgba(255,99,99,0.18)]  bg-rc-red-muted' };
+      if (isShared(code)) return { dot: 'dot-shared', card: 'border-[rgba(139,172,240,0.22)]' };
+      const degs = unitDegrees(code);
+      if (degs[0] === state.degrees[1]) return { dot: 'bg-rc-purple', card: 'border-[rgba(167,139,250,0.18)]' };
+      return { dot: 'bg-rc-blue', card: 'border-rc-border' };
+    }
+
+    function mkUnitCard(code, key, slotIdx = 0) {
+      const u    = UNITS_DATA[code];
+      const {dot, card} = dotStyle(code, key);
+      const done = isDone(code);
+
+      const missingPrereqs = [];
+      const prereqHighlightCodes = [];
+      if (!prereqsMet(code, key) && u?.prerequisites) {
+        const p = u.prerequisites;
+        const before = unitsBefore(key);
+        for (const c of (p.all_of||[])) {
+          if (!resolve(c).some(x=>before.includes(x))) {
+            missingPrereqs.push(c);
+            if (!state.done.includes(c)) prereqHighlightCodes.push(c);
+          }
+        }
+        for (const g of (p.any_of||[])) {
+          if (!g.flatMap(c=>resolve(c)).some(x=>before.includes(x))) {
+            missingPrereqs.push(`one of [${g.join('/')}]`);
+            for (const c of g) if (!state.done.includes(c)) prereqHighlightCodes.push(c);
+          }
+        }
+      }
+
+      // Degree badge(s)
+      const degs = unitDegrees(code);
+      const badges = degs.map(s => {
+        const idx = state.degrees.indexOf(s);
+        const col = idx===0 ? 'text-rc-blue bg-rc-blue-muted' : 'text-rc-purple bg-rc-purple-muted';
+        return `<span class="text-[8px] font-bold ${col} px-1 py-[1px] rounded leading-none">D${idx+1}</span>`;
+      }).join('');
+
+      const el = document.createElement('div');
+      // Done units get unit-done class (blocks drag) and reduced opacity (historical)
+      el.className = `unit-draggable group flex items-center gap-2 rounded-lg px-2.5 py-2 border ${card} transition select-none${done ? ' unit-done opacity-50' : ' hover:brightness-110'}`;
+      el.dataset.code = code;
+
+      if (missingPrereqs.length && !done) {
+        el.addEventListener('mouseenter', () => { showTooltip(el, missingPrereqs); highlightPrereqs(prereqHighlightCodes); });
+        el.addEventListener('mouseleave', () => { hideTooltip(); clearPrereqHighlights(); });
+      }
+
+      el.innerHTML = `
+        ${dot === 'dot-shared'
+          ? `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
+          : `<div class="w-1.5 h-1.5 rounded-full ${dot} shrink-0"></div>`}
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] font-medium text-white/80 leading-tight">${code}</span>
+            ${badges}
+          </div>
+          <div class="text-[9px] text-white/30 truncate leading-tight">${u?.title||'—'}</div>
+        </div>
+        <div class="flex items-center gap-0.5 shrink-0">
+          <span class="text-[9px] text-white/20">${u?.credit_points||0}CP</span>
+          ${done ? '' : `<button class="opacity-0 group-hover:opacity-60 hover:!opacity-100 text-white/30 hover:text-rc-red transition cursor-pointer px-0.5 text-[13px] leading-none"
+                  title="Remove" onclick="event.stopPropagation();removeUnit('${code}','${key}')">×</button>`}
+        </div>`;
+
+      if (!done) {
+        el.draggable = true;
+        el.addEventListener('dragstart', e => {
+          dragState = { code, fromKey: key, fromSlot: slotIdx };
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', code);
+          setTimeout(() => el.classList.add('dragging'), 0);
+          hideTooltip();
+        });
+        el.addEventListener('dragend', () => {
+          el.classList.remove('dragging');
+          dragState = null;
+        });
+      }
+
+      el.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        const isDoneNow = isDone(code);
+        ContextMenu.open(e.clientX, e.clientY, [
+          { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
+          { label: 'Slot in…', submenu: buildSlotSubmenu(code) },
+          { separator: true },
+          { label: isDoneNow ? 'Mark incomplete' : 'Mark complete', action: () => toggleDone(code) },
+          ...(isDoneNow ? [] : [{ separator: true }, { label: 'Remove from slot', action: () => removeUnit(code, key) }]),
+        ]);
+      });
+
+      return el;
+    }
+
+    // ─── Tray ─────────────────────────────────────────────────
+    function renderTray() {
+      const wrap      = document.getElementById('tray-wrap');
+      const avail     = document.getElementById('tray-available');
+      const locked    = document.getElementById('tray-locked');
+      const lockedWrap = document.getElementById('tray-locked-wrap');
+      const countEl   = document.getElementById('tray-count');
+
+      const allCodes = allRequiredCodes();
+      const placed   = Object.values(state.plan).flat();
+      const unplaced = allCodes.filter(c => !placed.includes(c) && !isDone(c));
+
+      wrap.classList.toggle('hidden', false);
+      wrap.classList.add('flex');
+      avail.innerHTML = '';
+      locked.innerHTML = '';
+
+      if (!unplaced.length) {
+        countEl.textContent = 'All placed!';
+        lockedWrap.classList.add('hidden');
+        lockedWrap.classList.remove('flex');
+        avail.innerHTML = '<span class="text-xs text-rc-green">All degree units are placed in your plan.</span>';
+        return;
+      }
+
+      countEl.textContent = `${unplaced.length} remaining`;
+      const allPlaced = [...state.done, ...placed];
+      let hasLocked = false;
+
+      for (const code of unplaced) {
+        const ready = prereqsMetGeneral(code, allPlaced);
+        const card  = mkTrayCard(code, ready);
+        if (ready) {
+          avail.appendChild(card);
+        } else {
+          locked.appendChild(card);
+          hasLocked = true;
+        }
+      }
+
+      if (hasLocked) { lockedWrap.classList.remove('hidden'); lockedWrap.classList.add('flex'); }
+      else           { lockedWrap.classList.add('hidden');    lockedWrap.classList.remove('flex'); }
+    }
+
+    function mkTrayCard(code, ready = true) {
+      const u    = UNITS_DATA[code];
+      const degs = unitDegrees(code);
+      const shared = degs.length > 1;
+
+      let dotCls, border, text;
+      if (!ready) {
+        dotCls = 'bg-white/15'; border = 'border-rc-border/50'; text = 'text-white/30';
+      } else if (shared) {
+        dotCls = 'dot-shared'; border = 'border-[rgba(139,172,240,0.25)] bg-[rgba(139,172,240,0.05)]'; text = 'text-white/65';
+      } else if (degs[0] === state.degrees[1]) {
+        dotCls = 'bg-rc-purple'; border = 'border-[rgba(167,139,250,0.25)] bg-rc-purple-muted'; text = 'text-rc-purple';
+      } else {
+        dotCls = 'bg-rc-blue'; border = 'border-[rgba(108,160,240,0.25)] bg-rc-blue-muted'; text = 'text-rc-blue';
+      }
+
+      const badges = degs.map(s => {
+        const i = state.degrees.indexOf(s);
+        const cl = i === 0 ? 'text-rc-blue bg-rc-blue-muted' : 'text-rc-purple bg-rc-purple-muted';
+        return `<span class="text-[8px] font-bold ${cl} px-1 py-[1px] rounded leading-none">D${i+1}</span>`;
+      }).join('');
+
+      const nstBadge = isYearLong(code)
+        ? `<span class="text-[8px] font-bold text-white/35 bg-white/[0.07] px-1 py-[1px] rounded leading-none">NST</span>`
+        : '';
+
+      const dotHtml = dotCls === 'dot-shared'
+        ? `<div class="w-1.5 h-1.5 rounded-full shrink-0" style="background:linear-gradient(135deg,#6CA0F0 50%,#A78BFA 50%)"></div>`
+        : `<div class="w-1.5 h-1.5 rounded-full ${dotCls} shrink-0"></div>`;
+
+      const el = document.createElement('div');
+      el.dataset.code = code;
+      el.className = `unit-draggable flex items-center gap-2 rounded-lg px-2.5 py-2 border ${border} transition select-none hover:brightness-110`;
+      el.style.width = '100%';
+
+      if (!ready) {
+        const missing = [];
+        const prereqHighlightCodes = [];
+        const p = UNITS_DATA[code]?.prerequisites;
+        if (p) {
+          const have = [...state.done, ...Object.values(state.plan).flat()];
+          for (const c of (p.all_of||[])) {
+            if (!resolve(c).some(x=>have.includes(x))) {
+              missing.push(c);
+              if (!state.done.includes(c)) prereqHighlightCodes.push(c);
+            }
+          }
+          for (const g of (p.any_of||[])) {
+            if (!g.flatMap(c=>resolve(c)).some(x=>have.includes(x))) {
+              missing.push(`one of [${g.join('/')}]`);
+              for (const c of g) if (!state.done.includes(c)) prereqHighlightCodes.push(c);
+            }
+          }
+        }
+        if (missing.length) {
+          el.addEventListener('mouseenter', () => { showTooltip(el, missing); highlightPrereqs(prereqHighlightCodes); });
+          el.addEventListener('mouseleave', () => { hideTooltip(); clearPrereqHighlights(); });
+        }
+      }
+      el.innerHTML = `
+        ${dotHtml}
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1">
+            <span class="text-[11px] font-medium ${text} leading-tight">${code}</span>
+            ${badges}
+            ${nstBadge}
+          </div>
+          <div class="text-[9px] text-white/30 truncate leading-tight">${u?.title || '—'}</div>
+        </div>
+        <span class="text-[9px] text-white/20 shrink-0">${u?.credit_points || 0}CP</span>`;
+
+      if (ready) {
+        el.draggable = true;
+        el.addEventListener('dragstart', e => {
+          dragState = { code, fromKey: 'tray', fromSlot: null };
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', code);
+          setTimeout(() => el.classList.add('dragging'), 0);
+        });
+        el.addEventListener('dragend', () => {
+          el.classList.remove('dragging');
+          dragState = null;
+        });
+      }
+
+      el.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        ContextMenu.open(e.clientX, e.clientY, [
+          { label: 'View unit info', action: () => window.open(`/unit/${code}`, '_blank') },
+          { label: 'Slot in…', submenu: buildSlotSubmenu(code) },
+        ]);
+      });
+
+      return el;
+    }
+
+    function prereqsMetGeneral(code, list) {
+      const u = UNITS_DATA[code];
+      if (!u?.prerequisites) return true;
+      const p = u.prerequisites;
+      // expand substitutions
+      const expanded = [...list];
+      for (const [from,to] of Object.entries(state.substitutions)) {
+        if (list.includes(from) && !expanded.includes(to)) expanded.push(to);
+        if (list.includes(to)   && !expanded.includes(from)) expanded.push(from);
+      }
+      for (const c of (p.all_of||[])) if (!resolve(c).some(x=>expanded.includes(x))) return false;
+      for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>expanded.includes(x))) return false;
+      return true;
+    }
+
+    function findBestSem(code) {
+      for (const k of allSemKeys()) {
+        const {sem} = parseKey(k);
+        if (unitSemOk(code,sem) && prereqsMet(code,k)) return k;
+      }
+      return null;
+    }
+
+    function moveToSlot(code, targetKey) {
+      for (const k of Object.keys(state.plan)) {
+        state.plan[k] = (state.plan[k] || []).filter(c => c !== code);
+      }
+      if (!state.plan[targetKey]) state.plan[targetKey] = [];
+      if (!state.plan[targetKey].includes(code)) state.plan[targetKey].push(code);
+      save(); render();
+    }
+
+    function buildSlotSubmenu(code) {
+      const keys       = allSemKeys();
+      const currentKey = keys.find(k => (state.plan[k] || []).includes(code));
+      const items      = [];
+
+      const years = {};
+      for (const k of keys) {
+        const { year, sem } = parseKey(k);
+        if (!years[year]) years[year] = [];
+        years[year].push({ k, sem });
+      }
+
+      let first = true;
+      for (const [year, sems] of Object.entries(years)) {
+        if (!first) items.push({ separator: true });
+        first = false;
+        items.push({ header: true, label: String(year) });
+        for (const { k, sem } of sems) {
+          const isCurrent = k === currentKey;
+          const semAvail  = unitSemOk(code, sem);
+          items.push({
+            label:    `Sem ${sem}`,
+            checked:  isCurrent,
+            disabled: !semAvail && !isCurrent,
+            action:   isCurrent ? null : () => moveToSlot(code, k),
+          });
+        }
+      }
+      return items;
+    }
+
+    function buildYearLongSlotSubmenu(code) {
+      const keys = allSemKeys();
+      const yearEntries = [];
+      const seen = new Set();
+      for (const k of keys) {
+        const { year } = parseKey(k);
+        if (!seen.has(year)) { seen.add(year); yearEntries.push({ year, k }); }
+      }
+      const currentKey  = keys.find(k => (state.plan[k] || []).includes(code));
+      const currentYear = currentKey ? parseKey(currentKey).year : null;
+      return yearEntries.map(({ year, k }, i) => ({
+        label:   `Year ${i + 1} · ${year}`,
+        checked: year === currentYear,
+        action:  year === currentYear ? null : () => moveToSlot(code, k),
+      }));
+    }
+
+    // ─── HTML5 drag-and-drop ─────────────────────────────────
+    function handleSlotDrop(targetKey, targetSlot) {
+      if (!dragState) return;
+      const { code, fromKey, fromSlot } = dragState;
+
+      const toSlots = getSlots(targetKey);
+      while (toSlots.length <= targetSlot) toSlots.push(null);
+
+      const displaced = toSlots[targetSlot]; // unit currently in the target slot (may be null)
+
+      // Place dragged unit in the exact target slot
+      toSlots[targetSlot] = code;
+
+      if (fromKey !== 'tray') {
+        if (fromKey === targetKey) {
+          // Same sem: swap — put displaced into the vacated source slot
+          if (fromSlot !== null && fromSlot !== targetSlot) {
+            while (toSlots.length <= fromSlot) toSlots.push(null);
+            toSlots[fromSlot] = displaced || null;
+          }
+        } else {
+          // Different sem: null out source slot; displaced goes to tray
+          const fromSlots = getSlots(fromKey);
+          if (fromSlot !== null) {
+            while (fromSlots.length <= fromSlot) fromSlots.push(null);
+            fromSlots[fromSlot] = null;
+          }
+          setSlots(fromKey, fromSlots);
+        }
+      }
+      // From tray: displaced (if any) is removed from plan → reappears in tray automatically
+
+      setSlots(targetKey, toSlots);
+
+      const finalIdx = getSlots(targetKey).indexOf(code);
+      const isFifth  = finalIdx >= 4;
+
+      save(); render();
+
+      if (isFifth) {
+        const slot5  = document.querySelector(`.slot-box[data-sem-key="${targetKey}"][data-slot="4"]`);
+        const unitEl = slot5?.querySelector('.unit-draggable');
+        if (unitEl) {
+          const tl = gsap.timeline();
+          tl.to(unitEl, { x: -5, duration: 0.07, ease: 'power1.out' })
+            .to(unitEl, { x:  5, duration: 0.07, ease: 'power1.inOut' })
+            .to(unitEl, { x: -4, duration: 0.07, ease: 'power1.inOut' })
+            .to(unitEl, { x:  4, duration: 0.07, ease: 'power1.inOut' })
+            .to(unitEl, { x: -2, duration: 0.07, ease: 'power1.inOut' })
+            .to(unitEl, { x:  0, duration: 0.07, ease: 'power1.in' });
+        }
+      }
+    }
+
+    function handleTrayDrop() {
+      if (!dragState) return;
+      const { code, fromKey, fromSlot } = dragState;
+      if (fromKey && fromKey !== 'tray') {
+        const fromSlots = getSlots(fromKey);
+        if (fromSlot !== null && fromSlot < fromSlots.length) {
+          fromSlots[fromSlot] = null;
+        } else {
+          // Fallback: scan and null out
+          for (let i = 0; i < fromSlots.length; i++) {
+            if (fromSlots[i] === code) { fromSlots[i] = null; break; }
+          }
+        }
+        setSlots(fromKey, fromSlots);
+        save(); render();
+      }
+    }
+
+    function initDragDrop() {
+      const trayWrap = document.getElementById('tray-wrap');
+      if (trayWrap) {
+        trayWrap.addEventListener('dragover',  e => { e.preventDefault(); trayWrap.classList.add('tray-drag-over'); });
+        trayWrap.addEventListener('dragleave', e => { if (!trayWrap.contains(e.relatedTarget)) trayWrap.classList.remove('tray-drag-over'); });
+        trayWrap.addEventListener('drop',      e => { e.preventDefault(); trayWrap.classList.remove('tray-drag-over'); handleTrayDrop(); });
+      }
+    }
+
+    // ─── Stats ────────────────────────────────────────────────
+    function renderStats() {
+      const placed = Object.values(state.plan).flat();
+      let d1CP=0, d2CP=0, donCP=0, remCP=0;
+
+      const allCodes = allRequiredCodes();
+      for (const code of allCodes) {
+        const cp = UNITS_DATA[code]?.credit_points || 0;
+        const inD1 = state.degrees[0] && degreeCodes(state.degrees[0]).includes(code);
+        const inD2 = state.degrees[1] && degreeCodes(state.degrees[1]).includes(code);
+        if (placed.includes(code) || isDone(code)) {
+          if (inD1) d1CP += cp;
+          if (inD2) d2CP += cp;
+          if (isDone(code)) donCP += cp;
+        } else {
+          remCP += cp;
+        }
+      }
+
+      document.getElementById('stat-d1').textContent = d1CP + ' CP';
+      document.getElementById('stat-d2').textContent = d2CP + ' CP';
+      document.getElementById('stat-done').textContent = donCP;
+      document.getElementById('stat-rem').textContent  = remCP;
+
+      const d2wrap = document.getElementById('stat-d2-wrap');
+      if (state.degrees.length > 1) { d2wrap.classList.remove('hidden'); d2wrap.classList.add('flex'); }
+      else                           { d2wrap.classList.add('hidden');    d2wrap.classList.remove('flex'); }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // ACTIONS
+    // ─────────────────────────────────────────────────────────
+    function toggleDone(code) {
+      const i = state.done.indexOf(code);
+      if (i === -1) state.done.push(code); else state.done.splice(i,1);
+      save(); render();
+    }
+
+    function removeUnit(code, key) {
+      if (state.plan[key]) state.plan[key] = state.plan[key].filter(c=>c!==code);
+      save(); render();
+    }
+
+    function setSub(from, to) {
+      state.substitutions[from] = to;
+      save(); render();
+    }
+
+    function clearSub(from, to) {
+      delete state.substitutions[from]; delete state.substitutions[to];
+      save(); render();
+    }
+
+    function pickConflict(code1, code2, choice) {
+      delete state.substitutions[code1];
+      delete state.substitutions[code2];
+      if (choice === 'd1') state.substitutions[code2] = code1;
+      if (choice === 'd2') state.substitutions[code1] = code2;
+      save(); render();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // PICKER
+    // ─────────────────────────────────────────────────────────
+    function openPicker(key, highlight = null) {
+      pickerTargetSem = key;
+      const {year,sem} = parseKey(key);
+      document.getElementById('picker-title').textContent = `Add unit — ${semLabel(year,sem)}`;
+      document.getElementById('picker-search').value = '';
+      buildPickerList('');
+      document.getElementById('picker-modal').classList.remove('hidden');
+      document.getElementById('picker-modal').classList.add('flex');
+      document.getElementById('picker-search').focus();
+    }
+
+    function buildPickerList(query) {
+      const list     = document.getElementById('picker-list');
+      const key      = pickerTargetSem;
+      const {sem}    = parseKey(key);
+      const allCodes = allRequiredCodes();
+      const placed   = Object.values(state.plan).flat();
+      const avail    = allCodes.filter(c => !placed.includes(c) && !isDone(c));
+      const q        = query.toLowerCase();
+
+      list.innerHTML = '';
+      const filtered = q ? avail.filter(c => c.toLowerCase().includes(q) || (UNITS_DATA[c]?.title||'').toLowerCase().includes(q)) : avail;
+
+      if (!filtered.length) {
+        list.innerHTML = '<div class="text-xs text-white/30 py-3 text-center">No unplaced units match.</div>';
+        return;
+      }
+
+      for (const code of filtered) {
+        const u       = UNITS_DATA[code];
+        const semOk   = unitSemOk(code, sem);
+        const pOk     = prereqsMet(code, key);
+        const cOk     = coreqsMet(code, key);
+        const ok      = semOk && pOk && cOk;
+
+        const missing = [];
+        if (!pOk && u?.prerequisites) {
+          const p = u.prerequisites; const before = unitsBefore(key);
+          for (const c of (p.all_of||[])) if (!resolve(c).some(x=>before.includes(x))) missing.push(c);
+          for (const g of (p.any_of||[])) if (!g.flatMap(c=>resolve(c)).some(x=>before.includes(x))) missing.push(`one of [${g.join('/')}]`);
+        }
+        if (!semOk) {
+          const a = u?.availability;
+          missing.push(Array.isArray(a) ? `only available S${a.join('/')}` : 'non-standard period');
+        }
+
+        const degs = unitDegrees(code);
+        const badgeHtml = degs.map(s => {
+          const i = state.degrees.indexOf(s);
+          const cl = i===0 ? 'text-rc-blue bg-rc-blue-muted' : 'text-rc-purple bg-rc-purple-muted';
+          return `<span class="text-[8px] font-bold ${cl} px-1 py-[1px] rounded">D${i+1}</span>`;
+        }).join(' ');
+
+        const row = document.createElement('div');
+        row.className = `flex items-center gap-2.5 rounded-lg px-3 py-2 transition
+          ${ok ? 'hover:bg-rc-fill cursor-pointer' : 'opacity-40 cursor-not-allowed'}`;
+        row.innerHTML = `
+          <div class="w-1.5 h-1.5 rounded-full shrink-0 ${ok?'bg-rc-green':'bg-white/20'}"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[12px] font-medium text-white/80">${code}</span>
+              ${badgeHtml}
+            </div>
+            <div class="text-[10px] text-white/30 truncate">${u?.title||''}</div>
+            ${missing.length ? `<div class="text-[10px] text-rc-red/70 mt-0.5">Missing: ${missing.join(', ')}</div>` : ''}
+          </div>
+          <span class="text-[10px] text-white/25 shrink-0">${u?.credit_points||0}CP</span>`;
+        if (ok) row.onclick = () => placeUnit(code, key);
+        list.appendChild(row);
+      }
+    }
+
+    function closePicker() {
+      pickerTargetSem = null;
+      document.getElementById('picker-modal').classList.add('hidden');
+      document.getElementById('picker-modal').classList.remove('flex');
+    }
+
+    function placeUnit(code, key) {
+      if (!state.plan[key]) state.plan[key] = [];
+      if (!state.plan[key].includes(code)) state.plan[key].push(code);
+      closePicker(); save(); render();
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+      load();
+      initDragDrop();
+
+      const d1FamSel = document.getElementById('degree1-family');
+      const d1Sel    = document.getElementById('degree1-select');
+      const d2FamSel = document.getElementById('degree2-family');
+      const d2Sel    = document.getElementById('degree2-select');
+      const yearSel  = document.getElementById('start-year');
+      const semSel   = document.getElementById('start-sem');
+
+      // ── Degree cascade helpers ──────────────────────────────
+      function filterMajors(famSel, majorSel) {
+        const fam = famSel.value;
+        Array.from(majorSel.options).forEach(opt => {
+          if (!opt.value) return;
+          opt.hidden = fam ? opt.dataset.family !== fam : false;
+        });
+        majorSel.disabled = !fam;
+        const selected = majorSel.options[majorSel.selectedIndex];
+        if (selected && selected.hidden) majorSel.value = '';
+      }
+
+      function restoreFamilyForMajor(majorSlug, famSel, majorSel) {
+        if (!majorSlug) return;
+        const opt = Array.from(majorSel.options).find(o => o.value === majorSlug);
+        if (opt) {
+          famSel.value = opt.dataset.family || '';
+          filterMajors(famSel, majorSel);
+          majorSel.value = majorSlug;
+        }
+      }
+
+      function getMajorLabel(sel) {
+        if (!sel.value) return null;
+        return sel.options[sel.selectedIndex]?.textContent.trim() || null;
+      }
+
+      // ── Modal logic ─────────────────────────────────────────
+      const degreeModal     = document.getElementById('degree-modal');
+      const degreeConfirm   = document.getElementById('degree-confirm-box');
+      const degreeSwitchBtn = document.getElementById('degree-switch-btn');
+
+      function updateSwitchBtn() {
+        const d1Label = getMajorLabel(d1Sel);
+        const d2Label = getMajorLabel(d2Sel);
+        if (!d1Label) {
+          degreeSwitchBtn.textContent = 'Select a degree first';
+          degreeSwitchBtn.disabled = true;
+        } else {
+          const label = d2Label ? `${d1Label} + ${d2Label}` : d1Label;
+          degreeSwitchBtn.textContent = `Switch to ${label}`;
+          degreeSwitchBtn.disabled = false;
+        }
+        degreeConfirm.classList.add('hidden');
+        degreeConfirm.classList.remove('flex');
+      }
+
+      function openDegreeModal() {
+        restoreFamilyForMajor(state.degrees[0], d1FamSel, d1Sel);
+        restoreFamilyForMajor(state.degrees[1], d2FamSel, d2Sel);
+        if (!state.degrees[0]) { d1FamSel.value = ''; filterMajors(d1FamSel, d1Sel); }
+        if (!state.degrees[1]) { d2FamSel.value = ''; filterMajors(d2FamSel, d2Sel); }
+        updateSwitchBtn();
+        degreeModal.classList.remove('hidden');
+        degreeModal.classList.add('flex');
+      }
+
+      function closeDegreeModal() {
+        degreeModal.classList.add('hidden');
+        degreeModal.classList.remove('flex');
+      }
+
+      function renderDegreeDisplay() {
+        const area = document.getElementById('degree-display-area');
+        const d1 = state.degrees[0], d2 = state.degrees[1];
+
+        const getDegreeInfo = (slug) => {
+          const d = DEGREES_DATA.find(x => x.slug === slug);
+          if (!d) return { title: slug, code: slug };
+          let code = slug;
+          if (d.source_url && d.source_url.includes('code=')) {
+            code = d.source_url.split('code=')[1].split('&')[0];
+          }
+          return { title: d.major_title || d.title, code };
+        };
+
+        const d1Info = d1 ? getDegreeInfo(d1) : null;
+        const d2Info = d2 ? getDegreeInfo(d2) : null;
+
+        if (!d1Info) {
+          area.innerHTML = `
+            <button id="open-degree-modal-btn"
+                    class="w-full text-[11px] font-medium text-rc-blue bg-rc-blue-muted border border-rc-blue/20 hover:border-rc-blue/40 transition px-3 py-2.5 rounded-[7px] cursor-pointer text-left">
+              + Select your degree to get started
+            </button>`;
+        } else {
+          area.innerHTML = `
+            <div class="flex flex-col gap-3">
+              <div class="text-[16px] font-semibold text-white/90 leading-relaxed">
+                <span id="primary-degree-pill" class="degree-pill bg-rc-blue-muted text-rc-blue cursor-help">${d1Info.title}</span>
+                ${d2Info ? `
+                  <span class="text-rc-text-faint font-normal mx-1">and</span>
+                  <span id="secondary-degree-pill" class="degree-pill bg-rc-purple-muted text-rc-purple cursor-help">${d2Info.title}</span>
+                ` : ''}
+              </div>
+              <button id="open-degree-modal-btn"
+                      class="w-full text-[11px] text-white/40 hover:text-white/70 bg-rc-fill border border-rc-border transition px-3 py-1.5 rounded-[7px] hover:border-white/15 cursor-pointer">
+                Change Degree Details
+              </button>
+            </div>`;
+
+          const pPill = document.getElementById('primary-degree-pill');
+          if (pPill) {
+            pPill.addEventListener('mouseenter', () => showTooltip(pPill, [d1Info.code], "Degree Code"));
+            pPill.addEventListener('mouseleave', hideTooltip);
+          }
+          if (d2Info) {
+            const sPill = document.getElementById('secondary-degree-pill');
+            if (sPill) {
+              sPill.addEventListener('mouseenter', () => showTooltip(sPill, [d2Info.code], "Degree Code"));
+              sPill.addEventListener('mouseleave', hideTooltip);
+            }
+          }
+        }
+        document.getElementById('open-degree-modal-btn').addEventListener('click', openDegreeModal);
+      }
+
+      function applyDegrees() {
+        const d1 = d1Sel.value, d2 = d2Sel.value;
+        state.degrees = d2 ? [d1, d2].filter(Boolean) : [d1].filter(Boolean);
+        const keptPlan = {};
+        for (const [k, codes] of Object.entries(state.plan)) {
+          const kept = codes.filter(c => state.done.includes(c));
+          if (kept.length) keptPlan[k] = kept;
+        }
+        state.plan = keptPlan;
+        state.substitutions = {};
+        closeDegreeModal();
+        renderDegreeDisplay();
+        save(); render();
+        openPanel('tray');
+      }
+
+      // Modal event wiring
+      document.getElementById('degree-modal-close').addEventListener('click', closeDegreeModal);
+      document.getElementById('degree-modal-backdrop').addEventListener('click', closeDegreeModal);
+
+      d1FamSel.addEventListener('change', () => { filterMajors(d1FamSel, d1Sel); updateSwitchBtn(); });
+      d1Sel.addEventListener('change', updateSwitchBtn);
+      d2FamSel.addEventListener('change', () => { filterMajors(d2FamSel, d2Sel); updateSwitchBtn(); });
+      d2Sel.addEventListener('change', updateSwitchBtn);
+
+      degreeSwitchBtn.addEventListener('click', () => {
+        degreeConfirm.classList.remove('hidden');
+        degreeConfirm.classList.add('flex');
+        degreeSwitchBtn.classList.add('hidden');
+      });
+      document.getElementById('degree-confirm-yes').addEventListener('click', applyDegrees);
+      document.getElementById('degree-confirm-cancel').addEventListener('click', () => {
+        degreeConfirm.classList.add('hidden');
+        degreeConfirm.classList.remove('flex');
+        degreeSwitchBtn.classList.remove('hidden');
+      });
+
+      yearSel.value = String(state.startYear);
+      semSel.value  = String(state.startSem);
+
+      yearSel.addEventListener('change', () => {
+        state.startYear = Number(yearSel.value);
+        save(); render();
+      });
+      semSel.addEventListener('change', () => {
+        state.startSem = Number(semSel.value);
+        save(); render();
+      });
+
+      document.getElementById('auto-btn').addEventListener('click', () => {
+        if (!state.degrees.length) return;
+        state.plan = getDefaultPlan();
+        save(); render();
+      });
+
+      document.getElementById('reset-btn').addEventListener('click', () => {
+        if (!state.degrees.length) return;
+        if (!confirm('Clear your plan? Completed units will stay in place.')) return;
+        const keptPlan = {};
+        for (const [k, codes] of Object.entries(state.plan)) {
+          const kept = codes.filter(c => state.done.includes(c));
+          if (kept.length) keptPlan[k] = kept;
+        }
+        state.plan = keptPlan;
+        state.substitutions = {};
+        save(); render();
+      });
+
+      document.getElementById('save-account-btn')?.addEventListener('click', savePlanToAccount);
+      document.getElementById('load-account-btn')?.addEventListener('click', loadPlanFromAccount);
+      document.getElementById('delete-account-btn')?.addEventListener('click', deletePlanFromAccount);
+      document.getElementById('public-plan-toggle')?.addEventListener('change', event => {
+        state.is_public = event.target.checked;
+        save();
+        syncPublicControls();
+      });
+      document.getElementById('copy-share-link-btn')?.addEventListener('click', async () => {
+        if (!state.share_url) return;
+        const shareUrl = new URL(state.share_url, window.location.origin).href;
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          setSyncMessage('Share link copied.');
+        } catch {
+          setSyncMessage(shareUrl);
+        }
+      });
+
+      // Live search in picker
+      document.getElementById('picker-search').addEventListener('input', e => {
+        buildPickerList(e.target.value);
+      });
+
+      renderDegreeDisplay();
+      render();
+      syncPublicControls();
+      openPanel('degree');
+    });
 </script>
 {% endblock %}

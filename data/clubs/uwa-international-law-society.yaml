@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: uwa-international-law-society
+name: UWA International Law Society
+abbreviation: ILS
+categories:
+- Arts
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: The UWA International Law Society is for students across all fields of
+  study with an in
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/uwa-international-law-society
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/uwa-international-law-society
+last_verified: '2026-05-09'
+active: true

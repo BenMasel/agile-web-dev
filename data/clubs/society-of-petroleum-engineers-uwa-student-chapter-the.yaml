@@ -1,0 +1,23 @@
+# Club data sourced from the UWA Student Guild clubs directory.
+slug: society-of-petroleum-engineers-uwa-student-chapter-the
+name: Society of Petroleum Engineers UWA Student Chapter, The
+abbreviation: SPE UWA
+categories:
+- Engineering
+icon_svg: <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.2"
+  fill="none"/>
+description: SPE is a worldwide organisation that boasts over 124,000 members and
+  295 university cha
+contact_email: null
+contact_phone: null
+website: https://www.uwastudentguild.com/clubs/society-of-petroleum-engineers-uwa-student-chapter-the
+room: null
+social_media:
+  instagram: null
+  facebook: null
+  discord: null
+related_units: []
+related_resources: []
+source_url: https://www.uwastudentguild.com/clubs/society-of-petroleum-engineers-uwa-student-chapter-the
+last_verified: '2026-05-09'
+active: true

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "stUwa degree",
+  "type": "object",
+  "required": [
+    "slug",
+    "degree_family_slug",
+    "major_title",
+    "title",
+    "faculty",
+    "duration_years",
+    "credit_points",
+    "source_url",
+    "handbook_year",
+    "last_verified",
+    "years"
+  ],
+  "properties": {
+    "slug":               { "type": "string", "minLength": 1 },
+    "degree_family_slug": { "type": "string", "minLength": 1 },
+    "major_title":        { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "faculty": { "type": "string", "minLength": 1 },
+    "duration_years": { "type": "integer", "minimum": 1 },
+    "credit_points": { "type": "integer", "minimum": 0 },
+    "accredited": { "type": "boolean" },
+    "school": { "type": "string" },
+    "school_faculty": { "type": "string" },
+    "delivery": { "type": "string" },
+    "location": { "type": "string" },
+    "atar_cutoff": { "type": "number" },
+    "atar_intake_year": { "type": "integer" },
+    "coordinator": { "type": "string" },
+    "coordinator_dept": { "type": "string" },
+    "intake": { "type": "string" },
+    "intake_detail": { "type": "string" },
+    "source_url": { "type": "string", "format": "uri" },
+    "handbook_year": { "type": "integer", "minimum": 2000 },
+    "last_verified": { "type": "string", "format": "date" },
+    "accreditation_body": { "type": "string" },
+    "accreditation_note": { "type": "string" },
+    "overview": { "type": "string" },
+    "career_outcomes": { "type": "object" },
+    "years": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["year", "semesters"],
+        "properties": {
+          "year": { "type": "integer", "minimum": 1 },
+          "semesters": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["number", "label", "units"],
+              "properties": {
+                "number": { "type": "integer" },
+                "label": { "type": "string" },
+                "units": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["code", "title", "credit_points", "type"],
+                    "properties": {
+                      "code": { "type": "string" },
+                      "title": { "type": "string" },
+                      "credit_points": { "type": "integer", "minimum": 0 },
+                      "type": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
