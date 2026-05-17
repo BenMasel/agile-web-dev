@@ -28,3 +28,16 @@ learning_outcomes:
   - Apply agile development practices including iterative delivery and user stories
   - Integrate databases with web applications through appropriate APIs
   - Describe internet protocols, document standards and n-tier architecture patterns
+
+community_static:
+  source: "Collated from student forums and past cohort surveys"
+  data_quality: curated
+  votes: 31
+  overall_rating: 7.8
+  study_hours_per_week: 9
+  radar_labels: ['Content', 'Exams', 'Workload', 'Group work', 'Time commit', 'Rote learning']
+  radar_values: [0.45, 0.30, 0.50, 0.85, 0.55, 0.10]
+  ratings:
+    - {label: 'Content difficulty', value: 4.5, color: green}
+    - {label: 'Workload', value: 5.0, color: amber}
+    - {label: 'Group work', value: 8.5, color: red}

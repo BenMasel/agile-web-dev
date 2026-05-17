@@ -24,3 +24,16 @@ learning_outcomes:
   - Apply defensive programming practices to prevent buffer overflows and injection attacks
   - Use security analysis tools to audit source code for weaknesses
   - Understand adversarial models and threat modelling in secure software design
+
+community_static:
+  source: "Collated from student forums and past cohort surveys"
+  data_quality: curated
+  votes: 29
+  overall_rating: 7.2
+  study_hours_per_week: 8
+  radar_labels: ['Content', 'Exams', 'Workload', 'Group work', 'Time commit', 'Rote learning']
+  radar_values: [0.62, 0.58, 0.45, 0.15, 0.50, 0.40]
+  ratings:
+    - {label: 'Content difficulty', value: 6.2, color: amber}
+    - {label: 'Exam difficulty', value: 5.8, color: amber}
+    - {label: 'Workload', value: 4.5, color: green}
