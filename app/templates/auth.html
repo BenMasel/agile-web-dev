@@ -61,6 +61,7 @@
       </button>
     </div>
 
+    <!-- ── Sign-in form ─────────────────────────────────────────── -->
     <form id="signin-form" method="post" class="auth-panel flex flex-col gap-4" novalidate>
       {{ login_form.hidden_tag() }}
       <input type="hidden" name="action" value="login" />
@@ -68,6 +69,7 @@
       <div class="flex flex-col gap-1.5">
         {{ login_form.email.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
         {{ login_form.email(id="login-email", autocomplete="email", spellcheck="false", placeholder="12345678@student.uwa.edu.au", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+        <p id="login-email-err" class="hidden text-[11px] text-rc-red/85"></p>
         {% for error in login_form.email.errors %}
         <p class="text-[11px] text-rc-red/85">{{ error }}</p>
         {% endfor %}
@@ -76,12 +78,13 @@
       <div class="flex flex-col gap-1.5">
         {{ login_form.password.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
         {{ login_form.password(id="login-password", autocomplete="current-password", placeholder="Password", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+        <p id="login-password-err" class="hidden text-[11px] text-rc-red/85"></p>
         {% for error in login_form.password.errors %}
         <p class="text-[11px] text-rc-red/85">{{ error }}</p>
         {% endfor %}
       </div>
 
-      <button type="submit"
+      <button id="signin-btn" type="submit"
               class="mt-1 flex w-full items-center justify-center gap-2 rounded-[8px] bg-rc-red/90 px-3 py-2.5 text-[13px] font-medium text-white transition hover:bg-rc-red focus:outline-none focus:ring-2 focus:ring-rc-red/40">
         Sign in
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -90,6 +93,7 @@
       </button>
     </form>
 
+    <!-- ── Register form ────────────────────────────────────────── -->
     <form id="signup-form" method="post" class="auth-panel hidden flex-col gap-4" novalidate>
       {{ register_form.hidden_tag() }}
       <input type="hidden" name="action" value="register" />
@@ -97,6 +101,7 @@
       <div class="flex flex-col gap-1.5">
         {{ register_form.email.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
         {{ register_form.email(id="register-email", autocomplete="email", spellcheck="false", placeholder="12345678@student.uwa.edu.au", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+        <p id="reg-email-err" class="hidden text-[11px] text-rc-red/85"></p>
         {% for error in register_form.email.errors %}
         <p class="text-[11px] text-rc-red/85">{{ error }}</p>
         {% endfor %}
@@ -106,6 +111,7 @@
         <div class="flex flex-col gap-1.5">
           {{ register_form.student_id.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
           {{ register_form.student_id(id="register-student-id", autocomplete="off", placeholder="12345678", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+          <p id="reg-sid-err" class="hidden text-[11px] text-rc-red/85"></p>
           {% for error in register_form.student_id.errors %}
           <p class="text-[11px] text-rc-red/85">{{ error }}</p>
           {% endfor %}
@@ -113,6 +119,7 @@
         <div class="flex flex-col gap-1.5">
           {{ register_form.display_name.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
           {{ register_form.display_name(id="register-display-name", autocomplete="name", placeholder="Alex Chen", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+          <p id="reg-name-err" class="hidden text-[11px] text-rc-red/85"></p>
           {% for error in register_form.display_name.errors %}
           <p class="text-[11px] text-rc-red/85">{{ error }}</p>
           {% endfor %}
@@ -128,6 +135,7 @@
         <div class="flex flex-col gap-1.5">
           {{ register_form.password.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
           {{ register_form.password(id="register-password", autocomplete="new-password", placeholder="8+ characters", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+          <p id="reg-pw-err" class="hidden text-[11px] text-rc-red/85"></p>
           {% for error in register_form.password.errors %}
           <p class="text-[11px] text-rc-red/85">{{ error }}</p>
           {% endfor %}
@@ -135,6 +143,7 @@
         <div class="flex flex-col gap-1.5">
           {{ register_form.confirm_password.label(class_="text-[11px] uppercase tracking-wider text-rc-text-tertiary") }}
           {{ register_form.confirm_password(id="register-confirm-password", autocomplete="new-password", placeholder="Repeat password", class_="rounded-[8px] border border-rc-border bg-rc-fill px-3 py-2.5 text-[13px] text-rc-text outline-none transition placeholder:text-rc-text-faint focus:border-white/20") }}
+          <p id="reg-cpw-err" class="hidden text-[11px] text-rc-red/85"></p>
           {% for error in register_form.confirm_password.errors %}
           <p class="text-[11px] text-rc-red/85">{{ error }}</p>
           {% endfor %}
@@ -153,8 +162,8 @@
         </p>
       </div>
 
-      <button type="submit"
-              class="mt-1 flex w-full items-center justify-center gap-2 rounded-[8px] bg-rc-red/90 px-3 py-2.5 text-[13px] font-medium text-white transition hover:bg-rc-red focus:outline-none focus:ring-2 focus:ring-rc-red/40">
+      <button id="signup-btn" type="submit"
+              class="mt-1 flex w-full items-center justify-center gap-2 rounded-[8px] bg-rc-red/90 px-3 py-2.5 text-[13px] font-medium text-white transition hover:bg-rc-red focus:outline-none focus:ring-2 focus:ring-rc-red/40 disabled:opacity-40 disabled:cursor-not-allowed">
         Create account
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -173,20 +182,21 @@
 <script>
 const initialMode = "{{ mode }}";
 
+/* ── Tab switching ─────────────────────────────────────────────── */
 function setMode(mode) {
   const signinForm = document.getElementById('signin-form');
   const signupForm = document.getElementById('signup-form');
-  const tabSignin = document.getElementById('tab-signin');
-  const tabSignup = document.getElementById('tab-signup');
-  const active = 'auth-tab flex-1 rounded-[6px] bg-rc-surface px-3 py-2 text-[12px] font-medium text-white/80 shadow-sm transition';
+  const tabSignin  = document.getElementById('tab-signin');
+  const tabSignup  = document.getElementById('tab-signup');
+  const active   = 'auth-tab flex-1 rounded-[6px] bg-rc-surface px-3 py-2 text-[12px] font-medium text-white/80 shadow-sm transition';
   const inactive = 'auth-tab flex-1 rounded-[6px] px-3 py-2 text-[12px] font-medium text-white/35 transition hover:text-white/55';
 
   tabSignin.className = mode === 'signin' ? active : inactive;
   tabSignup.className = mode === 'signup' ? active : inactive;
   signinForm.classList.toggle('hidden', mode !== 'signin');
-  signinForm.classList.toggle('flex', mode === 'signin');
+  signinForm.classList.toggle('flex',   mode === 'signin');
   signupForm.classList.toggle('hidden', mode !== 'signup');
-  signupForm.classList.toggle('flex', mode === 'signup');
+  signupForm.classList.toggle('flex',   mode === 'signup');
 
   const focusTarget = mode === 'signin'
     ? document.getElementById('login-email')
@@ -195,5 +205,139 @@ function setMode(mode) {
 }
 
 setMode(initialMode === 'signup' ? 'signup' : 'signin');
+
+/* ── Validation helpers ────────────────────────────────────────── */
+const UWA_EMAIL_RE = /^[^\s@]+@student\.uwa\.edu\.au$/i;
+
+function showErr(el, msg) {
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+function clearErr(el) {
+  el.textContent = '';
+  el.classList.add('hidden');
+}
+function markField(input, valid) {
+  if (valid) {
+    input.classList.remove('border-rc-red/60');
+    input.classList.add('border-white/20');
+  } else {
+    input.classList.add('border-rc-red/60');
+    input.classList.remove('border-white/20');
+  }
+}
+
+/* ── Sign-in validation ────────────────────────────────────────── */
+(function () {
+  const emailEl    = document.getElementById('login-email');
+  const pwEl       = document.getElementById('login-password');
+  const emailErr   = document.getElementById('login-email-err');
+  const pwErr      = document.getElementById('login-password-err');
+  const form       = document.getElementById('signin-form');
+
+  function validateLoginEmail() {
+    const v = emailEl.value.trim();
+    if (!v) { showErr(emailErr, 'Email is required.'); markField(emailEl, false); return false; }
+    if (!UWA_EMAIL_RE.test(v)) { showErr(emailErr, 'Must be a @student.uwa.edu.au address.'); markField(emailEl, false); return false; }
+    clearErr(emailErr); markField(emailEl, true); return true;
+  }
+  function validateLoginPw() {
+    if (!pwEl.value) { showErr(pwErr, 'Password is required.'); markField(pwEl, false); return false; }
+    clearErr(pwErr); markField(pwEl, true); return true;
+  }
+
+  emailEl.addEventListener('blur', validateLoginEmail);
+  emailEl.addEventListener('input', () => { if (!emailErr.classList.contains('hidden')) validateLoginEmail(); });
+  pwEl.addEventListener('blur', validateLoginPw);
+  pwEl.addEventListener('input', () => { if (!pwErr.classList.contains('hidden')) validateLoginPw(); });
+
+  form.addEventListener('submit', function (e) {
+    const ok = validateLoginEmail() & validateLoginPw();
+    if (!ok) e.preventDefault();
+  });
+})();
+
+/* ── Register validation ───────────────────────────────────────── */
+(function () {
+  const emailEl  = document.getElementById('register-email');
+  const sidEl    = document.getElementById('register-student-id');
+  const nameEl   = document.getElementById('register-display-name');
+  const pwEl     = document.getElementById('register-password');
+  const cpwEl    = document.getElementById('register-confirm-password');
+  const btn      = document.getElementById('signup-btn');
+  const form     = document.getElementById('signup-form');
+
+  const emailErr = document.getElementById('reg-email-err');
+  const sidErr   = document.getElementById('reg-sid-err');
+  const nameErr  = document.getElementById('reg-name-err');
+  const pwErr    = document.getElementById('reg-pw-err');
+  const cpwErr   = document.getElementById('reg-cpw-err');
+
+  function vEmail() {
+    const v = emailEl.value.trim();
+    if (!v) { showErr(emailErr, 'Email is required.'); markField(emailEl, false); return false; }
+    if (!UWA_EMAIL_RE.test(v)) { showErr(emailErr, 'Must be a @student.uwa.edu.au address.'); markField(emailEl, false); return false; }
+    clearErr(emailErr); markField(emailEl, true); return true;
+  }
+  function vSid() {
+    const v = sidEl.value.trim();
+    if (!/^\d{8}$/.test(v)) { showErr(sidErr, 'Must be exactly 8 digits.'); markField(sidEl, false); return false; }
+    clearErr(sidErr); markField(sidEl, true); return true;
+  }
+  function vName() {
+    const v = nameEl.value.trim();
+    if (!v) { showErr(nameErr, 'Display name is required.'); markField(nameEl, false); return false; }
+    if (v.length > 80) { showErr(nameErr, 'Max 80 characters.'); markField(nameEl, false); return false; }
+    clearErr(nameErr); markField(nameEl, true); return true;
+  }
+  function vPw() {
+    const v = pwEl.value;
+    if (v.length < 8) { showErr(pwErr, 'Password must be at least 8 characters.'); markField(pwEl, false); return false; }
+    clearErr(pwErr); markField(pwEl, true);
+    // re-check confirm when password changes
+    if (cpwEl.value) vCpw();
+    return true;
+  }
+  function vCpw() {
+    if (cpwEl.value !== pwEl.value) { showErr(cpwErr, 'Passwords do not match.'); markField(cpwEl, false); return false; }
+    clearErr(cpwErr); markField(cpwEl, true); return true;
+  }
+
+  function allValid() {
+    return UWA_EMAIL_RE.test(emailEl.value.trim()) &&
+           /^\d{8}$/.test(sidEl.value.trim()) &&
+           nameEl.value.trim().length > 0 &&
+           pwEl.value.length >= 8 &&
+           cpwEl.value === pwEl.value;
+  }
+  function updateBtn() {
+    btn.disabled = !allValid();
+  }
+
+  // Live feedback on blur
+  emailEl.addEventListener('blur', vEmail);
+  sidEl.addEventListener('blur', vSid);
+  nameEl.addEventListener('blur', vName);
+  pwEl.addEventListener('blur', vPw);
+  cpwEl.addEventListener('blur', vCpw);
+
+  // Re-validate on input once field has been touched (error visible)
+  emailEl.addEventListener('input', () => { if (!emailErr.classList.contains('hidden')) vEmail(); updateBtn(); });
+  sidEl.addEventListener('input',   () => { if (!sidErr.classList.contains('hidden'))   vSid();   updateBtn(); });
+  nameEl.addEventListener('input',  () => { if (!nameErr.classList.contains('hidden'))  vName();  updateBtn(); });
+  pwEl.addEventListener('input',    () => { if (!pwErr.classList.contains('hidden'))    vPw();    updateBtn(); });
+  cpwEl.addEventListener('input',   () => { if (!cpwErr.classList.contains('hidden'))   vCpw();   updateBtn(); });
+
+  // Also update button state on any input (enables button once all fields valid)
+  [emailEl, sidEl, nameEl, pwEl, cpwEl].forEach(el => el.addEventListener('input', updateBtn));
+
+  form.addEventListener('submit', function (e) {
+    const ok = vEmail() & vSid() & vName() & vPw() & vCpw();
+    if (!ok) e.preventDefault();
+  });
+
+  // Initial state — disable button if fields are blank
+  updateBtn();
+})();
 </script>
 {% endblock %}
